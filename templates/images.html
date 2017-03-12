@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content -%}
+{% for image in images.items -%}
+{{ image.name }}
+{%- endfor %}
+{%- endblock content %}

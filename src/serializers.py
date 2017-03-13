@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-13 13:23:26 (CST)
-# Last Update:星期一 2017-3-13 13:24:34 (CST)
+# Last Update:星期一 2017-3-13 16:15:28 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -18,8 +18,10 @@ class UserSerializer(Serializer):
 
 
 class AlbumSerializer(Serializer):
-    pass
+    class Meta:
+        exclude = ['user', 'images']
 
 
 class ImageSerializer(Serializer):
-    pass
+    class Meta:
+        exclude = ['user']

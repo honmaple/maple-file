@@ -6,11 +6,11 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:16:21 (CST)
-# Last Update:星期一 2017-3-13 14:21:20 (CST)
+# Last Update:星期一 2017-3-13 16:56:18 (CST)
 #          By:
 # Description:
 # **************************************************************************
-from flask import Flask
+from flask import Flask, send_from_directory, current_app
 from .admin import admin
 import os
 
@@ -29,8 +29,13 @@ def create_app(config):
 
 def register(app):
     from .server.urls import site
-    app.register_blueprint(site)
+    app.register_blueprint(site, url_prefix='/api')
     register_extensions(app)
+
+    @app.route('/images/<path:name>')
+    def photo(name):
+        config = current_app.config
+        return send_from_directory(config['UPLOAD_FOLDER'], name)
 
 
 def register_extensions(app):

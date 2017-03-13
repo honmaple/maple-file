@@ -6,10 +6,12 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:18:22 (CST)
-# Last Update:星期日 2017-3-12 20:31:3 (CST)
+# Last Update:星期一 2017-3-13 16:32:32 (CST)
 #          By:
 # Description:
 # **************************************************************************
+from flask import url_for, Markup, request
+from flask_admin import form
 from flask_wtf import Form
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -30,7 +32,7 @@ class BaseView(ModelView):
 
     page_size = 10
     can_view_details = True
-    # column_display_pk = True
+    column_display_pk = True
     form_base_class = BaseForm
 
     # def is_accessible(self):
@@ -40,6 +42,24 @@ class BaseView(ModelView):
 
     # def inaccessible_callback(self, name, **kwargs):
     #     abort(404)
+
+
+# class ImageView(BaseView):
+#     def _list_thumbnail(view, context, model, name):
+#         if not model.path:
+#             return ''
+#         return Markup('<img src="%s">' % url_for(
+#             'images', filename=form.thumbgen_filename(model.url)))
+
+#     column_formatters = {'path': _list_thumbnail}
+#     form_excluded_columns = ['url']
+#     form_extra_fields = {
+#         'path': form.ImageUploadField(
+#             'Image',
+#             base_path=file_path,
+#             namegen=prefix_name,
+#             thumbnail_size=(100, 100, True))
+#     }
 
 
 admin.add_view(

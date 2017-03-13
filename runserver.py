@@ -6,12 +6,13 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:53:43 (CST)
-# Last Update:星期一 2017-3-13 14:21:7 (CST)
+# Last Update:星期一 2017-3-13 16:59:33 (CST)
 #          By:
 # Description:
 # **************************************************************************
 from src import create_app
 from datetime import timedelta
+import os
 
 
 class Config(object):
@@ -27,19 +28,20 @@ class Config(object):
     LOGIN_TOKEN = 'api_key'
     AUTH_HEADER_NAME = 'token'
 
-    MIDDLEWARE = [
-        'src.common.middleware.CommonMiddleware'
-    ]
+    MIDDLEWARE = ['src.common.middleware.CommonMiddleware']
 
     WTF_CSRF_ENABLED = True
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
     # SQLALCHEMY_ECHO = DEBUG
-    UPLOAD_FOLDER = 'images'
+    UPLOAD_FOLDER_ROOT = os.path.dirname(os.path.abspath(__file__))
+    UPLOAD_FOLDER_PATH = 'images'
+    UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER_ROOT, UPLOAD_FOLDER_PATH)
 
 
 app = create_app(Config())
 
 if __name__ == '__main__':
     app.run()
+    print(app.url_map)

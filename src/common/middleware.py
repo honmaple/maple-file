@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-13 14:18:20 (CST)
-# Last Update:星期一 2017-3-13 14:22:57 (CST)
+# Last Update:星期一 2017-3-13 16:11:45 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -18,11 +18,9 @@ class CommonMiddleware(object):
     def preprocess_request(self):
         g.user = current_user
         request.user = current_user._get_current_object()
-        headers = request.headers
-        content_type = headers['Content-Type']
         if request.method == 'GET':
             request.data = request.args.to_dict()
-        elif content_type == 'application/x-www-form-urlencoded':
-            request.data = request.form.to_dict()
         else:
             request.data = request.json
+            if request.data is None:
+                request.data = request.form.to_dict()

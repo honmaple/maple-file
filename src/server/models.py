@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:58:08 (CST)
-# Last Update:星期一 2017-3-13 14:45:19 (CST)
+# Last Update:星期一 2017-3-13 17:38:22 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -14,7 +14,7 @@ from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import (generate_password_hash, check_password_hash)
 from itsdangerous import (URLSafeTimedSerializer, BadSignature,
-                          SignatureExpired, URLSafeSerializer)
+                          SignatureExpired)
 from src.extension import db
 from src.common.models import ModelUserMixin, ModelMixin
 
@@ -44,9 +44,10 @@ class User(ModelMixin, UserMixin, db.Model):
         return token
 
     @classmethod
-    def check_api_key(cls, token, max_age=86400):
-        if not cls.query.filter_by(key=token).first():
-            return False
+    def check_api_key(cls, token, max_age=7776000):
+        '''
+        max_age is three months
+        '''
         config = current_app.config
         secret_key = config['SECRET_KEY']
         salt = config['SECRET_KEY_SALT']
@@ -57,7 +58,7 @@ class User(ModelMixin, UserMixin, db.Model):
             return False
         except SignatureExpired:
             return False
-        user = cls.query.filter_by(email=email).first()
+        user = cls.query.filter_by(email=email, key=token).first()
         if user is None:
             return False
         return user
@@ -73,7 +74,7 @@ class Album(ModelUserMixin, db.Model):
     __tablename__ = 'album'
     user_related_name = 'albums'
     name = db.Column(db.String(108), nullable=False)
-    description = db.Column(db.String(1024), nullable=True)
+    description = db.Column(db.String(1024), default='album')
 
     def __repr__(self):
         return '<Album %r>' % self.name
@@ -86,7 +87,9 @@ class Image(ModelUserMixin, db.Model):
     __tablename__ = 'image'
     user_related_name = 'images'
     name = db.Column(db.String(108), nullable=False)
-    description = db.Column(db.String(1024), nullable=True)
+    path = db.Column(db.String(512), nullable=False)
+    url = db.Column(db.String(512), nullable=False)
+    description = db.Column(db.String(1024), default='image')
     album_id = db.Column(
         db.Integer, db.ForeignKey(
             'album.id', ondelete="CASCADE"))

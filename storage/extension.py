@@ -6,13 +6,13 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:12:20 (CST)
-# Last Update:星期一 2017-3-13 14:23:40 (CST)
+# Last Update:星期一 2017-3-13 20:48:38 (CST)
 #          By:
 # Description:
 # **************************************************************************
 from flask import abort, current_app
 from .common.models import db
-from flask_login import LoginManager
+from flask_login import LoginManager, login_user
 from werkzeug import import_string
 
 
@@ -59,7 +59,9 @@ def register_login():
             token = request.args.get(config['LOGIN_TOKEN'], None)
         if token:
             user = User.check_api_key(token)
-            return user if user else None
+            if user:
+                login_user(user=user, remember=True)
+                return user
 
     @login_manager.unauthorized_handler
     def unauthorized():

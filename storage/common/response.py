@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2016-12-25 11:21:35 (CST)
-# Last Update:星期一 2017-3-13 16:46:17 (CST)
+# Last Update:星期一 2017-3-13 19:26:7 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -19,12 +19,14 @@ class HTTPResponse(object):
     FORBIDDEN = '403'
     HTTP_CODE_PARA_ERROR = '401'
     HTTP_CODE_NOT_EXIST = '404'
+    HTTP_CODE_HAS_EXISTS = '501'
     OTHER_ERROR = '500'
 
     STATUS_DESCRIPTION = {
         NORMAL_STATUS: 'normal',
         HTTP_CODE_NOT_EXIST: '404',
         HTTP_CODE_PARA_ERROR: '参数错误',
+        HTTP_CODE_HAS_EXISTS: '文件已存在',
         OTHER_ERROR: '其它错误'
     }
 
@@ -35,7 +37,7 @@ class HTTPResponse(object):
                  description='',
                  pageinfo=None):
         self.status = status
-        self.message = self.STATUS_DESCRIPTION.get(status)
+        self.message = message or self.STATUS_DESCRIPTION.get(status)
         self.data = data
         self.description = description
         self.pageinfo = pageinfo

@@ -11,8 +11,8 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from runserver import app
 from getpass import getpass
-from src.extension import db
-from src.server.models import User, Album
+from storage.extension import db
+from storage.server.models import User, Album
 
 migrate = Migrate(app, db)
 manager = Manager(app)
@@ -51,6 +51,18 @@ def create_user(username, email, password):
     user.save()
     album = Album(name='default', user=user)
     album.save()
+
+
+@manager.option('-u', '--username', dest='username')
+@manager.option('-r', '--reset', dest='reset', default=False)
+def key(username, reset):
+    if username is None:
+        username = input('Username(default admin):') or 'admin'
+    user = User.query.filter_by(username=username).first()
+    if reset:
+        user.key = user.api_key
+        user.save()
+    print(user.key)
 
 
 manager.add_command('db', MigrateCommand)

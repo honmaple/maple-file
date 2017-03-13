@@ -6,11 +6,11 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:16:21 (CST)
-# Last Update:星期一 2017-3-13 16:56:18 (CST)
+# Last Update:星期一 2017-3-13 20:42:38 (CST)
 #          By:
 # Description:
 # **************************************************************************
-from flask import Flask, send_from_directory, current_app
+from flask import Flask, send_from_directory
 from .admin import admin
 import os
 
@@ -28,14 +28,16 @@ def create_app(config):
 
 
 def register(app):
-    from .server.urls import site
-    app.register_blueprint(site, url_prefix='/api')
+    from .server.urls import site as server_site
+    from .auth.urls import site as auth_site
+    app.register_blueprint(server_site, url_prefix='/api')
+    app.register_blueprint(auth_site, url_prefix='/api')
     register_extensions(app)
 
-    @app.route('/images/<path:name>')
-    def photo(name):
-        config = current_app.config
-        return send_from_directory(config['UPLOAD_FOLDER'], name)
+    @app.route('/images/<path:filename>')
+    def photo(filename):
+        config = app.config
+        return send_from_directory(config['UPLOAD_FOLDER'], filename)
 
 
 def register_extensions(app):
@@ -43,4 +45,5 @@ def register_extensions(app):
     db.init_app(app)
     login.init_app(app)
     middleware.init_app(app)
+    admin.index_view.url = app.config['ADMIN_URL']
     admin.init_app(app)

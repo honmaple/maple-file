@@ -6,12 +6,13 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-13 13:40:38 (CST)
-# Last Update:星期一 2017-3-13 13:40:49 (CST)
+# Last Update:星期一 2017-3-13 20:4:44 (CST)
 #          By:
 # Description:
 # **************************************************************************
-from time import time
+from flask import current_app
 from datetime import datetime, timedelta
+from hashlib import sha512
 
 
 def gen_order_by(query_dict=dict(), keys=[], date_key=True):
@@ -59,3 +60,19 @@ def gen_filter_dict(query_dict=dict(), keys=[], equal_key=[], user=None):
     if user is not None and user.is_authenticated:
         filter_dict.update(user__id=user.id)
     return filter_dict
+
+
+def gen_hash(image):
+    sha = sha512()
+    # while True:
+    #     data = f.read(block_size)
+    #     if not data:
+    #         break
+    # sha1.update(data)
+    sha.update(image.read())
+    return sha.hexdigest()
+
+
+def file_is_allowed(filename):
+    e = current_app.config['UPLOAD_ALLOWED_EXTENSIONS']
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in e

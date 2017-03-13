@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:54:12 (CST)
-# Last Update:星期一 2017-3-13 17:34:13 (CST)
+# Last Update:星期一 2017-3-13 20:52:32 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -16,11 +16,12 @@ from time import time
 from random import randint
 from threading import Thread
 from PIL import Image as ImagePIL
-from src.common.serializer import PageInfo
-from src.common.views import IsAuthMethodView as MethodView
-from src.common.response import HTTPResponse
-from src.serializers import (ImageSerializer, AlbumSerializer)
-from src.common.utils import gen_filter_dict, gen_order_by
+from storage.common.serializer import PageInfo
+from storage.common.views import IsAuthMethodView as MethodView
+from storage.common.response import HTTPResponse
+from storage.serializers import (ImageSerializer, AlbumSerializer)
+from storage.common.utils import (gen_filter_dict, gen_order_by, gen_hash,
+                                  file_is_allowed)
 from .models import Image, Album
 import os
 
@@ -163,33 +164,58 @@ class ImageListView(MethodView):
         images = request.files.getlist('images')
         t = datetime.now()
         # 将会保存到数据库中的路径
-        path = os.path.join(current_app.config['UPLOAD_FOLDER_PATH'], 'photo',
-                            t.strftime('%Y'), t.strftime('%m'))
+        path = os.path.join(
+            current_app.config['UPLOAD_FOLDER_PATH'], user.username, 'photo',
+            t.strftime('%Y'), t.strftime('%m'))
         # 将会保存到磁盘中的路径
         base_path = os.path.join(current_app.config['UPLOAD_FOLDER_ROOT'],
                                  path)
         if not os.path.exists(base_path):
             os.makedirs(base_path)
         _images = []
+        _exist_images = []
         for image in images:
+            if not file_is_allowed(image.filename):
+                msg = '{name} 不允许的扩展'.format(name=image.filename)
+                return HTTPResponse(
+                    HTTPResponse.HTTP_CODE_PARA_ERROR,
+                    message=msg).to_response()
             name = '{name}.png'.format(
                 name=str(int(time() * 1000)) + str(randint(10, 99)))
-            # 保存到磁盘中
-            img_path = os.path.join(base_path, name)
-            image.save(img_path)
-            # 保存到数据库中
-            img = Image(name=name, path=path, user=user, album=album)
-            img.url = os.path.join(path, name)
-            img.save()
-            serializer = ImageSerializer(img)
-            _images.append(serializer.data)
-            # 缩略图路径
-            thumb_path = os.path.join(current_app.config['UPLOAD_FOLDER_ROOT'],
-                                      img_path.replace('photo', 'thumb'))
-            t = Thread(
-                target=self.gen_thumb_image, args=(img_path, thumb_path))
-            t.setDaemon(True)
-            t.start()
+            # 计算sha-512值,避免重复保存
+            hash = gen_hash(image)
+            if not Image.query.filter_by(hash=hash, user=user).exists():
+                # 保存到磁盘中
+                img_path = os.path.join(base_path, name)
+                # http://stackoverflow.com/questions/42569942/calculate-md5-from-werkzeug-datastructures-filestorage-but-saving-the-object-as
+                image.seek(0)
+                image.save(img_path)
+                # 保存到数据库中
+                img = Image(
+                    name=name, path=path, hash=hash, user=user, album=album)
+                img.url = os.path.join(path, name)
+                img.save()
+                serializer = ImageSerializer(img)
+                _images.append(serializer.data)
+                # 缩略图路径
+                thumb_path = os.path.join(
+                    current_app.config['UPLOAD_FOLDER_ROOT'],
+                    img_path.replace('photo', 'thumb'))
+                t = Thread(
+                    target=self.gen_thumb_image, args=(img_path, thumb_path))
+                t.setDaemon(True)
+                t.start()
+            else:
+                _exist_images.append(image.filename)
+        if _exist_images:
+            msg = '文件已存在'
+            return HTTPResponse(
+                HTTPResponse.HTTP_CODE_HAS_EXISTS,
+                data={
+                    'success': _images,
+                    'fail': _exist_images
+                },
+                message=msg).to_response()
         return HTTPResponse(
             HTTPResponse.NORMAL_STATUS, data=_images).to_response()
 

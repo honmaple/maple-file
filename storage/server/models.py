@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:58:08 (CST)
-# Last Update:星期一 2017-3-13 17:38:22 (CST)
+# Last Update:星期一 2017-3-13 19:34:3 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -15,8 +15,8 @@ from flask_login import UserMixin
 from werkzeug.security import (generate_password_hash, check_password_hash)
 from itsdangerous import (URLSafeTimedSerializer, BadSignature,
                           SignatureExpired)
-from src.extension import db
-from src.common.models import ModelUserMixin, ModelMixin
+from storage.extension import db
+from storage.common.models import ModelUserMixin, ModelMixin
 
 
 class User(ModelMixin, UserMixin, db.Model):
@@ -89,6 +89,7 @@ class Image(ModelUserMixin, db.Model):
     name = db.Column(db.String(108), nullable=False)
     path = db.Column(db.String(512), nullable=False)
     url = db.Column(db.String(512), nullable=False)
+    hash = db.Column(db.String(1024), nullable=False)
     description = db.Column(db.String(1024), default='image')
     album_id = db.Column(
         db.Integer, db.ForeignKey(

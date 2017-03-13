@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-13 13:23:26 (CST)
-# Last Update:星期一 2017-3-13 16:15:28 (CST)
+# Last Update:星期一 2017-3-13 20:46:8 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -14,7 +14,8 @@ from .common.serializer import Serializer
 
 
 class UserSerializer(Serializer):
-    pass
+    class Meta:
+        include = ['id', 'username', 'key']
 
 
 class AlbumSerializer(Serializer):
@@ -24,4 +25,4 @@ class AlbumSerializer(Serializer):
 
 class ImageSerializer(Serializer):
     class Meta:
-        exclude = ['user']
+        exclude = ['user', 'hash']

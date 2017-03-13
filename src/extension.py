@@ -6,13 +6,36 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:12:20 (CST)
-# Last Update:星期日 2017-3-12 20:31:44 (CST)
+# Last Update:星期一 2017-3-13 14:23:40 (CST)
 #          By:
 # Description:
 # **************************************************************************
 from flask import abort, current_app
-from flask_sqlalchemy import SQLAlchemy
+from .common.models import db
 from flask_login import LoginManager
+from werkzeug import import_string
+
+
+class Middleware(object):
+    def __init__(self, app=None):
+        self.app = app
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+        middleware = app.config.setdefault('MIDDLEWARE', [])
+        self.process(app, middleware)
+
+    def process(self, app, middleware):
+        for middleware_string in middleware:
+            middleware = import_string(middleware_string)
+            response = middleware()
+            if hasattr(response, 'preprocess_request'):
+                before_request = response.preprocess_request
+                app.before_request(before_request)
+            if hasattr(response, 'process_response'):
+                after_request = response.process_response
+                app.after_request(after_request)
 
 
 def register_login():
@@ -35,9 +58,8 @@ def register_login():
         if not token:
             token = request.args.get(config['LOGIN_TOKEN'], None)
         if token:
-            user = User.check_user_token(token)
-            if user and user.user_status == User.USER_STATUS_ACTIVED:
-                return user
+            user = User.check_api_key(token)
+            return user if user else None
 
     @login_manager.unauthorized_handler
     def unauthorized():
@@ -46,5 +68,6 @@ def register_login():
     return login_manager
 
 
-db = SQLAlchemy()
+db = db
 login = register_login()
+middleware = Middleware()

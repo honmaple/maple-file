@@ -10,7 +10,9 @@
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from runserver import app
+from getpass import getpass
 from src.extension import db
+from src.server.models import User, Album
 
 migrate = Migrate(app, db)
 manager = Manager(app)
@@ -26,10 +28,29 @@ def init_db():
     """
     Drops and re-creates the SQL schema
     """
-    db.drop_all()
+    # db.drop_all()
     db.configure_mappers()
     db.create_all()
     db.session.commit()
+
+
+@manager.option('-u', '--username', dest='username')
+@manager.option('-e', '--email', dest='email')
+@manager.option('-p', '--password', dest='password')
+def create_user(username, email, password):
+    if username is None:
+        username = input('Username(default admin):') or 'admin'
+    if email is None:
+        email = input('Email:')
+    if password is None:
+        password = getpass('Password:')
+    user = User(username=username, email=email)
+    user.is_superuser = True
+    user.key = user.api_key
+    user.set_password(password)
+    user.save()
+    album = Album(name='default', user=user)
+    album.save()
 
 
 manager.add_command('db', MigrateCommand)

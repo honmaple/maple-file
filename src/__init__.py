@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:16:21 (CST)
-# Last Update:星期日 2017-3-12 20:56:44 (CST)
+# Last Update:星期一 2017-3-13 14:21:20 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -34,7 +34,8 @@ def register(app):
 
 
 def register_extensions(app):
-    from .extension import db, login
+    from .extension import db, login, middleware
     db.init_app(app)
     login.init_app(app)
+    middleware.init_app(app)
     admin.init_app(app)

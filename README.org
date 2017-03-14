@@ -1,1 +1,124 @@
 * maple-file
+  #+BEGIN_QUOTE
+  使用flask实现的一个简单的图片上传服务
+  #+END_QUOTE
+
+** 设计初衷
+   对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛
+   自定义域名竟然需要域名备案(*Excuse me*,当初就是因为备案麻烦才选择国外的),而且浪费了我十块钱,
+
+   而我又想像七牛一样可以直接在本地就可以上传图片,找来找去，没有找到一个比较合适的，所以花两天时间自己写了一个
+
+** 使用
+   由于初衷是本地脚本就可以发布,所以没有前端界面,等以后有时间了再加上
+
+*** API
+    - */api/login*
+      - POST
+        登录
+    - */api/logout*
+      - GET
+        注销
+    - */api/albums*
+      - GET
+        获取相册列表
+      - POST
+        新建相册
+        - name 相册名称
+        - description 相册描述
+    - */api/albums/<int:pk>*
+      pk 相册ID
+      - GET
+        获取相册信息
+      - PUT
+        修改相册信息
+        - name 相册名称
+        - description 相册描述
+      - DELETE
+        删除相册
+    - */api/images*
+      - GET
+        获取图片列表
+      - POST
+        上传图片
+        - images 上传图片列表
+        - album 相册ID(默认会新建一个*default*相册)
+    - */api/images/<int:pk>*
+      - GET
+        获取相册信息
+      - PUT
+        修改图片信息
+        - name 图片名称
+        - description 图片描述
+      - DELETE
+        删除图片
+*** 配置
+    #+BEGIN_SRC python
+      class Config(object):
+          DEBUG = True # 生产环境设置为False
+          SECRET_KEY = 'ccc' # import os;os.urandom(24)
+          SECRET_KEY_SALT = 'ssss'
+          JSON_AS_ASCII = False
+
+          PERMANENT_SESSION_LIFETIME = timedelta(days=3)
+
+          PER_PAGE = 10 # 分页
+          ADMIN_URL = '/admin/aaaaa' # 后台地址
+
+          LOGIN_TOKEN_HEADER = 'Api-Key' # 将会影响到后面headers设置
+          LOGIN_TOKEN = 'api_key' #url?api_key=21312313
+
+          MIDDLEWARE = ['storage.common.middleware.CommonMiddleware']
+
+          SQLALCHEMY_TRACK_MODIFICATIONS = False
+          SQLALCHEMY_DATABASE_URI = 'sqlite:///test.db'
+          # SQLALCHEMY_ECHO = DEBUG
+          UPLOAD_ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg']) # 允许上传的扩展名
+          UPLOAD_FOLDER_ROOT = os.path.dirname(os.path.abspath(__file__))
+          UPLOAD_FOLDER_PATH = 'images' # 相对于当前文件路径的地址
+          UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER_ROOT, UPLOAD_FOLDER_PATH)
+    #+END_SRC
+
+*** 创建账户
+    #+BEGIN_SRC shell
+    python manager.py create_user
+    #+END_SRC
+    将同时创建一个*default*的相册
+    #+BEGIN_SRC shell
+    python manager.py key
+    #+END_SRC
+    显示用户key
+
+*** 上传
+    上传后图片保存路径
+
+    - 原图路径:
+    #+BEGIN_EXAMPLE
+    UPLOAD_FOLDER + 'username' + 'photo' + %Y + %m + (时间戳+随机数).png
+    #+END_EXAMPLE
+    - 缩略图路径:
+    #+BEGIN_EXAMPLE
+    UPLOAD_FOLDER + 'username' + 'thumb' + %Y + %m + (时间戳+随机数).png
+    #+END_EXAMPLE
+
+*** example
+    使用*requests*本地上传
+    #+BEGIN_SRC python
+      import requests
+
+      def images():
+          url = 'http://127.0.0.1:8000/api/images'
+          files = {'images': open('desktop.png', 'rb')}
+          multiple_files = [
+              ('images', ('11.png', open('11.png', 'rb'), 'image/png')),
+              ('images', ('desktop.png', open('desktop.png', 'rb'), 'image/png'))
+          ]
+          headers = {
+              'Api-Key':
+              'InhpeWFuZzA4MDdJBtx4AWlPpI_Oxx1Ki8',
+              'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36'
+          }
+          # r = requests.post(url, files=multiple_files, headers=headers)
+          r = requests.post(url, files=files, headers=headers)
+          print(r.text)
+    #+END_SRC

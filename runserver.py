@@ -6,12 +6,13 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:53:43 (CST)
-# Last Update:星期一 2017-3-13 20:42:58 (CST)
+# Last Update:星期一 2017-3-13 22:54:5 (CST)
 #          By:
 # Description:
 # **************************************************************************
 from storage import create_app
 from datetime import timedelta
+from werkzeug.contrib.fixers import ProxyFix
 import os
 
 
@@ -26,7 +27,7 @@ class Config(object):
     PER_PAGE = 10
     ADMIN_URL = '/admin/aaaaa'
 
-    LOGIN_TOKEN_HEADER = 'Api_Key'
+    LOGIN_TOKEN_HEADER = 'Api-Key'
     LOGIN_TOKEN = 'api_key'
 
     MIDDLEWARE = ['storage.common.middleware.CommonMiddleware']
@@ -41,7 +42,7 @@ class Config(object):
 
 
 app = create_app(Config())
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == '__main__':
     app.run()
-    print(app.url_map)

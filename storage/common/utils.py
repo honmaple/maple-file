@@ -6,13 +6,15 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-13 13:40:38 (CST)
-# Last Update:星期一 2017-3-13 20:4:44 (CST)
+# Last Update:星期二 2017-3-14 16:2:24 (CST)
 #          By:
 # Description:
 # **************************************************************************
 from flask import current_app
 from datetime import datetime, timedelta
 from hashlib import sha512
+from io import BytesIO
+from PIL import Image as ImagePIL
 
 
 def gen_order_by(query_dict=dict(), keys=[], date_key=True):
@@ -76,3 +78,20 @@ def gen_hash(image):
 def file_is_allowed(filename):
     e = current_app.config['UPLOAD_ALLOWED_EXTENSIONS']
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in e
+
+
+def gen_thumb_image(path, width=0, height=0, filetype='JPEG'):
+    '''
+    生成缩略图
+    '''
+    width = min(1024, width)
+    height = min(1024, height)
+    img = ImagePIL.open(path)
+    if width and not height:
+        height = float(width) / img.size[0] * img.size[1]
+    if not width and height:
+        width = float(height) / img.size[1] * img.size[0]
+    stream = BytesIO()
+    img.thumbnail((width, height), ImagePIL.ANTIALIAS)
+    img.save(stream, format=filetype, optimize=True)
+    return stream

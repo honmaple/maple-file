@@ -27,6 +27,7 @@
         - name 相册名称
         - description 相册描述
     - */api/albums/<int:pk>*
+
       pk 相册ID
       - GET
         获取相册信息
@@ -45,7 +46,7 @@
         - album 相册ID(默认会新建一个*default*相册)
     - */api/images/<int:pk>*
       - GET
-        获取相册信息
+        获取图片信息
       - PUT
         修改图片信息
         - name 图片名称

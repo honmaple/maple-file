@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:54:12 (CST)
-# Last Update:星期二 2017-3-14 14:37:16 (CST)
+# Last Update:星期三 2017-3-22 22:34:16 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -201,8 +201,18 @@ class ImageListView(MethodView):
                 thumb_path = os.path.join(
                     current_app.config['UPLOAD_FOLDER_ROOT'],
                     img_path.replace('photo', 'thumb'))
+                # 展示图路径
+                show_path = os.path.join(
+                    current_app.config['UPLOAD_FOLDER_ROOT'],
+                    img_path.replace('photo', 'show'))
                 t = Thread(
-                    target=self.gen_thumb_image, args=(img_path, thumb_path))
+                    target=self.gen_thumb_image,
+                    args=(img_path, thumb_path, 300))
+                t.setDaemon(True)
+                t.start()
+                t = Thread(
+                    target=self.gen_thumb_image,
+                    args=(img_path, show_path, 810))
                 t.setDaemon(True)
                 t.start()
             else:
@@ -219,18 +229,18 @@ class ImageListView(MethodView):
         return HTTPResponse(
             HTTPResponse.NORMAL_STATUS, data=_images).to_response()
 
-    def gen_thumb_image(self, img_path, thumb_path):
+    def gen_thumb_image(self, img_path, thumb_path, width):
         '''
-        生成缩略图
+        生成缩略图 or 展示图
         '''
         base_path = os.path.dirname(thumb_path)
         if not os.path.exists(base_path):
             os.makedirs(base_path)
         img = ImagePIL.open(img_path)
-        if img.size[0] <= 300:
+        if img.size[0] <= width:
             img.save(thumb_path, 'PNG')
             return thumb_path
-        width = 300
+        width = width
         height = float(width) / img.size[0] * img.size[1]
         img.thumbnail((width, height), ImagePIL.ANTIALIAS)
         img.save(thumb_path, 'PNG')

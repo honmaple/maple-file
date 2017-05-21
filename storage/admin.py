@@ -6,19 +6,23 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 20:18:22 (CST)
-# Last Update:星期一 2017-3-13 20:39:14 (CST)
+# Last Update:星期四 2017-4-13 14:29:30 (CST)
 #          By:
 # Description:
 # **************************************************************************
-from flask import Markup, current_app, abort
-from flask_wtf import Form
+from random import randint
+from time import time
+
+from flask import Markup, abort, current_app
 from flask_admin import Admin, form
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
-from time import time
-from random import randint
-from .server.models import User, Album, Image
+from flask_wtf import Form
+
+from storage.common.utils import gen_hash
 from storage.extension import db
+
+from .server.models import Album, Image, User
 
 admin = Admin(name='图片管理', template_mode='bootstrap3')
 
@@ -46,15 +50,28 @@ class BaseView(ModelView):
         abort(404)
 
 
-def prefix_name(obj, file_data):
-    name = '{name}.png'.format(
-        name=str(int(time() * 1000)) + str(randint(10, 99)))
-    return name
+class UserView(BaseView):
+    column_exclude_list = ['password']
+    column_editable_list = ['is_superuser']
+
+    def on_model_change(self, form, model, is_created=False):
+        if is_created:
+            model.key = model.api_key
+            model.password = User.set_password(form.password.data)
+
+
+class AlbumView(BaseView):
+    column_editable_list = ['name']
 
 
 class ImageView(BaseView):
     def _list_thumbnail(view, context, model, name):
         return Markup('<img src="/%s">' % model.url.replace('photo', 'thumb'))
+
+    def prefix_name(obj, file_data):
+        name = '{name}.png'.format(
+            name=str(int(time() * 1000)) + str(randint(10, 99)))
+        return name
 
     column_formatters = {'url': _list_thumbnail}
     column_exclude_list = ['hash', 'path']
@@ -67,12 +84,16 @@ class ImageView(BaseView):
             thumbnail_size=(100, 100, True))
     }
 
+    def on_model_change(self, form, model, is_created=False):
+        if is_created:
+            model.hash = gen_hash(form.url.data)
+
 
 admin.add_view(
-    BaseView(
+    UserView(
         User, db.session, name='管理用户', endpoint='admin_user', url='users'))
 admin.add_view(
-    BaseView(
+    AlbumView(
         Album, db.session, name='管理相册', endpoint='admin_album', url='albums'))
 admin.add_view(
     ImageView(

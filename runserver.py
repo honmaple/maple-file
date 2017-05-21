@@ -6,7 +6,7 @@
 # Author: jianglin
 # Email: xiyang0807@gmail.com
 # Created: 2017-03-12 19:53:43 (CST)
-# Last Update:星期一 2017-3-13 22:54:5 (CST)
+# Last Update:星期四 2017-4-13 13:39:52 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -25,7 +25,7 @@ class Config(object):
     PERMANENT_SESSION_LIFETIME = timedelta(days=3)
 
     PER_PAGE = 10
-    ADMIN_URL = '/admin/aaaaa'
+    ADMIN_URL = '/admin'
 
     LOGIN_TOKEN_HEADER = 'Api-Key'
     LOGIN_TOKEN = 'api_key'
@@ -45,4 +45,4 @@ app = create_app(Config())
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=8000)

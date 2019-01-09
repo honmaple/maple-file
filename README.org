@@ -82,11 +82,11 @@
 
 *** 创建账户
     #+BEGIN_SRC shell
-    python manager.py create_user
+    python runserver.py create-user
     #+END_SRC
     将同时创建一个*default*的相册
     #+BEGIN_SRC shell
-    python manager.py key
+    python runserver.py key
     #+END_SRC
     显示用户key
 
@@ -116,7 +116,7 @@
           ]
           headers = {
               'Api-Key':
-              'InhpeWFuZzA4MDdJBtx4AWlPpI_Oxx1Ki8',
+              'InhpeWFuZzA4MDdJBt4AWlPpI_Oxx1Ki8',
               'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36'
           }
           # r = requests.post(url, files=multiple_files, headers=headers)

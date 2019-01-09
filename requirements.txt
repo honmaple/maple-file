@@ -1,8 +1,9 @@
-Flask==0.12
-Flask-Admin==1.4.2
-Flask-Script==2.0.5
-Flask-SQLAlchemy==3.0.dev20170107
-Flask-WTF==0.13.1
-gunicorn==19.6.0
-Pillow==3.4.2
-requests==2.13.0
+Flask==1.0.2
+Flask-Admin==1.5.3
+Flask-Login==0.4.1
+Flask-Maple==0.5.5
+Flask-SQLAlchemy==2.3.2
+itsdangerous==1.1.0
+Jinja2==2.10
+Pillow==5.4.1
+requests==2.21.0

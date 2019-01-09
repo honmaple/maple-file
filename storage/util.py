@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # **************************************************************************
-# Copyright © 2017 jianglin
-# File Name: utils.py
+# Copyright © 2019 jianglin
+# File Name: util.py
 # Author: jianglin
-# Email: xiyang0807@gmail.com
+# Email: mail@honmaple.com
 # Created: 2017-03-13 13:40:38 (CST)
-# Last Update:星期二 2017-3-14 16:2:24 (CST)
+# Last Update: Monday 2019-01-07 14:57:13 (CST)
 #          By:
 # Description:
 # **************************************************************************

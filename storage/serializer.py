@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # **************************************************************************
-# Copyright © 2017 jianglin
-# File Name: serializers.py
+# Copyright © 2019 jianglin
+# File Name: serializer.py
 # Author: jianglin
-# Email: xiyang0807@gmail.com
+# Email: mail@honmaple.com
 # Created: 2017-03-13 13:23:26 (CST)
-# Last Update:星期一 2017-3-13 20:46:8 (CST)
+# Last Update: Monday 2019-01-07 14:36:30 (CST)
 #          By:
 # Description:
 # **************************************************************************
-from .common.serializer import Serializer
+from flask_maple.serializer import Serializer
 
 
 class UserSerializer(Serializer):

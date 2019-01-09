@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # **************************************************************************
-# Copyright © 2017 jianglin
+# Copyright © 2019 jianglin
 # File Name: admin.py
 # Author: jianglin
-# Email: xiyang0807@gmail.com
+# Email: mail@honmaple.com
 # Created: 2017-03-12 20:18:22 (CST)
-# Last Update:星期四 2017-4-13 14:29:30 (CST)
+# Last Update: Wednesday 2019-01-09 14:20:18 (CST)
 #          By:
 # Description:
 # **************************************************************************
@@ -17,29 +17,23 @@ from flask import Markup, abort, current_app
 from flask_admin import Admin, form
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
-from flask_wtf import Form
 
-from storage.common.utils import gen_hash
+from storage.util import gen_hash
 from storage.extension import db
 
-from .server.models import Album, Image, User
+from storage.server.model import Album, Image
+from storage.auth.model import User
 
 admin = Admin(name='图片管理', template_mode='bootstrap3')
-
-
-class BaseForm(Form):
-    def __init__(self, formdata=None, obj=None, prefix=u'', **kwargs):
-        self._obj = obj
-        super(BaseForm, self).__init__(
-            formdata=formdata, obj=obj, prefix=prefix, **kwargs)
 
 
 class BaseView(ModelView):
 
     page_size = 10
     can_view_details = True
+
     # column_display_pk = True
-    form_base_class = BaseForm
+    # form_base_class = BaseForm
 
     def is_accessible(self):
         if current_user.is_authenticated and current_user.is_superuser:
@@ -89,12 +83,23 @@ class ImageView(BaseView):
             model.hash = gen_hash(form.url.data)
 
 
-admin.add_view(
-    UserView(
-        User, db.session, name='管理用户', endpoint='admin_user', url='users'))
-admin.add_view(
-    AlbumView(
-        Album, db.session, name='管理相册', endpoint='admin_album', url='albums'))
-admin.add_view(
-    ImageView(
-        Image, db.session, name='管理图片', endpoint='admin_image', url='images'))
+def init_app(app):
+    admin.add_view(
+        UserView(
+            User, db.session, name='管理用户', endpoint='admin_user', url='users'))
+    admin.add_view(
+        AlbumView(
+            Album,
+            db.session,
+            name='管理相册',
+            endpoint='admin_album',
+            url='albums'))
+    admin.add_view(
+        ImageView(
+            Image,
+            db.session,
+            name='管理图片',
+            endpoint='admin_image',
+            url='images'))
+    admin.index_view.url = app.config['ADMIN_URL']
+    admin.init_app(app)

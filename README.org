@@ -2,6 +2,8 @@
   #+BEGIN_QUOTE
   使用flask实现的一个简单的图片上传服务
   #+END_QUOTE
+  
+  *注意*: 最新代码重写并归档到[[https://github.com/honmaple/maple-blog][https://github.com/honmaple/maple-blog]]的 *storage* 模块
 
 ** 设计初衷
    对于图片的存储,有很多选择,一般采用云服务如(七牛,又拍等),但是国内的服务像七牛

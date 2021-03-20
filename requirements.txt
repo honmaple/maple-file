@@ -4,6 +4,6 @@ Flask-Login==0.4.1
 Flask-Maple==0.5.5
 Flask-SQLAlchemy==2.3.2
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 Pillow==5.4.1
 requests==2.21.0

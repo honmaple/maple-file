@@ -5,5 +5,5 @@ Flask-Maple==0.5.5
 Flask-SQLAlchemy==2.3.2
 itsdangerous==1.1.0
 Jinja2==2.10
-Pillow==5.4.1
+Pillow==8.2.0
 requests==2.21.0

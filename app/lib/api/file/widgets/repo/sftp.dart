@@ -1,0 +1,139 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+
+import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
+
+class SFTP extends StatefulWidget {
+  const SFTP({super.key, required this.form});
+
+  final Repo form;
+
+  @override
+  State<SFTP> createState() => _SFTPState();
+}
+
+class _SFTPState extends State<SFTP> {
+  late Map<String, dynamic> _option;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _option = widget.form.option == ""
+        ? {"port": 22}
+        : jsonDecode(widget.form.option);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          ListTile(
+            title: Text("主机/IP".tr(context)),
+            trailing: Wrap(
+              children: [
+                Text(_option["host"] ?? "未设置".tr(context)),
+                const Text(' *', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+            onTap: () async {
+              final result = await showEditingDialog(
+                context,
+                "主机/IP".tr(context),
+                value: _option["host"] ?? "",
+              );
+              if (result != null) {
+                setState(() {
+                  _option["host"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
+          ListTile(
+            title: Text("端口".tr(context)),
+            trailing: Text("${_option['port'] ?? 22}"),
+            onTap: () async {
+              final result = await showNumberEditingDialog(
+                context,
+                "端口".tr(context),
+                value: "${_option['port'] ?? 22}",
+              );
+              if (result != null) {
+                setState(() {
+                  _option["port"] = int.parse(result);
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
+          ListTile(
+            title: Text("用户".tr(context)),
+            trailing: Text(_option["username"] ?? "未设置".tr(context)),
+            onTap: () async {
+              final result = await showEditingDialog(
+                context,
+                "用户".tr(context),
+                value: _option["username"] ?? "",
+              );
+              if (result != null) {
+                setState(() {
+                  _option["username"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
+          ListTile(
+            title: Text("密码".tr(context)),
+            trailing: _option["password"] == null
+                ? Text("未设置".tr(context))
+                : const Icon(Icons.more_horiz),
+            onTap: () async {
+              final result = await showEditingDialog(
+                context,
+                "密码".tr(context),
+                value: _option["password"] ?? "",
+                obscureText: true,
+              );
+              if (result != null) {
+                setState(() {
+                  _option["password"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
+          ListTile(
+            title: Text("私钥".tr(context)),
+            trailing: _option["private_key"] == null
+                ? Text("未设置".tr(context))
+                : const Icon(Icons.more_horiz),
+            onTap: () async {
+              final result = await showEditingDialog(
+                context,
+                "私钥".tr(context),
+                value: _option["private_key"] ?? "",
+              );
+              if (result != null) {
+                setState(() {
+                  _option["private_key"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}

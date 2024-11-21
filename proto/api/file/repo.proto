@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package api.file;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "api/file";
+
+enum Driver {
+	DRIVER_UNSPECIFIED = 0;
+
+	DRIVER_LOCAL = 1;
+	DRIVER_WEBDAV = 2;
+}
+
+message Repo {
+	// @gotags: gorm:"primary_key;auto_increment"
+	int32 id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp created_at = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp updated_at = 3;
+
+	// @gotags: gorm:"not null;unique"
+	string name = 4;
+	string desc = 5;
+	string path = 6;
+	string driver = 7;
+	string option = 8;
+}
+
+message ListReposRequest {
+	int32  page_num = 1;
+	string page_token = 2;
+}
+
+message ListReposResponse {
+	repeated Repo results = 3;
+}
+
+message CreateRepoRequest {
+	Repo payload = 1;
+}
+
+message CreateRepoResponse {
+	Repo result = 1;
+}
+
+message TestRepoRequest {
+	Repo payload = 1;
+}
+
+message TestRepoResponse {
+	bool success = 1;
+}
+
+message UpdateRepoRequest {
+	Repo payload = 1;
+}
+
+message UpdateRepoResponse {
+	Repo result = 1;
+}
+
+message DeleteRepoRequest {
+	int32 id = 1;
+}
+
+message DeleteRepoResponse {}

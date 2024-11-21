@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package api.task;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "api/task";
+
+enum TaskState {
+	option allow_alias = true;
+	TASK_STATE_UNSPECIFIED = 0;
+
+	TASK_STATE_PENDING = 0;
+	TASK_STATE_RUNNING = 1;
+	TASK_STATE_SUCCEEDED = 2;
+	TASK_STATE_CANCELING = 3;
+	TASK_STATE_CANCELED = 4;
+	TASK_STATE_FAILED = 5;
+}
+
+message Task {
+	// @gotags: gorm:"not null;unique"
+	string id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp start_time = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp end_time   = 3;
+
+	// @gotags: gorm:"not null;"
+	string name = 5;
+	double progress = 7;
+	string progress_state = 8;
+	string kind = 9;
+	string option = 10;
+	TaskState state = 11;
+}
+
+message ListTasksRequest {
+	int32  page_num = 1;
+	string page_token = 2;
+	string state = 3;
+}
+
+message ListTasksResponse {
+	repeated Task results = 3;
+}
+
+message RetryTaskRequest {
+	repeated string tasks = 1;
+}
+
+message RetryTaskResponse {
+}
+
+message CancelTaskRequest {
+	repeated string tasks = 1;
+}
+
+message CancelTaskResponse {
+}
+
+message RemoveTaskRequest {
+	repeated string tasks = 1;
+}
+
+message RemoveTaskResponse {
+}

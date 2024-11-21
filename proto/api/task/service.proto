@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package api.task;
+
+import "google/api/annotations.proto";
+import "api/task/task.proto";
+
+option go_package = "api/task";
+
+service TaskService {
+	rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {
+		option (google.api.http) = {
+			post: "/api/task/list"
+			body: "*"
+		};
+	}
+	rpc RetryTask (RetryTaskRequest) returns (RetryTaskResponse) {
+		option (google.api.http) = {
+			post: "/api/task/retry"
+			body: "*"
+		};
+	}
+	rpc CancelTask (CancelTaskRequest) returns (CancelTaskResponse) {
+		option (google.api.http) = {
+			post: "/api/task/cancel"
+			body: "*"
+		};
+	}
+	rpc RemoveTask (RemoveTaskRequest) returns (RemoveTaskResponse) {
+		option (google.api.http) = {
+			post: "/api/task/move"
+			body: "*"
+		};
+	}
+}

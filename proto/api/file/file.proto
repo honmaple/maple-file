@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package api.file;
+
+import "google/protobuf/timestamp.proto";
+import "api/file/repo.proto";
+
+option go_package = "api/file";
+
+message File {
+	// @gotags: gorm:"primary_key;auto_increment"
+	int32 id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp created_at = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp updated_at = 3;
+
+	// @gotags: gorm:"not null;"
+	string name = 4;
+	string type = 5;
+	int32  size = 6;
+	string hash = 7;
+	// @gotags: gorm:"not null;"
+	string path = 8;
+	Repo repo = 10;
+
+	// @gotags: gorm:"not null"
+	int32 repo_id = 11;
+}
+
+message FileRequest {
+	int32  index = 1;
+	int32  size = 5;
+	string path = 3;
+	string filename = 4;
+	bytes  chunk = 2;
+}
+
+message FileResponse {
+	File result = 1;
+	string message = 2;
+}
+
+message ListFilesRequest {
+	int32  page_num = 1;
+	string page_token = 2;
+	string path = 3;
+}
+
+message ListFilesResponse {
+	repeated File results = 1;
+}
+
+message MoveFileRequest {
+	string path = 1;
+	string new_path = 2;
+	repeated string names = 3;
+}
+
+message MoveFileResponse {
+
+}
+
+message CopyFileRequest {
+	string path = 1;
+	string new_path = 2;
+	repeated string names = 3;
+}
+
+message CopyFileResponse {
+
+}
+
+message MkdirFileRequest {
+	string path = 1;
+	string name = 2;
+}
+
+message MkdirFileResponse {
+
+}
+
+message RenameFileRequest {
+	string path = 1;
+	string name = 2;
+	string new_name = 3;
+}
+
+message RenameFileResponse {
+
+}
+
+message RemoveFileRequest {
+	string path = 1;
+	repeated string names = 3;
+}
+
+message RemoveFileResponse {
+
+}
+
+message UploadFileRequest {
+
+}
+
+message PreviewFileRequest {
+	string path = 1;
+}
+
+message PreviewFileResponse {
+	bytes chunk = 1;
+}
+
+message DownloadFileRequest {
+	string path = 1;
+}
+
+message DownloadFileResponse {
+	bytes chunk = 1;
+}

@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package api.file;
+
+import "google/api/annotations.proto";
+import "api/file/file.proto";
+import "api/file/repo.proto";
+
+option go_package = "api/file";
+
+service FileService {
+	rpc List (ListFilesRequest) returns (ListFilesResponse) {
+		option (google.api.http) = {
+			post: "/api/file/list"
+			body: "*"
+		};
+	}
+	rpc Move (MoveFileRequest) returns (MoveFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/move"
+			body: "*"
+		};
+	}
+	rpc Copy (CopyFileRequest) returns (CopyFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/copy"
+			body: "*"
+		};
+	}
+	rpc Mkdir (MkdirFileRequest) returns (MkdirFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/mkdir"
+			body: "*"
+		};
+	}
+	rpc Rename (RenameFileRequest) returns (RenameFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/rename"
+			body: "*"
+		};
+	}
+	rpc Remove (RemoveFileRequest) returns (RemoveFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/remove"
+			body: "*"
+		};
+	}
+	rpc Upload(stream FileRequest) returns (FileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/upload"
+			body: "*"
+		};
+	}
+	rpc Download(DownloadFileRequest) returns (DownloadFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/download"
+			body: "*"
+		};
+	}
+	rpc Preview(PreviewFileRequest) returns (stream PreviewFileResponse) {
+		option (google.api.http) = {
+			post: "/api/file/preview"
+			body: "*"
+		};
+	}
+
+	rpc ListRepos (ListReposRequest) returns (ListReposResponse) {
+		option (google.api.http) = {
+			get: "/api/file/repos"
+		};
+	}
+	rpc CreateRepo (CreateRepoRequest) returns (CreateRepoResponse) {
+		option (google.api.http) = {
+			post: "/api/file/repos"
+			body: "*"
+		};
+	}
+	rpc UpdateRepo (UpdateRepoRequest) returns (UpdateRepoResponse) {
+		option (google.api.http) = {
+			put: "/api/file/repos/{payload.id}"
+			body: "payload"
+		};
+	}
+	rpc DeleteRepo (DeleteRepoRequest) returns (DeleteRepoResponse) {
+		option (google.api.http) = {
+			delete: "/api/file/repos/{id}"
+		};
+	}
+	rpc TestRepo (TestRepoRequest) returns (TestRepoResponse) {}
+}

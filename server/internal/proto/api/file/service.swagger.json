@@ -1,0 +1,826 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api/file/service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "FileService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/file/copy": {
+      "post": {
+        "operationId": "FileService_Copy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileCopyFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileCopyFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/download": {
+      "post": {
+        "operationId": "FileService_Download",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileDownloadFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileDownloadFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/list": {
+      "post": {
+        "operationId": "FileService_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileListFilesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileListFilesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/mkdir": {
+      "post": {
+        "operationId": "FileService_Mkdir",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileMkdirFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileMkdirFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/move": {
+      "post": {
+        "operationId": "FileService_Move",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileMoveFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileMoveFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/preview": {
+      "post": {
+        "operationId": "FileService_Preview",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/filePreviewFileResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of filePreviewFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/filePreviewFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/remove": {
+      "post": {
+        "operationId": "FileService_Remove",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileRemoveFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileRemoveFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/rename": {
+      "post": {
+        "operationId": "FileService_Rename",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileRenameFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileRenameFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/repos": {
+      "get": {
+        "operationId": "FileService_ListRepos",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileListReposResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageNum",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      },
+      "post": {
+        "operationId": "FileService_CreateRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileCreateRepoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileCreateRepoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/repos/{id}": {
+      "delete": {
+        "operationId": "FileService_DeleteRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileDeleteRepoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/repos/{payload.id}": {
+      "put": {
+        "operationId": "FileService_UpdateRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileUpdateRepoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "payload.id",
+            "description": "@gotags: gorm:\"primary_key;auto_increment\"",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+                },
+                "name": {
+                  "type": "string",
+                  "title": "@gotags: gorm:\"not null;unique\""
+                },
+                "desc": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "driver": {
+                  "type": "string"
+                },
+                "option": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    },
+    "/api/file/upload": {
+      "post": {
+        "operationId": "FileService_Upload",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fileFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " (streaming inputs)",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/fileFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FileService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "fileCopyFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "newPath": {
+          "type": "string"
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fileCopyFileResponse": {
+      "type": "object"
+    },
+    "fileCreateRepoRequest": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/definitions/fileRepo"
+        }
+      }
+    },
+    "fileCreateRepoResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/fileRepo"
+        }
+      }
+    },
+    "fileDeleteRepoResponse": {
+      "type": "object"
+    },
+    "fileDownloadFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "fileDownloadFileResponse": {
+      "type": "object",
+      "properties": {
+        "chunk": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "fileFile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "name": {
+          "type": "string",
+          "title": "@gotags: gorm:\"not null;\""
+        },
+        "type": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "title": "@gotags: gorm:\"not null;\""
+        },
+        "repo": {
+          "$ref": "#/definitions/fileRepo"
+        },
+        "repoId": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"not null\""
+        }
+      }
+    },
+    "fileFileRequest": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "path": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "chunk": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "fileFileResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/fileFile"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "fileListFilesRequest": {
+      "type": "object",
+      "properties": {
+        "pageNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageToken": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "fileListFilesResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/fileFile"
+          }
+        }
+      }
+    },
+    "fileListReposResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/fileRepo"
+          }
+        }
+      }
+    },
+    "fileMkdirFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "fileMkdirFileResponse": {
+      "type": "object"
+    },
+    "fileMoveFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "newPath": {
+          "type": "string"
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fileMoveFileResponse": {
+      "type": "object"
+    },
+    "filePreviewFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "filePreviewFileResponse": {
+      "type": "object",
+      "properties": {
+        "chunk": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "fileRemoveFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fileRemoveFileResponse": {
+      "type": "object"
+    },
+    "fileRenameFileRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "newName": {
+          "type": "string"
+        }
+      }
+    },
+    "fileRenameFileResponse": {
+      "type": "object"
+    },
+    "fileRepo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "name": {
+          "type": "string",
+          "title": "@gotags: gorm:\"not null;unique\""
+        },
+        "desc": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "option": {
+          "type": "string"
+        }
+      }
+    },
+    "fileTestRepoResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fileUpdateRepoResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/fileRepo"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

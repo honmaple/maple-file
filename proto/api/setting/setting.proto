@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package api.setting;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "api/setting";
+
+message Setting {
+	// @gotags: gorm:"primary_key;auto_increment"
+	int32 id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp created_at = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp updated_at = 3;
+
+	// @gotags: gorm:"size:128;not null;unique"
+	string key = 4;
+	string value = 5;
+}
+
+message ListSettingsRequest {}
+
+message ListSettingsResponse {
+	repeated Setting results = 1;
+}
+
+message GetSettingRequest {
+	string key = 1;
+}
+
+message GetSettingResponse {
+	Setting result = 1;
+}
+
+message UpdateSettingRequest {
+	string key = 1;
+	string value = 2;
+}
+
+message UpdateSettingResponse {
+	Setting result = 1;
+}
+
+message ResetSettingRequest {
+	string key = 1;
+}
+
+message ResetSettingResponse {}

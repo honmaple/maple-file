@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package api.setting;
+
+import "google/api/annotations.proto";
+import "api/setting/ping.proto";
+import "api/setting/setting.proto";
+
+option go_package = "api/setting";
+
+service SystemService {
+	rpc Ping (PingRequest) returns (PingResponse) {
+		option (google.api.http) = {
+			get: "/api/ping"
+		};
+	}
+
+	rpc ListSettings (ListSettingsRequest) returns (ListSettingsResponse) {
+		option (google.api.http) = {
+			get: "/api/settings"
+		};
+	}
+	rpc ResetSetting (ResetSettingRequest) returns (ResetSettingResponse) {
+		option (google.api.http) = {
+			post: "/api/settings/reset"
+		};
+	}
+	rpc UpdateSetting (UpdateSettingRequest) returns (UpdateSettingResponse) {
+		option (google.api.http) = {
+			post: "/api/settings"
+			body: "*"
+		};
+	}
+	rpc GetSetting (GetSettingRequest) returns (GetSettingResponse) {
+		option (google.api.http) = {
+			get: "/api/setting/{key}"
+		};
+	}
+}

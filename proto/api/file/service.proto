@@ -51,7 +51,7 @@ service FileService {
 			body: "*"
 		};
 	}
-	rpc Download(DownloadFileRequest) returns (DownloadFileResponse) {
+	rpc Download(DownloadFileRequest) returns (stream DownloadFileResponse) {
 		option (google.api.http) = {
 			post: "/api/file/download"
 			body: "*"

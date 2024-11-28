@@ -58,6 +58,7 @@ class FileSetting with _$FileSetting {
     @Default(32) @JsonKey(name: 'upload.slice_size') int uploadSliceSize,
     @JsonKey(name: 'download.path') String? downloadPath,
     @Default(10) @JsonKey(name: 'download.queue_size') int downloadQueueSize,
+    @Default([".*"]) @JsonKey(name: 'hide_files') List<String> hideFiles,
   }) = _FileSetting;
 
   factory FileSetting.fromJson(Map<String, Object?> json) =>

@@ -157,7 +157,7 @@ class FileService {
     });
   }
 
-  Future<Uint8List?> preview(String path) async {
+  Future<Uint8List?> preview(String path) {
     return doFuture(() async {
       PreviewFileRequest request = PreviewFileRequest(path: path);
 
@@ -181,6 +181,24 @@ class FileService {
     });
   }
 
+  Future<void> download(String path, String localPath) {
+    return doFuture(() async {
+      DownloadFileRequest request = DownloadFileRequest(path: path);
+
+      final response = _client.download(request);
+
+      var file = io.File("filename.mp3");
+      if (file.existsSync()) file.deleteSync();
+
+      var ios = file.openWrite(mode: io.FileMode.append);
+
+      await response.forEach((stream) {
+        ios.add(stream.chunk);
+      });
+      ios.close();
+    });
+  }
+
   Future<List<Repo>> listRepos({Map<String, String>? filterMap}) async {
     final result = await doFuture(() async {
       ListReposRequest request = ListReposRequest();
@@ -191,13 +209,13 @@ class FileService {
   }
 
   Future<void> testRepo(Repo payload) {
-    TestRepoRequest request = TestRepoRequest();
-    request.payload = payload;
+    return doFuture(() {
+      TestRepoRequest request = TestRepoRequest();
+      request.payload = payload;
 
-    return _client.testRepo(request).then((response) {
-      Messenger.showSnackBar(const Text("连接成功"));
-    }).catchError((err) {
-      Messenger.showSnackBar(Text("$err"));
+      return _client.testRepo(request).then((response) {
+        Messenger.showSnackBar(const Text("连接成功"));
+      });
     });
   }
 

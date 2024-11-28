@@ -1,6 +1,7 @@
-import 'dart:io' show Directory, Platform;
+import 'dart:io' show Directory, Platform, File;
 
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as filepath;
 import 'package:path_provider/path_provider.dart';
 import 'package:external_path/external_path.dart';
 
@@ -33,5 +34,19 @@ class PathUtil {
         }
         return downloadDir.path.replaceAll('\\', '/');
     }
+  }
+
+  static Future<String> checkFileExists(String path) async {
+    if (File(path).existsSync()) {
+      return "";
+    }
+    return "";
+  }
+
+  static Future<String> autoRename(String path) async {
+    if (File(path).existsSync()) {
+      return "";
+    }
+    return "";
   }
 }

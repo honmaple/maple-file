@@ -1,8 +1,13 @@
+#+begin_export html
+<p align="center">
+<img src="./app/assets/icon/icon-transparent.png" width="150">
+</p>
+#+end_export
+
 * maple-file
   #+BEGIN_QUOTE
   使用 *Flutter* + *Go* 实现的文件上传服务，以及云盘文件管理，无需服务器部署
   #+END_QUOTE
-
 
 * 截图
   |-----------------------------------------+-----------------------------------------|

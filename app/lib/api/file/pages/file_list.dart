@@ -121,7 +121,7 @@ class _FileListState extends ConsumerState<FileList> {
       );
       return;
     }
-    await showFileAction(context, item);
+    await showFileAction(context, item, ref);
   }
 
   _onLongPress(BuildContext context, File item) {

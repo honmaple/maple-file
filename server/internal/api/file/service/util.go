@@ -15,12 +15,10 @@ func (rf readFunc) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
-type previewFunc func(*pb.PreviewFileResponse) error
+type chunkFunc func([]byte) error
 
-func (wf previewFunc) Write(p []byte) (n int, err error) {
-	if err := wf(&pb.PreviewFileResponse{
-		Chunk: p,
-	}); err != nil {
+func (cf chunkFunc) Write(p []byte) (n int, err error) {
+	if err := cf(p); err != nil {
 		return 0, err
 	}
 	return len(p), nil

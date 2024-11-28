@@ -113,8 +113,8 @@ class FileServiceClient extends $grpc.Client {
     return $createStreamingCall(_$upload, request, options: options).single;
   }
 
-  $grpc.ResponseFuture<$0.DownloadFileResponse> download($0.DownloadFileRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$download, request, options: options);
+  $grpc.ResponseStream<$0.DownloadFileResponse> download($0.DownloadFileRequest request, {$grpc.CallOptions? options}) {
+    return $createStreamingCall(_$download, $async.Stream.fromIterable([request]), options: options);
   }
 
   $grpc.ResponseStream<$0.PreviewFileResponse> preview($0.PreviewFileRequest request, {$grpc.CallOptions? options}) {
@@ -200,7 +200,7 @@ abstract class FileServiceBase extends $grpc.Service {
         'Download',
         download_Pre,
         false,
-        false,
+        true,
         ($core.List<$core.int> value) => $0.DownloadFileRequest.fromBuffer(value),
         ($0.DownloadFileResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.PreviewFileRequest, $0.PreviewFileResponse>(
@@ -271,8 +271,8 @@ abstract class FileServiceBase extends $grpc.Service {
     return remove(call, await request);
   }
 
-  $async.Future<$0.DownloadFileResponse> download_Pre($grpc.ServiceCall call, $async.Future<$0.DownloadFileRequest> request) async {
-    return download(call, await request);
+  $async.Stream<$0.DownloadFileResponse> download_Pre($grpc.ServiceCall call, $async.Future<$0.DownloadFileRequest> request) async* {
+    yield* download(call, await request);
   }
 
   $async.Stream<$0.PreviewFileResponse> preview_Pre($grpc.ServiceCall call, $async.Future<$0.PreviewFileRequest> request) async* {
@@ -306,7 +306,7 @@ abstract class FileServiceBase extends $grpc.Service {
   $async.Future<$0.RenameFileResponse> rename($grpc.ServiceCall call, $0.RenameFileRequest request);
   $async.Future<$0.RemoveFileResponse> remove($grpc.ServiceCall call, $0.RemoveFileRequest request);
   $async.Future<$0.FileResponse> upload($grpc.ServiceCall call, $async.Stream<$0.FileRequest> request);
-  $async.Future<$0.DownloadFileResponse> download($grpc.ServiceCall call, $0.DownloadFileRequest request);
+  $async.Stream<$0.DownloadFileResponse> download($grpc.ServiceCall call, $0.DownloadFileRequest request);
   $async.Stream<$0.PreviewFileResponse> preview($grpc.ServiceCall call, $0.PreviewFileRequest request);
   $async.Future<$1.ListReposResponse> listRepos($grpc.ServiceCall call, $1.ListReposRequest request);
   $async.Future<$1.CreateRepoResponse> createRepo($grpc.ServiceCall call, $1.CreateRepoRequest request);

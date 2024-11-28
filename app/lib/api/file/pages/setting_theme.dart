@@ -88,6 +88,32 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       }
                     },
                   ),
+                  ListTile(
+                    title: const Text('隐藏文件'),
+                    trailing: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(setting.hideFiles.join(", ")),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
+                    onTap: () async {
+                      final result = await showListDialog2(
+                        context,
+                        height: MediaQuery.of(context).size.height / 2,
+                        child: const FileSettingHideFiles(),
+                      );
+                      if (result != null) {
+                        // ref.read(fileSettingProvider.notifier).update((state) {
+                        //   if (result == setting.sort) {
+                        //     return state.copyWith(
+                        //         sortReversed: !state.sortReversed);
+                        //   }
+                        //   return state.copyWith(sort: result);
+                        // });
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -165,6 +191,105 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                 ],
               ),
             )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FileSettingHideFiles extends ConsumerStatefulWidget {
+  const FileSettingHideFiles({super.key});
+
+  @override
+  ConsumerState<FileSettingHideFiles> createState() =>
+      _FileSettingHideFilesState();
+}
+
+class _FileSettingHideFilesState extends ConsumerState<FileSettingHideFiles> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hideFiles = ref.watch(fileSettingProvider.select((state) {
+      return state.hideFiles;
+    }));
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(borderSide: BorderSide.none),
+            hintText: '输入文件名称',
+            hintStyle: TextStyle(
+              fontSize: 12,
+            ),
+            prefixIcon: Icon(Icons.tag),
+            prefixIconConstraints: BoxConstraints(
+              minWidth: 42,
+              minHeight: 42,
+            ),
+            filled: true,
+            isDense: true,
+            contentPadding: EdgeInsets.all(0),
+          ),
+        ),
+        actions: [
+          GestureDetector(
+            child: Padding(
+              padding: const EdgeInsets.only(right: kDefaultFontSize),
+              child: Text(
+                "添加",
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+            ),
+            onTap: () {
+              ref.read(fileSettingProvider.notifier).update((state) {
+                return state
+                    .copyWith(hideFiles: [...hideFiles, _controller.text]);
+              });
+              _controller.text = "";
+            },
+          ),
+        ],
+      ),
+      body: Container(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: [
+            for (final file in hideFiles)
+              InputChip(
+                label: Text(file),
+                labelStyle: TextStyle(
+                  fontSize: kDefaultFontSize * 0.875,
+                  color: Theme.of(context).primaryColor,
+                ),
+                selected: true,
+                showCheckmark: false,
+                onDeleted: () {
+                  ref.read(fileSettingProvider.notifier).update((state) {
+                    return state.copyWith(
+                      hideFiles: hideFiles.where((r) => r != file).toList(),
+                    );
+                  });
+                },
+              )
           ],
         ),
       ),

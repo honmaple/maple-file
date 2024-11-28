@@ -13,7 +13,7 @@ Future<void> init(CustomRouter router) async {
         return const Index();
       }
       return DesktopIndex(
-        initialRoute: "/note/list",
+        initialRoute: "/file/list",
         onGenerateRoute: router.replaceRoute(replace: {
           "/": null,
         }),

@@ -77,6 +77,7 @@ dev_dependencies:
   build_runner: ^2.4.9
   json_serializable: ^6.8.0
   freezed: ^2.5.2
+  flutter_launcher_icons: "^0.14.1"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -90,9 +91,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/icon/icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -119,6 +119,21 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/icon-transparent.png"
+  web:
+    generate: true
+    image_path: "assets/icon/icon-transparent.png"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon-transparent.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/icon-transparent.png"
+
 ffigen:
   name: LibserverBind
   description: Bindings to grpc library.

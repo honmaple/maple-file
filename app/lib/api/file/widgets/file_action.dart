@@ -6,8 +6,10 @@ import 'dart:io' as io;
 import 'package:path/path.dart' as filepath;
 import 'package:image_picker/image_picker.dart' as image_picker;
 
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/time.dart';
+import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
@@ -75,7 +77,11 @@ void showFileDetail(BuildContext context, File file) {
   );
 }
 
-Future<void> showFileAction(BuildContext context, File file) async {
+Future<void> showFileAction(
+  BuildContext context,
+  File file,
+  WidgetRef ref,
+) async {
   final result = await showListDialog(context, items: [
     ListDialogItem(
       child: ListTile(
@@ -90,12 +96,12 @@ Future<void> showFileAction(BuildContext context, File file) async {
       ),
     ),
     ListDialogItem(
-      label: "下载",
+      label: "下载".tr(context),
       value: "download",
       icon: Icons.download,
     ),
     ListDialogItem(
-      label: "重命名",
+      label: "重命名".tr(context),
       value: "rename",
       icon: Icons.drive_file_rename_outline,
     ),
@@ -103,7 +109,7 @@ Future<void> showFileAction(BuildContext context, File file) async {
       child: const Divider(height: 4),
     ),
     ListDialogItem(
-      label: "删除",
+      label: "删除".tr(context),
       value: "delete",
       icon: Icons.delete,
     ),
@@ -117,14 +123,44 @@ Future<void> showFileAction(BuildContext context, File file) async {
         value: file.name,
       );
       if (name != null) {
-        FileService().rename("", file.name, name);
+        FileService().rename(file.path, file.name, name);
       }
       break;
     case "download":
-      // FileActionType.download.action(context, item, ref);
+      String? downloadPath = ref.read(fileSettingProvider.select((state) {
+        return state.downloadPath;
+      }));
+      if (downloadPath == null || downloadPath == "") {
+        final path = await PathUtil.getDownloadsPath();
+        final result = await showAlertDialog<bool>(
+          context,
+          content: Text("下载文件到$path?"),
+        );
+        if (result == null || !result) {
+          return;
+        }
+        downloadPath = path;
+      }
+      if (io.File(filepath.join(downloadPath, file.name)).existsSync()) {
+        final result = await showAlertDialog<bool>(
+          context,
+          content: const Text("本地文件已存在?\n是否覆盖原文件"),
+        );
+        if (result != null) {}
+      }
+
+      FileService().download(filepath.join(file.path, file.name), downloadPath);
       break;
     case "delete":
-      // FileActionType.download.action(context, item, ref);
+      final result = await showAlertDialog<bool>(
+        context,
+        content: const Text("确认删除文件?"),
+      );
+      if (result != null && result) {
+        await FileService().remove(file.path, [file.name]).then((_) {
+          ref.invalidate(fileProvider(file.path));
+        });
+      }
       break;
   }
 }

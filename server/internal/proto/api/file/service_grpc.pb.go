@@ -29,7 +29,7 @@ type FileServiceClient interface {
 	Rename(ctx context.Context, in *RenameFileRequest, opts ...grpc.CallOption) (*RenameFileResponse, error)
 	Remove(ctx context.Context, in *RemoveFileRequest, opts ...grpc.CallOption) (*RemoveFileResponse, error)
 	Upload(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadClient, error)
-	Download(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (*DownloadFileResponse, error)
+	Download(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (FileService_DownloadClient, error)
 	Preview(ctx context.Context, in *PreviewFileRequest, opts ...grpc.CallOption) (FileService_PreviewClient, error)
 	ListRepos(ctx context.Context, in *ListReposRequest, opts ...grpc.CallOption) (*ListReposResponse, error)
 	CreateRepo(ctx context.Context, in *CreateRepoRequest, opts ...grpc.CallOption) (*CreateRepoResponse, error)
@@ -134,17 +134,40 @@ func (x *fileServiceUploadClient) CloseAndRecv() (*FileResponse, error) {
 	return m, nil
 }
 
-func (c *fileServiceClient) Download(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (*DownloadFileResponse, error) {
-	out := new(DownloadFileResponse)
-	err := c.cc.Invoke(ctx, "/api.file.FileService/Download", in, out, opts...)
+func (c *fileServiceClient) Download(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (FileService_DownloadClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[1], "/api.file.FileService/Download", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &fileServiceDownloadClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type FileService_DownloadClient interface {
+	Recv() (*DownloadFileResponse, error)
+	grpc.ClientStream
+}
+
+type fileServiceDownloadClient struct {
+	grpc.ClientStream
+}
+
+func (x *fileServiceDownloadClient) Recv() (*DownloadFileResponse, error) {
+	m := new(DownloadFileResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *fileServiceClient) Preview(ctx context.Context, in *PreviewFileRequest, opts ...grpc.CallOption) (FileService_PreviewClient, error) {
-	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[1], "/api.file.FileService/Preview", opts...)
+	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[2], "/api.file.FileService/Preview", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +254,7 @@ type FileServiceServer interface {
 	Rename(context.Context, *RenameFileRequest) (*RenameFileResponse, error)
 	Remove(context.Context, *RemoveFileRequest) (*RemoveFileResponse, error)
 	Upload(FileService_UploadServer) error
-	Download(context.Context, *DownloadFileRequest) (*DownloadFileResponse, error)
+	Download(*DownloadFileRequest, FileService_DownloadServer) error
 	Preview(*PreviewFileRequest, FileService_PreviewServer) error
 	ListRepos(context.Context, *ListReposRequest) (*ListReposResponse, error)
 	CreateRepo(context.Context, *CreateRepoRequest) (*CreateRepoResponse, error)
@@ -266,8 +289,8 @@ func (UnimplementedFileServiceServer) Remove(context.Context, *RemoveFileRequest
 func (UnimplementedFileServiceServer) Upload(FileService_UploadServer) error {
 	return status.Errorf(codes.Unimplemented, "method Upload not implemented")
 }
-func (UnimplementedFileServiceServer) Download(context.Context, *DownloadFileRequest) (*DownloadFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Download not implemented")
+func (UnimplementedFileServiceServer) Download(*DownloadFileRequest, FileService_DownloadServer) error {
+	return status.Errorf(codes.Unimplemented, "method Download not implemented")
 }
 func (UnimplementedFileServiceServer) Preview(*PreviewFileRequest, FileService_PreviewServer) error {
 	return status.Errorf(codes.Unimplemented, "method Preview not implemented")
@@ -434,22 +457,25 @@ func (x *fileServiceUploadServer) Recv() (*FileRequest, error) {
 	return m, nil
 }
 
-func _FileService_Download_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DownloadFileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _FileService_Download_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DownloadFileRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(FileServiceServer).Download(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.file.FileService/Download",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileServiceServer).Download(ctx, req.(*DownloadFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(FileServiceServer).Download(m, &fileServiceDownloadServer{stream})
+}
+
+type FileService_DownloadServer interface {
+	Send(*DownloadFileResponse) error
+	grpc.ServerStream
+}
+
+type fileServiceDownloadServer struct {
+	grpc.ServerStream
+}
+
+func (x *fileServiceDownloadServer) Send(m *DownloadFileResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _FileService_Preview_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -595,10 +621,6 @@ var FileService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _FileService_Remove_Handler,
 		},
 		{
-			MethodName: "Download",
-			Handler:    _FileService_Download_Handler,
-		},
-		{
 			MethodName: "ListRepos",
 			Handler:    _FileService_ListRepos_Handler,
 		},
@@ -624,6 +646,11 @@ var FileService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "Upload",
 			Handler:       _FileService_Upload_Handler,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "Download",
+			Handler:       _FileService_Download_Handler,
+			ServerStreams: true,
 		},
 		{
 			StreamName:    "Preview",

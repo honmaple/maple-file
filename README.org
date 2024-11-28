@@ -1,8 +1,12 @@
+#+begin_center
+#+attr_html: :width 150px
+[[./app/assets/icon/icon-transparent.png]]
+#+end_center
+
 * maple-file
   #+BEGIN_QUOTE
   使用 *Flutter* + *Go* 实现的文件上传服务，以及云盘文件管理，无需服务器部署
   #+END_QUOTE
-
 
 * 截图
   |-----------------------------------------+-----------------------------------------|

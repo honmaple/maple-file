@@ -9,7 +9,7 @@ Future<void> init(CustomRouter router) async {
   router.registerMany({
     '/setting': (context) {
       if (Breakpoint.isMobile(context)) {
-        return Setting();
+        return const Setting();
       }
       return DesktopSetting(
         initialRoute: "/setting/theme",
@@ -20,10 +20,10 @@ Future<void> init(CustomRouter router) async {
       );
     },
     '/setting/theme': (context) {
-      return SettingTheme();
+      return const SettingTheme();
     },
     '/setting/locale': (context) {
-      return SettingLocale();
+      return const SettingLocale();
     },
   });
 }

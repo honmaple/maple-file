@@ -184,17 +184,50 @@ func (srv *Service) Preview(req *pb.PreviewFileRequest, stream pb.FileService_Pr
 	}
 	defer file.Close()
 
-	_, err = util.Copy(stream.Context(), previewFunc(stream.Send), file, nil)
+	dst := chunkFunc(func(chunk []byte) error {
+		return stream.Send(&pb.PreviewFileResponse{
+			Chunk: chunk,
+		})
+	})
+	_, err = util.Copy(stream.Context(), dst, file, nil)
 	return err
 }
 
-func (srv *Service) Download(ctx context.Context, req *pb.DownloadFileRequest) (*pb.DownloadFileResponse, error) {
+func (srv *Service) Download(req *pb.DownloadFileRequest, stream pb.FileService_DownloadServer) error {
 	info, err := srv.fs.Get(req.GetPath())
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if info.IsDir() {
-
+		// TODO 打包后下载
+		return errors.New("can't download dir")
 	}
-	return nil, nil
+
+	src, err := srv.fs.Open(req.GetPath())
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	dst := chunkFunc(func(chunk []byte) error {
+		return stream.Send(&pb.DownloadFileResponse{
+			Chunk: chunk,
+		})
+	})
+
+	task := srv.app.Runner.Submit(fmt.Sprintf("下载 [%s]", req.GetPath()), func(task runner.Task) error {
+		fsize := util.PrettyByteSize(int(info.Size()))
+
+		task.SetProgressState(fmt.Sprintf("0/%s", fsize))
+
+		_, err := util.Copy(stream.Context(), dst, src, func(progress int64) {
+			if size := info.Size(); size > 0 {
+				task.SetProgress(float64(progress) / float64(size))
+			}
+			task.SetProgressState(fmt.Sprintf("%s/%s", util.PrettyByteSize(int(progress)), fsize))
+		})
+		return err
+	})
+	<-task.Done()
+	return task.Err()
 }

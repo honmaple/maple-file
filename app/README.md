@@ -1,20 +1,21 @@
 # maple_file
 
-A new Flutter project.
+- ffi
+  ```
+  dart run ffigen
+  ```
 
-## Getting Started
+- freezed
+  ```
+  dart run build_runner build
+  ```
 
-This project is a starting point for a Flutter application.
+- launcher icon
+  ```
+  dart run flutter_launcher_icons && rm -r android/app/src/main/res/mipmap-anydpi-v26
+  ```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-```
-flutter packages pub run build_runner build
-```
+- build
+  ```
+  flutter build apk --no-tree-shake-icons --split-per-abi
+  ```

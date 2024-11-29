@@ -109,7 +109,7 @@ class AppearanceSetting with _$AppearanceSetting {
   const AppearanceSetting._();
 
   const factory AppearanceSetting({
-    @Default(ThemeMode.light) @JsonKey(name: 'theme.mode') ThemeMode themeMode,
+    @Default(ThemeMode.system) @JsonKey(name: 'theme.mode') ThemeMode themeMode,
     @Default("") @JsonKey(name: 'theme.color') String themeColor,
     @Default("zh") @JsonKey(name: 'locale') String locale,
   }) = _AppearanceSetting;

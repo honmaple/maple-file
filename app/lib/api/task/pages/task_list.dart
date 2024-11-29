@@ -28,11 +28,6 @@ class TaskList extends ConsumerStatefulWidget {
 
 class _TaskListState extends ConsumerState<TaskList>
     with TickerProviderStateMixin {
-  final List<Tab> _tabs = const <Tab>[
-    Tab(text: '正在进行'),
-    Tab(text: '已完成'),
-    Tab(text: '已失败'),
-  ];
   late Timer _timer;
   late TabController _tabController;
 
@@ -57,7 +52,7 @@ class _TaskListState extends ConsumerState<TaskList>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("任务列表"),
+        title: Text("任务列表".tr(context)),
       ),
       body: CustomScrollView(
         slivers: [
@@ -71,50 +66,21 @@ class _TaskListState extends ConsumerState<TaskList>
               //   fontWeight: FontWeight.w600,
               // ),
               // indicatorColor: Colors.black,
-              tabs: _tabs,
-              onTap: (index) {
-                ref.read(taskFilterProvider.notifier).state =
-                    TaskListFilter.values[index];
-              },
+              tabs: <Tab>[
+                Tab(text: '正在进行'.tr(context)),
+                Tab(text: '已完成'.tr(context)),
+                Tab(text: '已失败'.tr(context)),
+              ],
             ),
           ),
           SliverFillRemaining(
-            hasScrollBody: true,
-            child: CustomRefresh(
-              onRefresh: () => ref.invalidate(taskProvider),
-              childBuilder: (context, physics) {
-                return CustomAsyncValue(
-                  value: ref.watch(taskProvider),
-                  builder: (items) {
-                    if (items.isEmpty) {
-                      return Center(
-                        child: Wrap(
-                          direction: Axis.vertical,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.task_outlined,
-                              size: 36,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            Text("暂无任务".tr(context)),
-                          ],
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      physics: physics,
-                      itemCount: items.length + 1,
-                      itemBuilder: (BuildContext context, int index) {
-                        if (index == 0) {
-                          return buildListHeader(context, items);
-                        }
-                        return buildListItem(context, items[index - 1]);
-                      },
-                    );
-                  },
-                );
-              },
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildList(context, TaskListStatus.running),
+                _buildList(context, TaskListStatus.finished),
+                _buildList(context, TaskListStatus.failed),
+              ],
             ),
           ),
         ],
@@ -122,12 +88,54 @@ class _TaskListState extends ConsumerState<TaskList>
     );
   }
 
-  buildListHeader(BuildContext context, List<Task> items) {
-    final filter = ref.watch(taskFilterProvider);
+  _buildList(BuildContext context, TaskListStatus status) {
+    return CustomRefresh(
+      onRefresh: () => ref.invalidate(taskProvider(status)),
+      childBuilder: (context, physics) {
+        return CustomAsyncValue(
+          value: ref.watch(taskProvider(status)),
+          builder: (items) {
+            if (items.isEmpty) {
+              return Center(
+                child: Wrap(
+                  direction: Axis.vertical,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.task_outlined,
+                      size: 36,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    Text("暂无任务".tr(context)),
+                  ],
+                ),
+              );
+            }
+            return ListView.builder(
+              physics: physics,
+              itemCount: items.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == 0) {
+                  return _buildListHeader(context, items, status);
+                }
+                return _buildListItem(context, items[index - 1]);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  _buildListHeader(
+    BuildContext context,
+    List<Task> items,
+    TaskListStatus status,
+  ) {
     return ListTile(
-      leading: filter == TaskListFilter.running
+      leading: status == TaskListStatus.running
           ? Text("剩余任务(${items.length})")
-          : filter == TaskListFilter.finished
+          : status == TaskListStatus.finished
               ? Text("已完成(${items.length})")
               : Text("已失败(${items.length})"),
       trailing: Wrap(
@@ -140,7 +148,7 @@ class _TaskListState extends ConsumerState<TaskList>
                   .removeTask(items.map((item) => item.id).toList());
             },
           ),
-          if (filter == TaskListFilter.running)
+          if (status == TaskListStatus.running)
             TextButton.icon(
               icon: const Icon(Icons.play_circle, size: 16),
               label: Text("全部暂停".tr(context)),
@@ -151,7 +159,7 @@ class _TaskListState extends ConsumerState<TaskList>
     );
   }
 
-  buildListItem(BuildContext context, Task item) {
+  _buildListItem(BuildContext context, Task item) {
     return ListTile(
       leading: Icon(
         Icons.folder,
@@ -162,8 +170,8 @@ class _TaskListState extends ConsumerState<TaskList>
         item.name,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: buildProgress(context, item),
-      trailing: buildAction(context, item),
+      subtitle: _buildProgress(context, item),
+      trailing: _buildAction(context, item),
       onTap: () async {
         final result = await showListDialog(context, items: [
           ListDialogItem(
@@ -200,7 +208,7 @@ class _TaskListState extends ConsumerState<TaskList>
     );
   }
 
-  buildAction(BuildContext context, Task item) {
+  _buildAction(BuildContext context, Task item) {
     if (isFailed(item)) {
       return IconButton(
         icon: Icon(Icons.refresh, color: Theme.of(context).colorScheme.primary),
@@ -217,7 +225,7 @@ class _TaskListState extends ConsumerState<TaskList>
     );
   }
 
-  buildProgress(BuildContext context, Task item) {
+  _buildProgress(BuildContext context, Task item) {
     return Column(
       children: [
         const SizedBox(height: 4),
@@ -234,7 +242,7 @@ class _TaskListState extends ConsumerState<TaskList>
               child: Container(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: Text(
-                  item.progressState ?? "0/1",
+                  item.progressState,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.black, fontSize: 12),

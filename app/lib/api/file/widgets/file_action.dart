@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:maple_file/api/task/providers/task.dart';
 
 import 'dart:io' as io;
 import 'package:path/path.dart' as filepath;
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;
 
-import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/path.dart';
@@ -131,30 +131,25 @@ Future<void> showFileAction(
         return state.downloadPath;
       }));
       if (downloadPath == null || downloadPath == "") {
-        final path = await PathUtil.getDownloadsPath();
-        final result = await showAlertDialog<bool>(
-          context,
-          content: Text("下载文件到$path?"),
-        );
-        if (result == null || !result) {
-          return;
-        }
-        downloadPath = path;
+        downloadPath = await PathUtil.getDownloadsPath();
       }
-      if (io.File(filepath.join(downloadPath, file.name)).existsSync()) {
-        final result = await showAlertDialog<bool>(
-          context,
-          content: const Text("本地文件已存在?\n是否覆盖原文件"),
-        );
-        if (result != null) {}
-      }
-
-      FileService().download(filepath.join(file.path, file.name), downloadPath);
+      print(downloadPath);
+      FileService()
+          .download(
+        filepath.join(file.path, file.name),
+        io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
+      )
+          .then((_) {
+        ref.invalidate(taskProvider(TaskListStatus.running));
+      });
       break;
     case "delete":
       final result = await showAlertDialog<bool>(
         context,
-        content: const Text("确认删除文件?"),
+        content: Text("确认删除文件{name}?".tr(
+          context,
+          args: {"name": file.name},
+        )),
       );
       if (result != null && result) {
         await FileService().remove(file.path, [file.name]).then((_) {
@@ -293,30 +288,35 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
       shape: const CircleBorder(),
       child: const Icon(Icons.add_a_photo),
       onPressed: () async {
-        final image_picker.ImagePicker picker = image_picker.ImagePicker();
-
         final result = await showListDialog(
           context,
           items: [
             if (Util.isMobile())
               ListDialogItem(
-                label: "拍照上传",
+                label: "拍照上传".tr(context),
                 value: "camera",
                 icon: Icons.camera_alt,
               ),
             ListDialogItem(
-              label: "相册上传",
+              label: "相册上传".tr(context),
               value: "photo",
               icon: Icons.photo,
             ),
             ListDialogItem(
-              label: "新建文件夹",
+              label: "文件上传".tr(context),
+              value: "file",
+              icon: Icons.file_upload_outlined,
+            ),
+            ListDialogItem(
+              label: "新建文件夹".tr(context),
               value: "folder",
               icon: Icons.create_new_folder,
             ),
           ],
           cancelAction: true,
         );
+
+        final image_picker.ImagePicker picker = image_picker.ImagePicker();
 
         Future<void>? future;
         switch (result) {
@@ -325,23 +325,34 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
               source: image_picker.ImageSource.camera,
               imageQuality: 100,
             );
-            List<io.File> images = [];
             if (image != null) {
-              images.add(io.File(image.path));
+              future = FileService().upload(widget.path, [io.File(image.path)]);
             }
-            future = FileService().upload(widget.path, images);
             break;
           case "photo":
             List<image_picker.XFile> images = await picker.pickMultiImage(
               imageQuality: 100,
             );
-            future = FileService().upload(
-              widget.path,
-              images.map((file) => io.File(file.path)).toList(),
+            if (images.isNotEmpty) {
+              future = FileService().upload(
+                widget.path,
+                images.map((file) => io.File(file.path)).toList(),
+              );
+            }
+            break;
+          case "file":
+            FilePickerResult? result = await FilePicker.platform.pickFiles(
+              allowMultiple: true,
             );
+            if (result != null) {
+              future = FileService().upload(
+                widget.path,
+                result.paths.map((path) => io.File(path!)).toList(),
+              );
+            }
             break;
           case "folder":
-            final name = await showEditingDialog(context, "新建目录");
+            final name = await showEditingDialog(context, "新建目录".tr(context));
             if (name != null) {
               future = FileService().mkdir(widget.path, name);
             }
@@ -398,7 +409,7 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
           onPressed: () async {
             final Map<String, dynamic> args = {
               "path": "/",
-              "title": "复制文件到",
+              "title": "复制文件到".tr(context),
               "filter": (File file) => file.type == "DIR",
             };
             final result = await Navigator.pushNamed(
@@ -420,18 +431,18 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
           },
         ),
         TextButton(
-          child: const Wrap(
+          child: Wrap(
             direction: Axis.vertical,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Icon(Icons.move_up),
-              Text('移动'),
+              const Icon(Icons.move_up),
+              Text('移动'.tr(context)),
             ],
           ),
           onPressed: () async {
             final Map<String, dynamic> args = {
               "path": "/",
-              "title": "移动文件到",
+              "title": "移动文件到".tr(context),
               "filter": (File file) => file.type == "DIR",
             };
             final result = await Navigator.pushNamed(
@@ -455,12 +466,12 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
         ),
         if (widget.selected.length == 1)
           TextButton(
-            child: const Wrap(
+            child: Wrap(
               direction: Axis.vertical,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Icon(Icons.drive_file_rename_outline),
-                Text('重命名'),
+                const Icon(Icons.drive_file_rename_outline),
+                Text('重命名'.tr(context)),
               ],
             ),
             onPressed: () async {
@@ -472,7 +483,7 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
               );
               final result = await showEditingDialog(
                 context,
-                "重命名",
+                "重命名".tr(context),
                 controller: _controller,
               );
               if (result != null) {
@@ -518,12 +529,6 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
                 value: "download",
                 icon: Icons.download,
               ),
-              if (widget.selected.length == 1)
-                ListDialogItem(
-                  label: "复制链接",
-                  value: "link",
-                  icon: Icons.link,
-                ),
               ListDialogItem(
                 child: const Divider(height: 4),
               ),

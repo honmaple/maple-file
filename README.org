@@ -1,8 +1,4 @@
-#+begin_export html
-<p align="center">
-<img src="./app/assets/icon/icon-transparent.png" width="150">
-</p>
-#+end_export
+#+HTML: <p align="center"><img src="./app/assets/icon/icon-transparent.png" width="150" /></p>
 
 * maple-file
   #+BEGIN_QUOTE

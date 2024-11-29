@@ -123,10 +123,31 @@ class _SMBState extends State<SMB> {
             },
           ),
           ListTile(
+            title: Text("共享名称".tr(context)),
+            trailing: Wrap(
+              children: [
+                Text(_option["share_name"] ?? "未设置".tr(context)),
+                const Text(' *', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+            onTap: () async {
+              final result = await showEditingDialog(
+                context,
+                "共享名称".tr(context),
+                value: _option["share_name"] ?? "",
+              );
+              if (result != null) {
+                setState(() {
+                  _option["share_name"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
+          ListTile(
             title: Text("根目录".tr(context)),
-            trailing: _option["root_path"] == null
-                ? Text("未设置".tr(context))
-                : const Icon(Icons.more_horiz),
+            trailing: Text(_option["root_path"] ?? "未设置".tr(context)),
             onTap: () async {
               final result = await showEditingDialog(
                 context,

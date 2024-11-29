@@ -18,6 +18,7 @@ type (
 		Get(string) (File, error)
 		Open(string) (FileReader, error)
 		Create(string) (FileWriter, error)
+		Close() error
 	}
 	WalkDirFunc func(File, error) error
 
@@ -39,6 +40,7 @@ func (Base) MakeDir(context.Context, string) error              { return ErrNotS
 func (Base) Get(string) (File, error)                           { return nil, ErrNotSupport }
 func (Base) Open(string) (FileReader, error)                    { return nil, ErrNotSupport }
 func (Base) Create(string) (FileWriter, error)                  { return nil, ErrNotSupport }
+func (Base) Close() error                                       { return nil }
 
 var allOptions map[string]OptionCreator
 

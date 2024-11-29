@@ -5,11 +5,6 @@ import 'package:maple_file/generated/proto/api/task/task.pb.dart';
 
 import 'service.dart';
 
-final taskProvider = AsyncNotifierProvider<TaskNotifier, List<Task>>(() {
-  return TaskNotifier();
-});
-final taskFilterProvider = StateProvider((ref) => TaskListFilter.running);
-
 Map<TaskState, String> stateLabel = {
   TaskState.TASK_STATE_PENDING: "等待执行",
   TaskState.TASK_STATE_RUNNING: "正在执行",
@@ -19,7 +14,7 @@ Map<TaskState, String> stateLabel = {
   TaskState.TASK_STATE_FAILED: "执行失败",
 };
 
-enum TaskListFilter {
+enum TaskListStatus {
   running,
   finished,
   failed,
@@ -40,24 +35,37 @@ bool isFailed(Task item) {
   return item.state == TaskState.TASK_STATE_FAILED;
 }
 
-class TaskNotifier extends AsyncNotifier<List<Task>> {
+class TaskNotifier extends FamilyAsyncNotifier<List<Task>, TaskListStatus> {
   final _service = TaskService();
 
   @override
-  FutureOr<List<Task>> build() async {
+  FutureOr<List<Task>> build(arg) async {
     List<Task> results = await _service.listTasks();
 
-    final filter = ref.watch(taskFilterProvider);
-
-    switch (filter) {
-      case TaskListFilter.running:
+    switch (arg) {
+      case TaskListStatus.running:
         return results.where(isRunning).toList();
-      case TaskListFilter.finished:
+      case TaskListStatus.finished:
         return results.where(isFinished).toList();
-      case TaskListFilter.failed:
+      case TaskListStatus.failed:
         return results.where(isFailed).toList();
-      default:
-        return results;
     }
   }
 }
+
+class TaskCountNotifier extends FamilyNotifier<int, TaskListStatus> {
+  @override
+  int build(arg) {
+    final tasks = ref.watch(taskProvider(arg)).valueOrNull ?? <Task>[];
+    return tasks.length;
+  }
+}
+
+final taskProvider =
+    AsyncNotifierProvider.family<TaskNotifier, List<Task>, TaskListStatus>(() {
+  return TaskNotifier();
+});
+final taskCountProvider =
+    NotifierProvider.family<TaskCountNotifier, int, TaskListStatus>(() {
+  return TaskCountNotifier();
+});

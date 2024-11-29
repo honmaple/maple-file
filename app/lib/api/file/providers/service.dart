@@ -181,14 +181,16 @@ class FileService {
     });
   }
 
-  Future<void> download(String path, String localPath) {
+  Future<void> download(String path, io.File file) {
     return doFuture(() async {
-      DownloadFileRequest request = DownloadFileRequest(path: path);
+      if (file.existsSync()) {
+        Messenger.showSnackBar(const Text("文件已存在"));
+        return;
+      }
 
-      final response = _client.download(request);
-
-      var file = io.File("filename.mp3");
-      if (file.existsSync()) file.deleteSync();
+      final response = _client.download(
+        DownloadFileRequest(path: path),
+      );
 
       var ios = file.openWrite(mode: io.FileMode.append);
 

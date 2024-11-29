@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
@@ -23,7 +24,7 @@ class _FTPState extends State<FTP> {
     super.initState();
 
     _option = widget.form.option == ""
-        ? {"port": 22}
+        ? {"port": 21}
         : jsonDecode(widget.form.option);
   }
 
@@ -34,11 +35,10 @@ class _FTPState extends State<FTP> {
         children: [
           ListTile(
             title: Text("主机/IP".tr(context)),
-            trailing: Wrap(
-              children: [
-                Text(_option["host"] ?? "未设置".tr(context)),
-                const Text(' *', style: TextStyle(color: Colors.red)),
-              ],
+            trailing: _emptyText(
+              context,
+              _option["host"],
+              isRequired: true,
             ),
             onTap: () async {
               final result = await showEditingDialog(
@@ -57,12 +57,12 @@ class _FTPState extends State<FTP> {
           ),
           ListTile(
             title: Text("端口".tr(context)),
-            trailing: Text("${_option['port'] ?? 22}"),
+            trailing: Text("${_option['port'] ?? 21}"),
             onTap: () async {
               final result = await showNumberEditingDialog(
                 context,
                 "端口".tr(context),
-                value: "${_option['port'] ?? 22}",
+                value: "${_option['port'] ?? 21}",
               );
               if (result != null) {
                 setState(() {
@@ -75,7 +75,11 @@ class _FTPState extends State<FTP> {
           ),
           ListTile(
             title: Text("用户".tr(context)),
-            trailing: Text(_option["username"] ?? "未设置".tr(context)),
+            trailing: _emptyText(
+              context,
+              _option["username"],
+              isRequired: true,
+            ),
             onTap: () async {
               final result = await showEditingDialog(
                 context,
@@ -113,19 +117,17 @@ class _FTPState extends State<FTP> {
             },
           ),
           ListTile(
-            title: Text("私钥".tr(context)),
-            trailing: _option["private_key"] == null
-                ? Text("未设置".tr(context))
-                : const Icon(Icons.more_horiz),
+            title: Text("根目录".tr(context)),
+            trailing: _emptyText(context, _option["root_path"]),
             onTap: () async {
               final result = await showEditingDialog(
                 context,
-                "私钥".tr(context),
-                value: _option["private_key"] ?? "",
+                "根目录".tr(context),
+                value: _option["root_path"] ?? "",
               );
               if (result != null) {
                 setState(() {
-                  _option["private_key"] = result;
+                  _option["root_path"] = result;
                 });
 
                 widget.form.option = jsonEncode(_option);
@@ -134,6 +136,21 @@ class _FTPState extends State<FTP> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _emptyText(
+    BuildContext context,
+    String? value, {
+    bool isRequired = false,
+  }) {
+    bool isEmpty = value == null || value == "";
+    return Wrap(
+      children: [
+        Text(isEmpty ? "未设置".tr(context) : value),
+        if (isRequired && isEmpty)
+          const Text(' *', style: TextStyle(color: Colors.red)),
+      ],
     );
   }
 }

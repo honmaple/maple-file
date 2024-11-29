@@ -63,6 +63,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 if (result != null && result) {
                   await FileService().deleteRepo(_form.id).then((_) {
                     ref.invalidate(repoProvider);
+                    ref.invalidate(fileProvider(_form.path));
                     if (context.mounted) Navigator.of(context).pop();
                   });
                 }

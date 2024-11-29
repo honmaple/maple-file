@@ -36,17 +36,10 @@ class PathUtil {
     }
   }
 
-  static Future<String> checkFileExists(String path) async {
+  static String autoRename(String path) {
     if (File(path).existsSync()) {
-      return "";
+      return autoRename("$path.1");
     }
-    return "";
-  }
-
-  static Future<String> autoRename(String path) async {
-    if (File(path).existsSync()) {
-      return "";
-    }
-    return "";
+    return path;
   }
 }

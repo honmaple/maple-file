@@ -34,11 +34,10 @@ class _SFTPState extends State<SFTP> {
         children: [
           ListTile(
             title: Text("主机/IP".tr(context)),
-            trailing: Wrap(
-              children: [
-                Text(_option["host"] ?? "未设置".tr(context)),
-                const Text(' *', style: TextStyle(color: Colors.red)),
-              ],
+            trailing: _emptyText(
+              context,
+              _option["host"],
+              isRequired: true,
             ),
             onTap: () async {
               final result = await showEditingDialog(
@@ -75,7 +74,11 @@ class _SFTPState extends State<SFTP> {
           ),
           ListTile(
             title: Text("用户".tr(context)),
-            trailing: Text(_option["username"] ?? "未设置".tr(context)),
+            trailing: _emptyText(
+              context,
+              _option["username"],
+              isRequired: true,
+            ),
             onTap: () async {
               final result = await showEditingDialog(
                 context,
@@ -132,8 +135,41 @@ class _SFTPState extends State<SFTP> {
               }
             },
           ),
+          ListTile(
+            title: Text("根目录".tr(context)),
+            trailing: _emptyText(context, _option["root_path"]),
+            onTap: () async {
+              final result = await showEditingDialog(
+                context,
+                "根目录".tr(context),
+                value: _option["root_path"] ?? "",
+              );
+              if (result != null) {
+                setState(() {
+                  _option["root_path"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              }
+            },
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _emptyText(
+    BuildContext context,
+    String? value, {
+    bool isRequired = false,
+  }) {
+    bool isEmpty = value == null || value == "";
+    return Wrap(
+      children: [
+        Text(isEmpty ? "未设置".tr(context) : value),
+        if (isRequired && isEmpty)
+          const Text(' *', style: TextStyle(color: Colors.red)),
+      ],
     );
   }
 }

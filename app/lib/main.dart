@@ -5,7 +5,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api/setting/providers/setting_appearance.dart';
 import 'app/app.dart';
 import 'app/i18n.dart';
-import 'init.dart';
+
+import 'api/file/route.dart' as file;
+import 'api/home/route.dart' as home;
+import 'api/task/route.dart' as task;
+import 'api/setting/route.dart' as setting;
+
+Future<void> init() async {
+  await App().init();
+
+  await home.init(App.router);
+  await file.init(App.router);
+  await task.init(App.router);
+  await setting.init(App.router);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,8 +63,8 @@ class MyApp extends ConsumerWidget {
       ),
       localizationsDelegates: I18n.localizationsDelegates,
       supportedLocales: I18n.supportedLocales,
-      initialRoute: RoutePage.initialRoute,
-      onGenerateRoute: RoutePage.router.generateRoute,
+      initialRoute: App.initialRoute,
+      onGenerateRoute: App.router.generateRoute,
       debugShowCheckedModeBanner: false,
     );
   }

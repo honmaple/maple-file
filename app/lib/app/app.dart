@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'grpc.dart';
+import 'router.dart';
+import 'store.dart';
+import 'window.dart';
+
 class Messenger {
   static final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -15,15 +20,20 @@ class Messenger {
 }
 
 class App {
+  static const initialRoute = "/";
+
+  static final router = CustomRouter();
+
   App._internal() {
     print("init app");
   }
-
-  static final App _instance = App._internal();
-
   factory App() => _instance;
-
+  static final App _instance = App._internal();
   static App get instance => _instance;
 
-  Future<void> init() async {}
+  Future<void> init() async {
+    await Window().init();
+    await Store().init();
+    await GRPC().init();
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:maple_file/api/task/providers/task.dart';
 import 'package:path/path.dart' as filepath;
 
 import 'package:flutter/material.dart';
@@ -62,6 +63,7 @@ class _FileListState extends ConsumerState<FileList> {
     if (widget.path != "/") {
       title = widget.path.split('/').last;
     }
+    final taskCount = ref.watch(taskCountProvider(TaskListStatus.running));
     return AppBar(
       leading: widget.path == "/"
           ? Container(
@@ -81,7 +83,12 @@ class _FileListState extends ConsumerState<FileList> {
       title: Text(title),
       actions: [
         IconButton(
-          icon: const Icon(Icons.swap_vert_circle_outlined),
+          icon: Badge(
+            label: Text('$taskCount'),
+            isLabelVisible: taskCount > 0,
+            backgroundColor: Theme.of(context).primaryColor,
+            child: const Icon(Icons.swap_vert_circle_outlined),
+          ),
           onPressed: () {
             Navigator.pushNamed(context, '/task/list');
           },

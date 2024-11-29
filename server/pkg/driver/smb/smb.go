@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"io/fs"
 	"net"
-
-	"github.com/honmaple/maple-file/server/pkg/driver"
+	"strings"
 
 	"github.com/hirochachacha/go-smb2"
+	"github.com/honmaple/maple-file/server/pkg/driver"
 )
 
 type Option struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	RootPath string `json:"root_path"`
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	ShareName string `json:"share_name"`
+	RootPath  string `json:"root_path"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -130,6 +131,10 @@ func (d *SMB) Remove(ctx context.Context, path string) error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if opt.Username == "" || opt.ShareName == "" {
+		return nil, driver.ErrOption
+	}
+
 	if opt.Port == 0 {
 		opt.Port = 445
 	}
@@ -151,16 +156,25 @@ func New(opt *Option) (driver.FS, error) {
 		return nil, err
 	}
 
-	fs, err := s.Mount(opt.Username)
+	client, err := s.Mount(opt.ShareName)
 	if err != nil {
 		return nil, err
 	}
 
-	d := &SMB{opt: opt, client: fs}
+	d := &SMB{opt: opt, client: client}
+
 	if opt.RootPath != "" {
 		return driver.PrefixFS(d, opt.RootPath), nil
 	}
-	return d, nil
+	return driver.NewFS(
+		// smb访问路径不能以/开头
+		func(path string) (driver.FS, string, error) {
+			return d, strings.TrimPrefix(path, "/"), nil
+		},
+		func(root string, file driver.File) driver.File {
+			return file
+		},
+	), nil
 }
 
 func init() {

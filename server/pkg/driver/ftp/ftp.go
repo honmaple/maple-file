@@ -140,6 +140,10 @@ func (d *FTP) Remove(ctx context.Context, path string) error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if opt.Username == "" || opt.Password == "" {
+		return nil, driver.ErrOption
+	}
+
 	if opt.Port == 0 {
 		opt.Port = 21
 	}

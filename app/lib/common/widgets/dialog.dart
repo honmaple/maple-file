@@ -33,12 +33,13 @@ class CustomEditingDialog extends StatefulWidget {
 class _CustomEditingDialogState extends State<CustomEditingDialog> {
   late final TextEditingController _controller;
 
-  bool showObscureText = false;
+  late bool showObscureText;
 
   @override
   void initState() {
     super.initState();
 
+    showObscureText = widget.obscureText;
     _controller = widget.controller ?? TextEditingController();
     if (widget.value != null) {
       _controller.text = widget.value!;
@@ -87,8 +88,8 @@ class _CustomEditingDialogState extends State<CustomEditingDialog> {
                     });
                   },
                   child: Icon(showObscureText
-                      ? Icons.visibility
-                      : Icons.visibility_off),
+                      ? Icons.visibility_off
+                      : Icons.visibility),
                 )
               : null,
         ),

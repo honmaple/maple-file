@@ -29,19 +29,11 @@ class RepoEdit extends ConsumerStatefulWidget {
 class _RepoEditState extends ConsumerState<RepoEdit> {
   late Repo _form;
 
-  final TextEditingController _controller = TextEditingController();
-
   @override
   void initState() {
     super.initState();
 
     _form = widget.repo ?? Repo(path: "/");
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   bool get _isEditing {
@@ -102,47 +94,23 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       }
                     },
                   ),
-                  ListTile(
-                    title: Text("存储名称".tr(context)),
-                    trailing: Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(_form.name == "" ? "未设置".tr(context) : _form.name),
-                        if (_form.name == "")
-                          const Text(' *', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
-                    onTap: () async {
-                      _controller.text = _form.name;
-
-                      final result = await showEditingDialog(
-                        context,
-                        "存储名称".tr(context),
-                        value: _form.name,
-                      );
-                      if (result != null) {
-                        setState(() {
-                          _form.name = result;
-                        });
-                      }
+                  DriverFormField(
+                    label: "存储名称".tr(context),
+                    value: _form.name,
+                    isRequired: true,
+                    onTap: (result) {
+                      setState(() {
+                        _form.name = result;
+                      });
                     },
                   ),
-                  ListTile(
-                    title: Text("挂载目录".tr(context)),
-                    trailing: Text(_form.path),
-                    onTap: () async {
-                      _controller.text = _form.path;
-
-                      final result = await showEditingDialog(
-                        context,
-                        "挂载目录".tr(context),
-                        value: _form.path,
-                      );
-                      if (result != null) {
-                        setState(() {
-                          _form.path = result;
-                        });
-                      }
+                  DriverFormField(
+                    label: "挂载目录".tr(context),
+                    value: _form.path,
+                    onTap: (result) {
+                      setState(() {
+                        _form.path = result;
+                      });
                     },
                   ),
                 ],

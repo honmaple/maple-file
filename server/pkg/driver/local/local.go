@@ -171,8 +171,8 @@ func (d *Local) Create(path string) (driver.FileWriter, error) {
 	return os.Create(path)
 }
 
-func (d *Local) Rename(ctx context.Context, src, dst string) error {
-	return os.Rename(src, dst)
+func (d *Local) Rename(ctx context.Context, path, newName string) error {
+	return os.Rename(path, filepath.Join(filepath.Dir(path), newName))
 }
 
 func (d *Local) Move(ctx context.Context, src, dst string) error {

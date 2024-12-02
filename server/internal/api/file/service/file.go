@@ -2,16 +2,45 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
+	settingpb "github.com/honmaple/maple-file/server/internal/proto/api/setting"
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"github.com/spf13/viper"
 )
+
+func (srv *Service) getSetting(ctx context.Context, key string) (*viper.Viper, error) {
+	ins := new(settingpb.Setting)
+
+	if err := srv.app.DB.WithContext(ctx).First(&ins, "key = ?", key).Error; err != nil {
+		return nil, err
+	}
+
+	allSettings := make([]*settingpb.Setting, 0)
+	srv.app.DB.WithContext(ctx).Find(&allSettings)
+	for _, set := range allSettings {
+		fmt.Println(set.Key, set.Value)
+	}
+
+	setting := make(map[string]any)
+	if err := json.Unmarshal([]byte(ins.GetValue()), &setting); err != nil {
+		return nil, err
+	}
+
+	cf := viper.New()
+	for k, v := range setting {
+		cf.Set(k, v)
+	}
+	return cf, nil
+}
 
 func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.ListFilesResponse, error) {
 	path := util.CleanPath(req.GetPath())
@@ -48,28 +77,16 @@ func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.Lis
 	}
 
 	for _, m := range files {
-		result := &pb.File{
-			Path:      m.Path(),
-			Name:      m.Name(),
-			Size:      int32(m.Size()),
-			Type:      m.Type(),
-			CreatedAt: timestamppb.New(m.ModTime()),
-			UpdatedAt: timestamppb.New(m.ModTime()),
-		}
-		if m.IsDir() {
-			result.Type = "DIR"
-		}
-		results = append(results, result)
+		results = append(results, infoToFile(m))
 	}
 	return &pb.ListFilesResponse{Results: results}, nil
 }
 
 func (srv *Service) Rename(ctx context.Context, req *pb.RenameFileRequest) (*pb.RenameFileResponse, error) {
 	oldPath := filepath.Join(req.GetPath(), req.GetName())
-	newPath := filepath.Join(req.GetPath(), req.GetNewName())
 
-	fmt.Println("rename", oldPath, newPath)
-	if err := srv.fs.Rename(ctx, oldPath, newPath); err != nil {
+	fmt.Println("rename", oldPath, filepath.Join(req.GetPath(), req.GetNewName()))
+	if err := srv.fs.Rename(ctx, oldPath, req.GetNewName()); err != nil {
 		return nil, err
 	}
 	return &pb.RenameFileResponse{}, nil
@@ -119,15 +136,42 @@ func (srv *Service) Remove(ctx context.Context, req *pb.RemoveFileRequest) (*pb.
 	return &pb.RemoveFileResponse{}, nil
 }
 
-func (srv *Service) Upload(stream pb.FileService_UploadServer) error {
-	// 接收第0片数据，只包括文件名等信息，不包括数据
-	req, err := stream.Recv()
+func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.Reader) (*pb.File, error) {
+	filename := req.GetFilename()
+
+	cf, err := srv.getSetting(ctx, "app.file")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	task := srv.app.Runner.Submit(fmt.Sprintf("上传文件 %s", req.GetFilename()), func(task runner.Task) error {
-		file, err := srv.fs.Create(filepath.Join(req.GetPath(), req.GetFilename()))
+	if limitSize := cf.GetInt32("upload.limit_size"); limitSize > 0 && req.GetSize() > limitSize*1024*1024 {
+		return nil, errors.New("上传限制大小")
+	}
+
+	if limitType := cf.GetString("upload.limit_type"); limitType != "" {
+		fileExt := filepath.Ext(filename)
+
+		limit := true
+		for _, t := range strings.Split(limitType, ",") {
+			if fileExt == t {
+				limit = false
+				break
+			}
+		}
+		if limit {
+			return nil, errors.New("上传限制类型")
+		}
+	}
+
+	// 自动重命名
+	if cf.GetBool("upload.rename") {
+		filename = renameFile(cf.GetString("upload.format"), filename)
+	}
+
+	path := filepath.Join(req.GetPath(), filename)
+
+	task := srv.app.Runner.Submit(fmt.Sprintf("上传文件 %s", filename), func(task runner.Task) error {
+		file, err := srv.fs.Create(path)
 		if err != nil {
 			return err
 		}
@@ -137,7 +181,7 @@ func (srv *Service) Upload(stream pb.FileService_UploadServer) error {
 
 		task.SetProgressState(fmt.Sprintf("0/%s", fsize))
 
-		_, err = util.Copy(task.Context(), file, readFunc(stream.Recv), func(progress int64) {
+		_, err = util.Copy(task.Context(), file, reader, func(progress int64) {
 			if size := req.GetSize(); size > 0 {
 				task.SetProgress(float64(progress) / float64(size))
 			}
@@ -151,20 +195,28 @@ func (srv *Service) Upload(stream pb.FileService_UploadServer) error {
 	<-task.Done()
 
 	if err := task.Err(); err != nil {
-		return stream.SendAndClose(&pb.FileResponse{Message: err.Error()})
+		return nil, err
 	}
 
-	info, err := srv.fs.Get(filepath.Join(filepath.Join(req.GetPath(), req.GetFilename())))
+	info, err := srv.fs.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	return infoToFile(info), nil
+}
+
+func (srv *Service) Upload(stream pb.FileService_UploadServer) error {
+	ctx := stream.Context()
+
+	// 接收第0片数据，只包括文件名等信息，不包括数据
+	firstReq, err := stream.Recv()
 	if err != nil {
 		return err
 	}
-	result := &pb.File{
-		Path:      info.Path(),
-		Name:      info.Name(),
-		Size:      int32(info.Size()),
-		Type:      info.Type(),
-		CreatedAt: timestamppb.New(info.ModTime()),
-		UpdatedAt: timestamppb.New(info.ModTime()),
+
+	result, err := srv.upload(ctx, firstReq, readFunc(stream.Recv))
+	if err != nil {
+		return err
 	}
 	return stream.SendAndClose(&pb.FileResponse{Result: result})
 }

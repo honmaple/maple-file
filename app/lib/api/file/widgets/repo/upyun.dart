@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/list_tile.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
+
+import 'form.dart';
 
 part 'upyun.g.dart';
 part 'upyun.freezed.dart';
@@ -18,6 +19,7 @@ class UpyunOption with _$UpyunOption {
     @Default("") String bucket,
     @Default("") String operator,
     @Default("") String password,
+    @Default("") @JsonKey(name: 'root_path') String rootPath,
   }) = _UpyunOption;
 
   factory UpyunOption.fromJson(Map<String, Object?> json) =>
@@ -50,7 +52,7 @@ class _UpyunState extends ConsumerState<Upyun> {
     return Card(
       child: Column(
         children: [
-          CustomListTile(
+          DriverFormField(
             label: "接入点".tr(context),
             value: _option.endpoint,
             isRequired: true,
@@ -62,7 +64,7 @@ class _UpyunState extends ConsumerState<Upyun> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          CustomListTile(
+          DriverFormField(
             label: "存储桶".tr(context),
             value: _option.bucket,
             isRequired: true,
@@ -74,7 +76,7 @@ class _UpyunState extends ConsumerState<Upyun> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          CustomListTile(
+          DriverFormField(
             label: "操作员".tr(context),
             value: _option.operator,
             isRequired: true,
@@ -86,14 +88,25 @@ class _UpyunState extends ConsumerState<Upyun> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          CustomListTile(
+          DriverFormField(
+            type: DriverFormFieldType.password,
             label: "操作密码".tr(context),
             value: _option.password,
             isRequired: true,
-            obscureText: true,
             onTap: (result) {
               setState(() {
                 _option.password = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
+            },
+          ),
+          DriverFormField(
+            label: "根目录".tr(context),
+            value: _option.rootPath,
+            onTap: (result) {
+              setState(() {
+                _option.rootPath = result;
               });
 
               widget.form.option = jsonEncode(_option);

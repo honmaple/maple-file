@@ -7,6 +7,8 @@ import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
+import 'form.dart';
+
 class Local extends StatefulWidget {
   const Local({super.key, required this.form});
 
@@ -35,45 +37,30 @@ class _LocalState extends State<Local> {
         Card(
           child: Column(
             children: [
-              ListTile(
-                title: Text('目录'.tr(context)),
-                trailing: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      _option["root_path"] ?? "未设置".tr(context),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Text(' *', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-                onTap: () async {
-                  String? result = await FilePicker.platform.getDirectoryPath();
-                  if (result != null) {
-                    setState(() {
-                      _option["root_path"] = result;
-                    });
+              DriverFormField(
+                type: DriverFormFieldType.directory,
+                label: '目录'.tr(context),
+                value: _option["root_path"],
+                isRequired: true,
+                onTap: (result) {
+                  setState(() {
+                    _option["root_path"] = result;
+                  });
 
-                    widget.form.option = jsonEncode(_option);
-                  }
+                  widget.form.option = jsonEncode(_option);
                 },
               ),
-              ListTile(
-                title: Text("目录权限".tr(context)),
-                trailing: Text("${_option['dir_perm'] ?? 0755}"),
-                onTap: () async {
-                  final result = await showNumberEditingDialog(
-                    context,
-                    "目录权限".tr(context),
-                    value: "${_option['dir_perm'] ?? 0755}",
-                  );
-                  if (result != null) {
-                    setState(() {
-                      _option["dir_perm"] = int.parse(result);
-                    });
+              DriverFormField(
+                type: DriverFormFieldType.number,
+                label: "目录权限".tr(context),
+                value: "${_option['dir_perm'] ?? 0755}",
+                isRequired: true,
+                onTap: (result) {
+                  setState(() {
+                    _option["dir_perm"] = int.parse(result);
+                  });
 
-                    widget.form.option = jsonEncode(_option);
-                  }
+                  widget.form.option = jsonEncode(_option);
                 },
               ),
             ],

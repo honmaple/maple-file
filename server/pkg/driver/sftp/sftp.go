@@ -101,8 +101,8 @@ func (d *SFTP) Copy(ctx context.Context, src, dst string) error {
 	return driver.ErrNotSupport
 }
 
-func (d *SFTP) Rename(ctx context.Context, src, dst string) error {
-	return d.client.Rename(src, dst)
+func (d *SFTP) Rename(ctx context.Context, path, newName string) error {
+	return d.client.Rename(path, filepath.Join(filepath.Dir(path), newName))
 }
 
 func (d *SFTP) MakeDir(ctx context.Context, path string) error {

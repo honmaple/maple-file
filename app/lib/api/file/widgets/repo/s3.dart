@@ -7,16 +7,16 @@ import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 import 'form.dart';
 
-class SFTP extends StatefulWidget {
-  const SFTP({super.key, required this.form});
+class S3 extends StatefulWidget {
+  const S3({super.key, required this.form});
 
   final Repo form;
 
   @override
-  State<SFTP> createState() => _SFTPState();
+  State<S3> createState() => _S3State();
 }
 
-class _SFTPState extends State<SFTP> {
+class _S3State extends State<S3> {
   late Map<String, dynamic> _option;
 
   @override
@@ -35,36 +35,47 @@ class _SFTPState extends State<SFTP> {
         children: [
           DriverFormField(
             label: "主机/IP".tr(context),
-            value: _option["host"],
+            value: _option["endpoint"],
             isRequired: true,
             onTap: (result) {
               setState(() {
-                _option["host"] = result;
+                _option["endpoint"] = result;
               });
 
               widget.form.option = jsonEncode(_option);
             },
           ),
           DriverFormField(
-            type: DriverFormFieldType.number,
-            label: "端口".tr(context),
-            value: "${_option['port'] ?? 22}",
+            label: "存储桶".tr(context),
+            value: _option["bucket"],
             isRequired: true,
             onTap: (result) {
               setState(() {
-                _option["port"] = int.parse(result);
+                _option["bucket"] = result;
               });
 
               widget.form.option = jsonEncode(_option);
             },
           ),
           DriverFormField(
-            label: "用户".tr(context),
-            value: _option["username"],
+            label: "访问区域".tr(context),
+            value: _option["region"],
             isRequired: true,
             onTap: (result) {
               setState(() {
-                _option["username"] = result;
+                _option["region"] = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
+            },
+          ),
+          DriverFormField(
+            label: "访问key".tr(context),
+            value: _option["access_key"],
+            isRequired: true,
+            onTap: (result) {
+              setState(() {
+                _option["access_key"] = result;
               });
 
               widget.form.option = jsonEncode(_option);
@@ -72,23 +83,12 @@ class _SFTPState extends State<SFTP> {
           ),
           DriverFormField(
             type: DriverFormFieldType.password,
-            label: "密码".tr(context),
-            value: _option["password"],
+            label: "访问密钥".tr(context),
+            value: _option["secret_key"],
+            isRequired: true,
             onTap: (result) {
               setState(() {
-                _option["password"] = result;
-              });
-
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          DriverFormField(
-            type: DriverFormFieldType.password,
-            label: "私钥".tr(context),
-            value: _option["private_key"],
-            onTap: (result) {
-              setState(() {
-                _option["private_key"] = result;
+                _option["secret_key"] = result;
               });
 
               widget.form.option = jsonEncode(_option);

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net"
+	"path/filepath"
 	"strings"
 
 	"github.com/hirochachacha/go-smb2"
@@ -103,8 +104,8 @@ func (d *SMB) Copy(ctx context.Context, src, dst string) error {
 	return driver.ErrNotSupport
 }
 
-func (d *SMB) Rename(ctx context.Context, src, dst string) error {
-	return d.client.Rename(src, dst)
+func (d *SMB) Rename(ctx context.Context, path, newName string) error {
+	return d.client.Rename(path, filepath.Join(filepath.Dir(path), newName))
 }
 
 func (d *SMB) MakeDir(ctx context.Context, path string) error {

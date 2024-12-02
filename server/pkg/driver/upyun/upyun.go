@@ -115,8 +115,8 @@ func (d *Upyun) List(ctx context.Context, path string) ([]driver.File, error) {
 	return []driver.File{driver.NewFile(path, fi)}, nil
 }
 
-func (d *Upyun) Rename(ctx context.Context, src, dst string) error {
-	return d.Move(ctx, src, dst)
+func (d *Upyun) Rename(ctx context.Context, path, newName string) error {
+	return d.Move(ctx, path, filepath.Join(filepath.Dir(path), newName))
 }
 
 func (d *Upyun) Move(ctx context.Context, src, dst string) error {

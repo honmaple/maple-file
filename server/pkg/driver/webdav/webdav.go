@@ -106,8 +106,8 @@ func (d *Webdav) Copy(ctx context.Context, src, dst string) error {
 	return d.client.Copy(src, dst, false)
 }
 
-func (d *Webdav) Rename(ctx context.Context, src, dst string) error {
-	return d.client.Rename(src, dst, false)
+func (d *Webdav) Rename(ctx context.Context, path, newName string) error {
+	return d.client.Rename(path, filepath.Join(filepath.Dir(path), newName), false)
 }
 
 func (d *Webdav) Remove(ctx context.Context, path string) error {

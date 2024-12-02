@@ -112,8 +112,8 @@ func (d *FTP) Copy(ctx context.Context, src, dst string) error {
 	return driver.ErrNotSupport
 }
 
-func (d *FTP) Rename(ctx context.Context, src, dst string) error {
-	return d.client.Rename(src, dst)
+func (d *FTP) Rename(ctx context.Context, path, newName string) error {
+	return d.client.Rename(path, filepath.Join(filepath.Dir(path), newName))
 }
 
 func (d *FTP) MakeDir(ctx context.Context, path string) error {

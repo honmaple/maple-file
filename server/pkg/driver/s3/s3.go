@@ -3,10 +3,12 @@ package s3
 import (
 	"context"
 	"io"
+	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -122,8 +124,8 @@ func (d *S3) Copy(ctx context.Context, src, dst string) error {
 	return err
 }
 
-func (d *S3) Rename(ctx context.Context, src, dst string) error {
-	return d.Move(ctx, src, dst)
+func (d *S3) Rename(ctx context.Context, path, newName string) error {
+	return d.Move(ctx, path, filepath.Join(filepath.Dir(path), newName))
 }
 
 func (d *S3) Remove(ctx context.Context, path string) error {
@@ -139,8 +141,8 @@ func (d *S3) MakeDir(ctx context.Context, path string) error {
 	uploader := s3manager.NewUploader(nil)
 
 	_, err := uploader.UploadWithContext(ctx, &s3manager.UploadInput{
-		Bucket: aws.String(""),
-		Key:    aws.String(""),
+		Bucket: aws.String(d.opt.Bucket),
+		Key:    aws.String(path),
 		Body:   nil,
 	})
 	return err
@@ -148,8 +150,8 @@ func (d *S3) MakeDir(ctx context.Context, path string) error {
 
 func (d *S3) Open(path string) (driver.FileReader, error) {
 	input := &s3.GetObjectInput{
-		Bucket: aws.String(""),
-		Key:    aws.String(""),
+		Bucket: aws.String(d.opt.Bucket),
+		Key:    aws.String(path),
 	}
 	result, err := d.client.GetObject(input)
 	if err != nil {
@@ -164,8 +166,8 @@ func (d *S3) Create(path string) (driver.FileWriter, error) {
 		uploader := s3manager.NewUploader(nil)
 
 		_, err := uploader.Upload(&s3manager.UploadInput{
-			Bucket: aws.String(""),
-			Key:    aws.String(""),
+			Bucket: aws.String(d.opt.Bucket),
+			Key:    aws.String(path),
 			Body:   r,
 		})
 		r.CloseWithError(err)
@@ -175,8 +177,8 @@ func (d *S3) Create(path string) (driver.FileWriter, error) {
 
 func (d *S3) Get(path string) (driver.File, error) {
 	input := &s3.GetObjectInput{
-		Bucket: aws.String(""),
-		Key:    aws.String(""),
+		Bucket: aws.String(d.opt.Bucket),
+		Key:    aws.String(path),
 	}
 	object, err := d.client.GetObject(input)
 	if err != nil {
@@ -194,8 +196,12 @@ func (d *S3) Close() error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if opt.Bucket == "" || opt.Region == "" {
+		return nil, driver.ErrOption
+	}
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(opt.Region),
+		Region:      aws.String(opt.Region),
+		Credentials: credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, ""),
 	})
 	if err != nil {
 		return nil, err

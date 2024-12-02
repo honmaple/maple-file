@@ -8,6 +8,7 @@ import (
 )
 
 type rootFS struct {
+	Base
 	fn     func(string) (FS, string, error)
 	fileFn func(string, File) File
 }
@@ -116,19 +117,12 @@ func (d *rootFS) Move(ctx context.Context, src string, dst string) error {
 	return srcFS.Move(ctx, srcPath, dstPath)
 }
 
-func (d *rootFS) Rename(ctx context.Context, src, dst string) error {
-	srcFS, srcPath, err := d.fn(src)
+func (d *rootFS) Rename(ctx context.Context, path, newName string) error {
+	srcFS, srcPath, err := d.fn(path)
 	if err != nil {
 		return err
 	}
-	dstFS, dstPath, err := d.fn(dst)
-	if err != nil {
-		return err
-	}
-	if srcFS != dstFS {
-		return ErrNotSupport
-	}
-	return dstFS.Rename(ctx, srcPath, dstPath)
+	return srcFS.Rename(ctx, srcPath, newName)
 }
 
 func (d *rootFS) Remove(ctx context.Context, path string) error {

@@ -1,12 +1,20 @@
 #+HTML: <p align="center"><img src="./app/assets/icon/icon-transparent.png" width="150" /></p>
 
-* maple-file
+* 红枫云盘
   #+BEGIN_QUOTE
   使用 *Flutter* + *Go* 实现的文件上传服务，以及云盘文件管理，无需服务器部署
   #+END_QUOTE
 
-* 截图
-  |-----------------------------------------+-----------------------------------------|
-  | [[./example/screenshot/flutter_01.png]] | [[./example/screenshot/flutter_02.png]] |
-  | [[./example/screenshot/flutter_03.png]] | [[./example/screenshot/flutter_04.png]] |
-  | [[./example/screenshot/flutter_05.png]] |                                         |
+** 支持的存储
+   - [X] 本地文件
+   - [X] ftp
+   - [X] sftp
+   - [X] smb
+   - [X] webdav
+   - [X] 又拍云
+
+** 截图
+   |-----------------------------------------+-----------------------------------------|
+   | [[./example/screenshot/flutter_01.png]] | [[./example/screenshot/flutter_02.png]] |
+   | [[./example/screenshot/flutter_03.png]] | [[./example/screenshot/flutter_04.png]] |
+   | [[./example/screenshot/flutter_05.png]] |                                         |

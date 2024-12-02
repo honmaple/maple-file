@@ -133,7 +133,6 @@ Future<void> showFileAction(
       if (downloadPath == null || downloadPath == "") {
         downloadPath = await PathUtil.getDownloadsPath();
       }
-      print(downloadPath);
       FileService()
           .download(
         filepath.join(file.path, file.name),

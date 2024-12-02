@@ -122,6 +122,16 @@ class _FileViewState extends ConsumerState<FileView> {
 
         final size = (row.size / 1024 / 1024).toStringAsFixed(2);
         return GestureDetector(
+          onTap: widget.onTap == null
+              ? null
+              : () {
+                  widget.onTap?.call(context, row);
+                },
+          onLongPress: widget.onLongPress == null
+              ? null
+              : () {
+                  widget.onLongPress?.call(context, row);
+                },
           child: ListTile(
             leading: _buildIcon(row, setting, 0.8),
             title: Text(row.name),
@@ -133,22 +143,24 @@ class _FileViewState extends ConsumerState<FileView> {
                   style: const TextStyle(fontSize: 12),
                 ),
                 if (Breakpoint.isDesktop(context) && row.type != "DIR")
-                  Text("文件大小: ${size}MB", style: const TextStyle(fontSize: 12)),
+                  Text(
+                      "文件大小: {size}MB".tr(
+                        context,
+                        args: {"size": size},
+                      ),
+                      style: const TextStyle(fontSize: 12)),
               ],
             ),
             selected: selection.contains(row),
             trailing: _isSelection(row)
                 ? _buildCheckbox(selection, row)
-                : row.type == "DIR"
-                    ? const Icon(Icons.chevron_right)
-                    : null,
+                : IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () {
+                      showFileAction(context, row, ref);
+                    },
+                  ),
           ),
-          onTap: () {
-            widget.onTap?.call(context, row);
-          },
-          onLongPress: () {
-            widget.onLongPress?.call(context, row);
-          },
         );
       },
     );

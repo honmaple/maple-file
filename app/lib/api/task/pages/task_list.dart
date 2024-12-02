@@ -35,8 +35,10 @@ class _TaskListState extends ConsumerState<TaskList>
   void initState() {
     super.initState();
 
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
-      ref.invalidate(taskProvider);
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      ref.invalidate(taskProvider(TaskListStatus.running));
+      ref.invalidate(taskProvider(TaskListStatus.finished));
+      ref.invalidate(taskProvider(TaskListStatus.failed));
     });
     _tabController = TabController(length: 3, vsync: this);
   }

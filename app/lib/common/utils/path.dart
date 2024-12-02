@@ -36,9 +36,16 @@ class PathUtil {
     }
   }
 
+  static RegExp exp = RegExp(r'(.*?)\.(\d+)$');
+
   static String autoRename(String path) {
     if (File(path).existsSync()) {
-      return autoRename("$path.1");
+      final match = exp.firstMatch(path);
+      if (match == null) {
+        return autoRename("$path.1");
+      }
+      final next = int.parse(match[2]!) + 1;
+      return autoRename("${match[1]}.$next");
     }
     return path;
   }

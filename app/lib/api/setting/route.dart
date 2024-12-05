@@ -8,6 +8,7 @@ import "pages/setting_locale.dart";
 Future<void> init(CustomRouter router) async {
   router.registerMany({
     '/setting': (context) {
+      return const Setting();
       if (Breakpoint.isMobile(context)) {
         return const Setting();
       }

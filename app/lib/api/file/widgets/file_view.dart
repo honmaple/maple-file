@@ -43,28 +43,23 @@ class FileView extends ConsumerStatefulWidget {
 class _FileViewState extends ConsumerState<FileView> {
   @override
   Widget build(BuildContext context) {
-    return CustomRefresh(
-      onLoad: () => ref.invalidate(fileProvider(widget.path)),
-      onRefresh: () => ref.invalidate(fileProvider(widget.path)),
-      childBuilder: (context, physics) {
-        return CustomScrollView(
-          physics: physics,
-          slivers: [
-            if (widget.path != "/")
-              SliverToBoxAdapter(
-                child: ListTile(
-                  dense: true,
-                  title: FileBreadcrumb(path: widget.path),
-                  trailing: const FileSortAction(),
-                ),
-              ),
-            CustomSliverAsyncValue(
-              value: ref.watch(fileProvider(widget.path)),
-              builder: (items) => buildView(context, items),
+    return CustomPaging(
+      onLoad: () => ref.read(fileProvider(widget.path).notifier).load(),
+      onRefresh: () => ref.read(fileProvider(widget.path).notifier).refresh(),
+      slivers: [
+        if (widget.path != "/")
+          SliverToBoxAdapter(
+            child: ListTile(
+              dense: true,
+              title: FileBreadcrumb(path: widget.path),
+              trailing: const FileSortAction(),
             ),
-          ],
-        );
-      },
+          ),
+        CustomSliverAsyncValue(
+          value: ref.watch(fileProvider(widget.path)),
+          builder: (items) => buildView(context, items),
+        ),
+      ],
     );
   }
 
@@ -106,7 +101,7 @@ class _FileViewState extends ConsumerState<FileView> {
       );
     }
     final view = ref.watch(fileSettingProvider.select((state) => state.view));
-    return view == FileListView.GRID
+    return view == FileListView.grid
         ? buildGridView(context, items)
         : buildListView(context, items);
   }
@@ -214,7 +209,7 @@ class _FileViewState extends ConsumerState<FileView> {
   }
 
   _buildIcon(File row, FileSetting setting, double size) {
-    if (setting.icon == FileListIcon.CIRCLE) {
+    if (setting.icon == FileListIcon.circle) {
       return Container(
         height: 48 * size,
         width: 48 * size,

@@ -29,6 +29,15 @@ class FileService {
     return _client;
   }
 
+  Future<List<File>> list({Map<String, String>? filter}) async {
+    final result = await doFuture(() async {
+      ListFilesRequest request = ListFilesRequest(filter: filter);
+      ListFilesResponse response = await _client.list(request);
+      return response.results;
+    });
+    return result ?? <File>[];
+  }
+
   Future<void> move(
     String path,
     String newPath,

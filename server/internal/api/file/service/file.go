@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
@@ -43,17 +42,16 @@ func (srv *Service) getSetting(ctx context.Context, key string) (*viper.Viper, e
 }
 
 func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.ListFilesResponse, error) {
-	path := util.CleanPath(req.GetPath())
+	filter := util.NewFilter(req.GetFilter())
+
+	path := util.CleanPath(filter.GetString("path"))
+
+	q := srv.app.DB.WithContext(ctx).Model(pb.Repo{}).Where("path = ?", path).Order("name DESC")
 
 	repos := make([]*pb.Repo, 0)
-
-	q := srv.app.DB.WithContext(ctx).Model(pb.Repo{}).Where("path = ?", path)
 	if err := q.Find(&repos).Error; err != nil {
 		return nil, err
 	}
-	sort.SliceStable(repos, func(i, j int) bool {
-		return repos[i].GetName() > repos[j].GetName()
-	})
 
 	results := make([]*pb.File, len(repos))
 	for i, m := range repos {
@@ -66,19 +64,17 @@ func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.Lis
 		}
 		results[i] = result
 	}
-
-	if path == "/" {
-		return &pb.ListFilesResponse{Results: results}, nil
+	if path != "/" {
+		files, err := srv.fs.List(ctx, path)
+		if err != nil {
+			return nil, err
+		}
+		for _, m := range files {
+			results = append(results, infoToFile(m))
+		}
 	}
 
-	files, err := srv.fs.List(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, m := range files {
-		results = append(results, infoToFile(m))
-	}
+	results = paginator(results, filter.GetInt("page"), filter.GetInt("page_size"))
 	return &pb.ListFilesResponse{Results: results}, nil
 }
 

@@ -175,15 +175,11 @@ class Repo extends $pb.GeneratedMessage {
 
 class ListReposRequest extends $pb.GeneratedMessage {
   factory ListReposRequest({
-    $core.int? pageNum,
-    $core.String? pageToken,
+    $core.Map<$core.String, $core.String>? filter,
   }) {
     final $result = create();
-    if (pageNum != null) {
-      $result.pageNum = pageNum;
-    }
-    if (pageToken != null) {
-      $result.pageToken = pageToken;
+    if (filter != null) {
+      $result.filter.addAll(filter);
     }
     return $result;
   }
@@ -192,8 +188,7 @@ class ListReposRequest extends $pb.GeneratedMessage {
   factory ListReposRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListReposRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'pageNum', $pb.PbFieldType.O3)
-    ..aOS(2, _omitFieldNames ? '' : 'pageToken')
+    ..m<$core.String, $core.String>(1, _omitFieldNames ? '' : 'filter', entryClassName: 'ListReposRequest.FilterEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('api.file'))
     ..hasRequiredFields = false
   ;
 
@@ -219,22 +214,7 @@ class ListReposRequest extends $pb.GeneratedMessage {
   static ListReposRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get pageNum => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set pageNum($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPageNum() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPageNum() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get pageToken => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set pageToken($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPageToken() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPageToken() => clearField(2);
+  $core.Map<$core.String, $core.String> get filter => $_getMap(0);
 }
 
 class ListReposResponse extends $pb.GeneratedMessage {

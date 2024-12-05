@@ -3,38 +3,47 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/common/providers/selection.dart';
+import 'package:maple_file/common/providers/pagination.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
 import 'service.dart';
 import 'file_setting.dart';
 
-class FileNotifier extends FamilyAsyncNotifier<List<File>, String> {
-  final _client = FileService().client;
+class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
+    with PaginationNotifierMixin<File> {
+  final _service = FileService();
 
   @override
   FutureOr<List<File>> build(String arg) async {
-    ListFilesRequest request = ListFilesRequest(path: arg);
-    ListFilesResponse response = await _client.list(request);
+    final size = ref.watch(fileSettingProvider.select((state) {
+      return state.paginationSize;
+    }));
 
-    final sort = ref.watch(fileSettingProvider.select((state) => state.sort));
+    final results = await _service.list(
+      filter: {"path": arg, "page_size": "$size"},
+    );
+
+    final sort = ref.watch(fileSettingProvider.select((state) {
+      return state.sort;
+    }));
     switch (sort) {
-      case FileListSort.NAME:
-        response.results.sort((a, b) {
+      case FileListSort.name:
+        results.sort((a, b) {
           return b.name.compareTo(a.name);
         });
         break;
-      case FileListSort.TYPE:
-        response.results.sort((a, b) {
+      case FileListSort.type:
+        results.sort((a, b) {
           return b.type.compareTo(a.type);
         });
         break;
-      case FileListSort.SIZE:
-        response.results.sort((a, b) {
+      case FileListSort.size:
+        results.sort((a, b) {
           return b.size.compareTo(a.size);
         });
         break;
-      case FileListSort.TIME:
-        response.results.sort((a, b) {
+      case FileListSort.time:
+        results.sort((a, b) {
           return b.updatedAt.seconds.compareTo(a.updatedAt.seconds);
         });
         break;
@@ -42,9 +51,23 @@ class FileNotifier extends FamilyAsyncNotifier<List<File>, String> {
     final sortReversed =
         ref.watch(fileSettingProvider.select((state) => state.sortReversed));
     if (sortReversed) {
-      return response.results.reversed.toList();
+      return results.reversed.toList();
     }
-    return response.results;
+    return results;
+  }
+
+  @override
+  FutureOr<List<File>> fetch(int page) async {
+    final size = ref.read(fileSettingProvider.select((state) {
+      return state.paginationSize;
+    }));
+    if (size == 0) {
+      return <File>[];
+    }
+    final results = await _service.list(
+      filter: {"path": arg, "page": "$page", "page_size": "$size"},
+    );
+    return results;
   }
 }
 

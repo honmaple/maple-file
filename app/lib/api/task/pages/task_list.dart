@@ -184,16 +184,19 @@ class _TaskListState extends ConsumerState<TaskList>
           ),
           if (isFinished(item))
             ListDialogItem(
+              icon: Icons.refresh,
               label: "重试任务",
               value: "retry",
             ),
           if (isRunning(item))
             ListDialogItem(
+              icon: Icons.cancel,
               label: "取消任务",
               value: "cancel",
             ),
           if (isFinished(item))
             ListDialogItem(
+              icon: Icons.delete,
               label: "删除任务",
               value: "remove",
             ),

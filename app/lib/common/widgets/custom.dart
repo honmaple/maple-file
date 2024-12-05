@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:easy_refresh/easy_paging.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:grpc/grpc.dart';
+
+import 'package:maple_file/app/i18n.dart';
 
 import 'dialog.dart';
 
@@ -85,16 +89,16 @@ class CustomSliverAsyncValue<T> extends StatelessWidget {
 }
 
 class CustomRefresh extends StatelessWidget {
-  final FutureOr Function()? onRefresh;
   final FutureOr Function()? onLoad;
+  final FutureOr Function()? onRefresh;
   final ERChildBuilder? childBuilder;
   final EasyRefreshController? controller;
 
   const CustomRefresh({
     super.key,
     this.controller,
-    this.onRefresh,
     this.onLoad,
+    this.onRefresh,
     required this.childBuilder,
   });
 
@@ -107,72 +111,89 @@ class CustomRefresh extends StatelessWidget {
       //    position: IndicatorPosition.locator,
       //    safeArea: false,
       //  ),
-      header: const ClassicHeader(
-        // clamping: _headerProperties.clamping,
-        // backgroundColor: _headerProperties.background
-        //     ? Theme.of(context).colorScheme.surfaceContainerHighest
-        //     : null,
-        // mainAxisAlignment: _headerProperties.alignment,
-        // showMessage: _headerProperties.message,
-        // showText: _headerProperties.text,
-        // infiniteOffset: _headerProperties.infinite ? 70 : null,
-        // triggerWhenReach: _headerProperties.immediately,
-        dragText: '下拉刷新',
-        armedText: '刷新中...',
-        readyText: '刷新中...',
-        processingText: '刷新中...',
-        processedText: '刷新成功',
-        noMoreText: 'No more',
-        failedText: 'Failed',
-        messageText: 'Last updated at %T',
+      header: ClassicHeader(
+        dragText: '下拉刷新'.tr(context),
+        armedText: '刷新中...'.tr(context),
+        readyText: '刷新中...'.tr(context),
+        processingText: '刷新中...'.tr(context),
+        processedText: '刷新成功'.tr(context),
+        failedText: '刷新失败'.tr(context),
+        noMoreText: '没有更多'.tr(context),
+        messageText: '最后更新于 %T'.tr(context),
       ),
-      // footer: ClassicFooter(
-      //   dragText: '上滑加载',
-      //   armedText: '加载中...',
-      //   readyText: '加载中...',
-      //   processingText: '加载中...',
-      //   processedText: '加载成功',
-      //   noMoreText: 'No more',
-      //   failedText: 'Failed',
-      //   messageText: 'Last updated at %T',
-      //   showText: false,
-      //   showMessage: false,
+      footer: ClassicFooter(
+        // clamping: true,
+        // triggerWhenReach: true,
+        // infiniteOffset: null,
+        dragText: '上拉加载'.tr(context),
+        armedText: '加载中...'.tr(context),
+        readyText: '加载中...'.tr(context),
+        processingText: '加载中...'.tr(context),
+        processedText: '加载成功'.tr(context),
+        failedText: '加载失败'.tr(context),
+        noMoreText: '没有更多'.tr(context),
+        messageText: '最后更新于 %T'.tr(context),
+        position: IndicatorPosition.locator,
+      ),
+      // footer: TaurusFooter(
+      //   skyColor: Theme.of(context).primaryColor,
+      //   position: IndicatorPosition.locator,
+      //   // safeArea: false,
       // ),
-      footer: TaurusFooter(
-        skyColor: Theme.of(context).primaryColor,
-        // position: IndicatorPosition.locator,
-        // safeArea: false,
-      ),
       // header: MaterialHeader(
       //   triggerOffset: 60,
       //   //  backgroundColor: Theme.of(context).primaryColor,
       //   //  backgroundColor: Colors.white,
       // ),
-      // footer: BezierFooter(
-      //   triggerOffset: 60,
-      //   //  backgroundColor: Theme.of(context).primaryColor,
-      // ),
       onLoad: onLoad,
       onRefresh: onRefresh,
-
       childBuilder: childBuilder,
-
       // refreshOnStart: true,
-      refreshOnStartHeader: BuilderHeader(
-        triggerOffset: 60,
-        clamping: true,
-        position: IndicatorPosition.above,
-        processedDuration: Duration.zero,
-        builder: (ctx, state) {
-          if (state.mode == IndicatorMode.inactive ||
-              state.mode == IndicatorMode.done) {
-            return const SizedBox();
-          }
-          return Center(
-            child: SpinKitFadingCube(),
-          );
-        },
-      ),
+      // refreshOnStartHeader: BuilderHeader(
+      //   triggerOffset: 60,
+      //   clamping: true,
+      //   position: IndicatorPosition.above,
+      //   processedDuration: Duration.zero,
+      //   builder: (ctx, state) {
+      //     if (state.mode == IndicatorMode.inactive ||
+      //         state.mode == IndicatorMode.done) {
+      //       return const SizedBox();
+      //     }
+      //     return Center(
+      //       child: SpinKitFadingCube(),
+      //     );
+      //   },
+      // ),
+    );
+  }
+}
+
+class CustomPaging extends StatelessWidget {
+  final List<Widget> slivers;
+  final FutureOr Function()? onLoad;
+  final FutureOr Function()? onRefresh;
+
+  const CustomPaging({
+    super.key,
+    required this.slivers,
+    this.onLoad,
+    this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomRefresh(
+      onLoad: onLoad,
+      onRefresh: onRefresh,
+      childBuilder: (context, physics) {
+        return CustomScrollView(
+          physics: physics,
+          slivers: [
+            ...slivers,
+            const FooterLocator.sliver(),
+          ],
+        );
+      },
     );
   }
 }
@@ -367,6 +388,93 @@ class _CustomListTileState extends State<CustomListTile> {
       label,
       controller: _textController,
       obscureText: widget.obscureText,
+    );
+  }
+}
+
+enum CustomFormFieldType {
+  string,
+  number,
+  password,
+  directory,
+}
+
+class CustomFormField extends StatelessWidget {
+  const CustomFormField({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.value,
+    this.type = CustomFormFieldType.string,
+    this.subtitle,
+    this.isRequired = false,
+  });
+
+  final bool isRequired;
+  final String label;
+  final String? value;
+  final Widget? subtitle;
+  final CustomFormFieldType type;
+  final Function(String) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(label),
+      subtitle: subtitle,
+      trailing: _emptyText(context, value),
+      onTap: () async {
+        String? result;
+        switch (type) {
+          case CustomFormFieldType.string:
+            result = await showEditingDialog(
+              context,
+              label,
+              value: value ?? "",
+            );
+            break;
+          case CustomFormFieldType.number:
+            result = await showNumberEditingDialog(
+              context,
+              label,
+              value: value ?? "",
+            );
+            break;
+          case CustomFormFieldType.password:
+            result = await showPasswordEditingDialog(
+              context,
+              label,
+              value: value ?? "",
+            );
+            break;
+          case CustomFormFieldType.directory:
+            result = await FilePicker.platform.getDirectoryPath();
+            break;
+        }
+        if (result != null) {
+          onTap(result);
+        }
+      },
+    );
+  }
+
+  Widget _emptyText(
+    BuildContext context,
+    String? value,
+  ) {
+    bool isEmpty = value == null || value == "";
+    if (type == CustomFormFieldType.password) {
+      if (isEmpty) {
+        return Text("未设置".tr(context));
+      }
+      return const Icon(Icons.more_horiz);
+    }
+    return Wrap(
+      children: [
+        Text(isEmpty ? "未设置".tr(context) : value),
+        if (isRequired && isEmpty)
+          const Text(' *', style: TextStyle(color: Colors.red)),
+      ],
     );
   }
 }

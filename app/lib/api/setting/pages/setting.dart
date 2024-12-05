@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/responsive.dart';
 
 class Setting extends StatelessWidget {
   const Setting({super.key, this.navigatorKey});
@@ -20,7 +19,6 @@ class Setting extends StatelessWidget {
       appBar: AppBar(
         title: Text("设置".tr(context)),
         centerTitle: true,
-        automaticallyImplyLeading: Breakpoint.isMobile(context),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),

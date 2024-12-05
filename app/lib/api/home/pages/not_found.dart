@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:maple_file/app/i18n.dart';
+
 class NotFound extends StatelessWidget {
   const NotFound({super.key});
 
@@ -7,10 +9,10 @@ class NotFound extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("404", style: TextStyle(fontSize: 16)),
+        title: const Text("404", style: TextStyle(fontSize: 16)),
       ),
       body: Center(
-        child: Text("未找到页面"),
+        child: Text("未找到页面".tr(context)),
       ),
     );
   }

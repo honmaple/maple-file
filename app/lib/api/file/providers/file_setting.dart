@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/api/setting/providers/setting.dart';
 import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
@@ -8,38 +9,54 @@ part 'file_setting.g.dart';
 part 'file_setting.freezed.dart';
 
 enum FileListView {
-  LIST,
-  GRID,
+  list,
+  grid,
+}
+
+extension FileListViewExtension on FileListView {
+  String label(BuildContext context) {
+    Map<FileListView, String> labels = {
+      FileListView.list: "列表模式".tr(context),
+      FileListView.grid: "宫格模式".tr(context),
+    };
+    return labels[this] ?? "未知".tr(context);
+  }
 }
 
 enum FileListSort {
-  NAME,
-  TYPE,
-  SIZE,
-  TIME,
+  name,
+  type,
+  size,
+  time,
+}
+
+extension FileListSortExtension on FileListSort {
+  String label(BuildContext context) {
+    Map<FileListSort, String> labels = {
+      FileListSort.name: "名称".tr(context),
+      FileListSort.type: "类型".tr(context),
+      FileListSort.size: "大小".tr(context),
+      FileListSort.time: "修改时间".tr(context),
+    };
+
+    return labels[this] ?? "未知".tr(context);
+  }
 }
 
 enum FileListIcon {
-  RECTANGLE,
-  CIRCLE,
+  rectangle,
+  circle,
 }
 
-Map<FileListView, String> fileListViewLabel = {
-  FileListView.LIST: "列表模式",
-  FileListView.GRID: "宫格模式",
-};
-
-Map<FileListSort, String> fileListSortLabel = {
-  FileListSort.NAME: "名称",
-  FileListSort.TYPE: "类型",
-  FileListSort.SIZE: "大小",
-  FileListSort.TIME: "修改时间",
-};
-
-Map<FileListIcon, String> fileListIconLabel = {
-  FileListIcon.RECTANGLE: "默认",
-  FileListIcon.CIRCLE: "圆形",
-};
+extension FileListIconExtension on FileListIcon {
+  String label(BuildContext context) {
+    Map<FileListIcon, String> labels = {
+      FileListIcon.rectangle: "默认".tr(context),
+      FileListIcon.circle: "圆形".tr(context),
+    };
+    return labels[this] ?? "未知".tr(context);
+  }
+}
 
 @freezed
 class FileSetting with _$FileSetting {
@@ -47,9 +64,9 @@ class FileSetting with _$FileSetting {
 
   const factory FileSetting({
     @Default(false) @JsonKey(name: 'sortReversed') bool sortReversed,
-    @Default(FileListSort.NAME) @JsonKey(name: 'sort') FileListSort sort,
-    @Default(FileListView.LIST) @JsonKey(name: 'view') FileListView view,
-    @Default(FileListIcon.RECTANGLE) @JsonKey(name: 'icon') FileListIcon icon,
+    @Default(FileListSort.name) @JsonKey(name: 'sort') FileListSort sort,
+    @Default(FileListView.list) @JsonKey(name: 'view') FileListView view,
+    @Default(FileListIcon.rectangle) @JsonKey(name: 'icon') FileListIcon icon,
     @JsonKey(name: 'iconColor') String? iconColor,
     @Default("") @JsonKey(name: 'upload.format') String uploadFormat,
     @Default(false) @JsonKey(name: 'upload.rename') bool uploadRename,
@@ -59,6 +76,7 @@ class FileSetting with _$FileSetting {
     @JsonKey(name: 'download.path') String? downloadPath,
     @Default(10) @JsonKey(name: 'download.queue_size') int downloadQueueSize,
     @Default([".*"]) @JsonKey(name: 'hide_files') List<String> hideFiles,
+    @Default(0) @JsonKey(name: 'pagination.size') int paginationSize,
   }) = _FileSetting;
 
   factory FileSetting.fromJson(Map<String, Object?> json) =>

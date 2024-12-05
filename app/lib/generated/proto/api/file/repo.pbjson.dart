@@ -55,15 +55,26 @@ final $typed_data.Uint8List repoDescriptor = $convert.base64Decode(
 const ListReposRequest$json = {
   '1': 'ListReposRequest',
   '2': [
-    {'1': 'page_num', '3': 1, '4': 1, '5': 5, '10': 'pageNum'},
-    {'1': 'page_token', '3': 2, '4': 1, '5': 9, '10': 'pageToken'},
+    {'1': 'filter', '3': 1, '4': 3, '5': 11, '6': '.api.file.ListReposRequest.FilterEntry', '10': 'filter'},
   ],
+  '3': [ListReposRequest_FilterEntry$json],
+};
+
+@$core.Deprecated('Use listReposRequestDescriptor instead')
+const ListReposRequest_FilterEntry$json = {
+  '1': 'FilterEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
 };
 
 /// Descriptor for `ListReposRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listReposRequestDescriptor = $convert.base64Decode(
-    'ChBMaXN0UmVwb3NSZXF1ZXN0EhkKCHBhZ2VfbnVtGAEgASgFUgdwYWdlTnVtEh0KCnBhZ2VfdG'
-    '9rZW4YAiABKAlSCXBhZ2VUb2tlbg==');
+    'ChBMaXN0UmVwb3NSZXF1ZXN0Ej4KBmZpbHRlchgBIAMoCzImLmFwaS5maWxlLkxpc3RSZXBvc1'
+    'JlcXVlc3QuRmlsdGVyRW50cnlSBmZpbHRlcho5CgtGaWx0ZXJFbnRyeRIQCgNrZXkYASABKAlS'
+    'A2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
 
 @$core.Deprecated('Use listReposResponseDescriptor instead')
 const ListReposResponse$json = {

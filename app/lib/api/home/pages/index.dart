@@ -16,9 +16,9 @@ class Index extends ConsumerStatefulWidget {
 class _IndexState extends ConsumerState<Index> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgets = <Widget>[
-    FileList(),
-    Setting(),
+  final List<Widget> _widgets = <Widget>[
+    const FileList(),
+    const Setting(),
   ];
 
   @override
@@ -27,9 +27,7 @@ class _IndexState extends ConsumerState<Index> {
       fileSelectionProvider.select((state) => state.enabled),
     );
     return Scaffold(
-      body: Center(
-        child: _widgets.elementAt(_selectedIndex),
-      ),
+      body: _widgets.elementAt(_selectedIndex),
       bottomNavigationBar: !fileSelection
           ? BottomNavigationBar(
               items: <BottomNavigationBarItem>[
@@ -91,7 +89,7 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(height: 30),
+                const SizedBox(height: 32),
                 Expanded(
                   child: NavigationRail(
                     // minExtendedWidth: 200,
@@ -100,18 +98,18 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                     selectedIndex: _selectedIndex,
                     // groupAlignment: groupAlignment,
                     onDestinationSelected: _onDestinationSelected,
-                    destinations: const <NavigationRailDestination>[
+                    destinations: <NavigationRailDestination>[
                       NavigationRailDestination(
-                        icon: Icon(Icons.school),
-                        label: Text('文件'),
+                        icon: const Icon(Icons.school),
+                        label: Text('文件'.tr(context)),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.settings),
-                        label: Text('设置'),
+                        icon: const Icon(Icons.swap_vert_circle),
+                        label: Text('任务'.tr(context)),
                       ),
                       NavigationRailDestination(
-                        icon: Icon(Icons.info),
-                        label: Text('关于'),
+                        icon: const Icon(Icons.settings),
+                        label: Text('设置'.tr(context)),
                       ),
                     ],
                   ),
@@ -126,14 +124,12 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
             ),
             VerticalDivider(thickness: 1, width: 1, color: Colors.grey[300]),
             Expanded(
-              child: Center(
-                child: widget.child ??
-                    Navigator(
-                      key: _navigatorKey,
-                      initialRoute: widget.initialRoute,
-                      onGenerateRoute: widget.onGenerateRoute,
-                    ),
-              ),
+              child: widget.child ??
+                  Navigator(
+                    key: _navigatorKey,
+                    initialRoute: widget.initialRoute,
+                    onGenerateRoute: widget.onGenerateRoute,
+                  ),
             ),
           ],
         ),
@@ -143,17 +139,8 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
 
   _onDestinationSelected(int index) {
     if (index != _selectedIndex) {
-      switch (index) {
-        case 0:
-          _navigatorKey.currentState?.pushNamed('/file/list');
-          break;
-        case 1:
-          _navigatorKey.currentState?.pushNamed('/setting');
-          break;
-        case 2:
-          _navigatorKey.currentState?.pushNamed('/about');
-          break;
-      }
+      final routes = ["/file/list", "/task/list", "/setting"];
+      _navigatorKey.currentState?.pushNamed(routes[index]);
       setState(() {
         _selectedIndex = index;
       });

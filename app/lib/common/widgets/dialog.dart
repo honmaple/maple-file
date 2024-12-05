@@ -262,7 +262,8 @@ Future<T?> showListDialog2<T>(
   }
   return showDialog<T>(
     context: context,
-    builder: (context) {
+    useRootNavigator: false,
+    builder: (BuildContext context) {
       return AlertDialog(
         clipBehavior: Clip.hardEdge,
         shape: const RoundedRectangleBorder(
@@ -283,6 +284,7 @@ Future<bool?> showAlertDialog<T>(BuildContext context,
     {Widget? title, Widget? content}) {
   return showDialog<bool>(
     context: context,
+    useRootNavigator: false,
     builder: (BuildContext context) {
       return AlertDialog(
         shape: const RoundedRectangleBorder(

@@ -378,19 +378,11 @@ class FileResponse extends $pb.GeneratedMessage {
 
 class ListFilesRequest extends $pb.GeneratedMessage {
   factory ListFilesRequest({
-    $core.int? pageNum,
-    $core.String? pageToken,
-    $core.String? path,
+    $core.Map<$core.String, $core.String>? filter,
   }) {
     final $result = create();
-    if (pageNum != null) {
-      $result.pageNum = pageNum;
-    }
-    if (pageToken != null) {
-      $result.pageToken = pageToken;
-    }
-    if (path != null) {
-      $result.path = path;
+    if (filter != null) {
+      $result.filter.addAll(filter);
     }
     return $result;
   }
@@ -399,9 +391,7 @@ class ListFilesRequest extends $pb.GeneratedMessage {
   factory ListFilesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListFilesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'pageNum', $pb.PbFieldType.O3)
-    ..aOS(2, _omitFieldNames ? '' : 'pageToken')
-    ..aOS(3, _omitFieldNames ? '' : 'path')
+    ..m<$core.String, $core.String>(1, _omitFieldNames ? '' : 'filter', entryClassName: 'ListFilesRequest.FilterEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('api.file'))
     ..hasRequiredFields = false
   ;
 
@@ -427,31 +417,7 @@ class ListFilesRequest extends $pb.GeneratedMessage {
   static ListFilesRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get pageNum => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set pageNum($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPageNum() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPageNum() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get pageToken => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set pageToken($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPageToken() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPageToken() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get path => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set path($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasPath() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPath() => clearField(3);
+  $core.Map<$core.String, $core.String> get filter => $_getMap(0);
 }
 
 class ListFilesResponse extends $pb.GeneratedMessage {

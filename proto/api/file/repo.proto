@@ -30,8 +30,7 @@ message Repo {
 }
 
 message ListReposRequest {
-	int32  page_num = 1;
-	string page_token = 2;
+	map<string, string> filter = 1;
 }
 
 message ListReposResponse {

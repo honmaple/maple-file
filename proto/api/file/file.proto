@@ -42,9 +42,7 @@ message FileResponse {
 }
 
 message ListFilesRequest {
-	int32  page_num = 1;
-	string page_token = 2;
-	string path = 3;
+	map<string, string> filter = 1;
 }
 
 message ListFilesResponse {

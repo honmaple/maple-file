@@ -181,7 +181,7 @@ class FilePopupAction extends ConsumerWidget {
               Navigator.of(context).pushNamed("/file/setting/repo");
             },
           ),
-          view == FileListView.LIST
+          view == FileListView.list
               ? PopupMenuItem(
                   child: ListTile(
                     dense: true,
@@ -190,7 +190,7 @@ class FilePopupAction extends ConsumerWidget {
                   ),
                   onTap: () {
                     ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(view: FileListView.GRID);
+                      return state.copyWith(view: FileListView.grid);
                     });
                   },
                 )
@@ -202,7 +202,7 @@ class FilePopupAction extends ConsumerWidget {
                   ),
                   onTap: () {
                     ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(view: FileListView.LIST);
+                      return state.copyWith(view: FileListView.list);
                     });
                   },
                 ),
@@ -237,7 +237,7 @@ class FileSortAction extends ConsumerWidget {
         children: [
           Icon(sortReversed ? Icons.north : Icons.south, size: 12),
           const SizedBox(width: 4),
-          Text(fileListSortLabel[sort] ?? sort.toString()),
+          Text(sort.label(context)),
         ],
       ),
       itemBuilder: (BuildContext bc) {
@@ -248,7 +248,7 @@ class FileSortAction extends ConsumerWidget {
               dense: true,
               contentPadding: EdgeInsets.zero,
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-              title: Text(fileListSortLabel[value] ?? value.toString()),
+              title: Text(value.label(context)),
               trailing: sort == value
                   ? Icon(sortReversed ? Icons.north : Icons.south, size: 16)
                   : null,

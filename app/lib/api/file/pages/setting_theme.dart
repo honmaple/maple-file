@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
 import '../providers/file_setting.dart';
@@ -34,8 +35,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(fileListViewLabel[setting.view] ??
-                            "默认".tr(context)),
+                        Text(setting.view.label(context)),
                         const Icon(Icons.chevron_right),
                       ],
                     ),
@@ -44,8 +44,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                         context,
                         items: FileListView.values.map((item) {
                           return ListDialogItem(
-                              label: fileListViewLabel[item] ?? "未知",
-                              value: item);
+                              label: item.label(context), value: item);
                         }).toList(),
                       );
                       if (result != null) {
@@ -60,7 +59,10 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text('按${fileListSortLabel[setting.sort] ?? "默认"}排序'),
+                        Text('按{sort}排序'.tr(
+                          context,
+                          args: {"sort": setting.sort.label(context)},
+                        )),
                         const Icon(Icons.chevron_right),
                       ],
                     ),
@@ -69,10 +71,12 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                         context,
                         items: FileListSort.values.map((item) {
                           return ListDialogItem(
-                            label: fileListSortLabel[item] ?? "未知",
+                            label: item.label(context),
                             value: item,
                             trailing: setting.sort == item
-                                ? Text(setting.sortReversed ? "倒序" : "正序")
+                                ? Text(setting.sortReversed
+                                    ? "倒序".tr(context)
+                                    : "正序".tr(context))
                                 : null,
                           );
                         }).toList(),
@@ -89,7 +93,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                     },
                   ),
                   ListTile(
-                    title: const Text('隐藏文件'),
+                    title: Text('隐藏文件'.tr(context)),
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
@@ -121,11 +125,11 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
               child: Column(
                 children: [
                   ListTile(
-                    title: const Text('图标'),
+                    title: Text('图标'.tr(context)),
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(fileListIconLabel[setting.icon] ?? "默认"),
+                        Text(setting.icon.label(context)),
                         const Icon(Icons.chevron_right),
                       ],
                     ),
@@ -134,8 +138,9 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                         context,
                         items: FileListIcon.values.map((item) {
                           return ListDialogItem(
-                              label: fileListIconLabel[item] ?? "未知",
-                              value: item);
+                            label: item.label(context),
+                            value: item,
+                          );
                         }).toList(),
                       );
                       if (result != null) {
@@ -190,7 +195,30 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                   ),
                 ],
               ),
-            )
+            ),
+            Card(
+              child: Column(
+                children: [
+                  ListTile(
+                    title: Text("分页设置".tr(context)),
+                    dense: true,
+                  ),
+                  CustomFormField(
+                    type: CustomFormFieldType.number,
+                    label: '分页大小'.tr(context),
+                    value: "${setting.paginationSize}",
+                    subtitle: Text("为0时表示不分页".tr(context)),
+                    onTap: (result) {
+                      ref.read(fileSettingProvider.notifier).update((state) {
+                        return state.copyWith(
+                          paginationSize: int.parse(result),
+                        );
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

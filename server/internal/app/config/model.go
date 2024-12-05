@@ -90,6 +90,6 @@ func NewDB(conf *Config) (*DB, error) {
 
 	schema.RegisterSerializer("protobuf_timestamp", serializer.ProtobufTimestamp{})
 
-	db = db.Debug()
+	// db = db.Debug()
 	return &DB{DB: db}, nil
 }

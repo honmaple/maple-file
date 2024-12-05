@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:maple_file/generated/proto/api/setting/setting.pb.dart';
 
 import 'service.dart';
 

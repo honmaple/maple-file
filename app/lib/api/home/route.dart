@@ -1,10 +1,10 @@
 import 'package:maple_file/app/router.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 
-import "pages/404.dart";
 import "pages/help.dart";
 import "pages/about.dart";
 import "pages/index.dart";
+import "pages/not_found.dart";
 
 Future<void> init(CustomRouter router) async {
   router.registerMany({

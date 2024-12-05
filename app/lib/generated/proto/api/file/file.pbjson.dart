@@ -75,16 +75,26 @@ final $typed_data.Uint8List fileResponseDescriptor = $convert.base64Decode(
 const ListFilesRequest$json = {
   '1': 'ListFilesRequest',
   '2': [
-    {'1': 'page_num', '3': 1, '4': 1, '5': 5, '10': 'pageNum'},
-    {'1': 'page_token', '3': 2, '4': 1, '5': 9, '10': 'pageToken'},
-    {'1': 'path', '3': 3, '4': 1, '5': 9, '10': 'path'},
+    {'1': 'filter', '3': 1, '4': 3, '5': 11, '6': '.api.file.ListFilesRequest.FilterEntry', '10': 'filter'},
   ],
+  '3': [ListFilesRequest_FilterEntry$json],
+};
+
+@$core.Deprecated('Use listFilesRequestDescriptor instead')
+const ListFilesRequest_FilterEntry$json = {
+  '1': 'FilterEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
 };
 
 /// Descriptor for `ListFilesRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listFilesRequestDescriptor = $convert.base64Decode(
-    'ChBMaXN0RmlsZXNSZXF1ZXN0EhkKCHBhZ2VfbnVtGAEgASgFUgdwYWdlTnVtEh0KCnBhZ2VfdG'
-    '9rZW4YAiABKAlSCXBhZ2VUb2tlbhISCgRwYXRoGAMgASgJUgRwYXRo');
+    'ChBMaXN0RmlsZXNSZXF1ZXN0Ej4KBmZpbHRlchgBIAMoCzImLmFwaS5maWxlLkxpc3RGaWxlc1'
+    'JlcXVlc3QuRmlsdGVyRW50cnlSBmZpbHRlcho5CgtGaWx0ZXJFbnRyeRIQCgNrZXkYASABKAlS'
+    'A2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
 
 @$core.Deprecated('Use listFilesResponseDescriptor instead')
 const ListFilesResponse$json = {

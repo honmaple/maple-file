@@ -102,20 +102,8 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       ],
                     ),
                     onTap: () async {
-                      final result = await showListDialog2(
-                        context,
-                        height: MediaQuery.of(context).size.height / 2,
-                        child: const FileSettingHideFiles(),
-                      );
-                      if (result != null) {
-                        // ref.read(fileSettingProvider.notifier).update((state) {
-                        //   if (result == setting.sort) {
-                        //     return state.copyWith(
-                        //         sortReversed: !state.sortReversed);
-                        //   }
-                        //   return state.copyWith(sort: result);
-                        // });
-                      }
+                      Navigator.of(context)
+                          .pushNamed("/file/setting/hidefiles");
                     },
                   ),
                 ],

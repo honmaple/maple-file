@@ -29,8 +29,9 @@ func (opt *Option) NewFS() (driver.FS, error) {
 
 type S3 struct {
 	driver.Base
-	opt    *Option
-	client *s3.S3
+	opt     *Option
+	client  *s3.S3
+	session *session.Session
 }
 
 var _ driver.FS = (*S3)(nil)
@@ -77,7 +78,6 @@ func (d *S3) List(ctx context.Context, path string) ([]driver.File, error) {
 	input := &s3.ListObjectsInput{
 		Bucket:    aws.String(d.opt.Bucket),
 		Prefix:    aws.String(path),
-		MaxKeys:   aws.Int64(1000),
 		Delimiter: aws.String("/"),
 	}
 
@@ -163,7 +163,7 @@ func (d *S3) Open(path string) (driver.FileReader, error) {
 func (d *S3) Create(path string) (driver.FileWriter, error) {
 	r, w := io.Pipe()
 	go func() {
-		uploader := s3manager.NewUploader(nil)
+		uploader := s3manager.NewUploader(d.session)
 
 		_, err := uploader.Upload(&s3manager.UploadInput{
 			Bucket: aws.String(d.opt.Bucket),
@@ -176,19 +176,14 @@ func (d *S3) Create(path string) (driver.FileWriter, error) {
 }
 
 func (d *S3) Get(path string) (driver.File, error) {
-	input := &s3.GetObjectInput{
+	object, err := d.client.HeadObject(&s3.HeadObjectInput{
 		Bucket: aws.String(d.opt.Bucket),
 		Key:    aws.String(path),
-	}
-	object, err := d.client.GetObject(input)
+	})
 	if err != nil {
 		return nil, err
 	}
-	info := &fileinfo1{
-		name: "",
-		size: *object.ContentLength,
-	}
-	return driver.NewFile(path, info), nil
+	return driver.NewFile(path, &headinfo{info: object}), nil
 }
 
 func (d *S3) Close() error {
@@ -200,16 +195,19 @@ func New(opt *Option) (driver.FS, error) {
 		return nil, driver.ErrOption
 	}
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(opt.Region),
-		Credentials: credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, ""),
+		Region:           aws.String(opt.Region),
+		Endpoint:         aws.String(opt.Endpoint),
+		Credentials:      credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, ""),
+		S3ForcePathStyle: aws.Bool(true),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	d := &S3{
-		opt:    opt,
-		client: s3.New(sess),
+		opt:     opt,
+		client:  s3.New(sess),
+		session: sess,
 	}
 	if opt.RootPath != "" {
 		return driver.PrefixFS(d, opt.RootPath), nil

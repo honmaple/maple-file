@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/api/ping": {
+    "/api/info": {
       "get": {
-        "operationId": "SystemService_Ping",
+        "operationId": "SystemService_Info",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/settingPingResponse"
+              "$ref": "#/definitions/settingInfoResponse"
             }
           },
           "default": {
@@ -152,6 +152,26 @@
     }
   },
   "definitions": {
+    "apisettingInfo": {
+      "type": "object",
+      "properties": {
+        "os": {
+          "type": "string"
+        },
+        "arch": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -188,6 +208,14 @@
         }
       }
     },
+    "settingInfoResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/apisettingInfo"
+        }
+      }
+    },
     "settingListSettingsResponse": {
       "type": "object",
       "properties": {
@@ -197,14 +225,6 @@
             "type": "object",
             "$ref": "#/definitions/settingSetting"
           }
-        }
-      }
-    },
-    "settingPingResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
         }
       }
     },

@@ -6,21 +6,16 @@ import (
 	"time"
 )
 
-type fileinfo1 struct {
-	size    int64
-	name    string
-	path    string
-	mode    fs.FileMode
-	modTime time.Time
-	isDir   bool
+type headinfo struct {
+	info *s3.HeadObjectOutput
 }
 
-func (d *fileinfo1) Name() string       { return d.name }
-func (d *fileinfo1) Size() int64        { return d.size }
-func (d *fileinfo1) Mode() fs.FileMode  { return d.mode }
-func (d *fileinfo1) ModTime() time.Time { return d.modTime }
-func (d *fileinfo1) IsDir() bool        { return d.isDir }
-func (d *fileinfo1) Sys() any           { return nil }
+func (d *headinfo) Name() string       { return *d.info.SSEKMSKeyId }
+func (d *headinfo) Size() int64        { return *d.info.ContentLength }
+func (d *headinfo) Mode() fs.FileMode  { return 0 }
+func (d *headinfo) ModTime() time.Time { return *d.info.LastModified }
+func (d *headinfo) IsDir() bool        { return false }
+func (d *headinfo) Sys() any           { return nil }
 
 type fileinfo struct {
 	info *s3.Object

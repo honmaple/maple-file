@@ -19,6 +19,11 @@ import (
 	"github.com/honmaple/maple-file/server/pkg/runner"
 )
 
+var (
+	VERSION     = "dev"
+	DESCRIPTION = "Upload or download file, manage cloud file"
+)
+
 type App struct {
 	ctx    context.Context
 	cancel context.CancelFunc

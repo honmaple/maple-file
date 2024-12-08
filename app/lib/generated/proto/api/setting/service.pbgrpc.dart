@@ -15,17 +15,17 @@ import 'dart:core' as $core;
 import 'package:grpc/service_api.dart' as $grpc;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'ping.pb.dart' as $0;
+import 'info.pb.dart' as $0;
 import 'setting.pb.dart' as $1;
 
 export 'service.pb.dart';
 
 @$pb.GrpcServiceName('api.setting.SystemService')
 class SystemServiceClient extends $grpc.Client {
-  static final _$ping = $grpc.ClientMethod<$0.PingRequest, $0.PingResponse>(
-      '/api.setting.SystemService/Ping',
-      ($0.PingRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.PingResponse.fromBuffer(value));
+  static final _$info = $grpc.ClientMethod<$0.InfoRequest, $0.InfoResponse>(
+      '/api.setting.SystemService/Info',
+      ($0.InfoRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.InfoResponse.fromBuffer(value));
   static final _$listSettings = $grpc.ClientMethod<$1.ListSettingsRequest, $1.ListSettingsResponse>(
       '/api.setting.SystemService/ListSettings',
       ($1.ListSettingsRequest value) => value.writeToBuffer(),
@@ -49,8 +49,8 @@ class SystemServiceClient extends $grpc.Client {
       : super(channel, options: options,
         interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.PingResponse> ping($0.PingRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$ping, request, options: options);
+  $grpc.ResponseFuture<$0.InfoResponse> info($0.InfoRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$info, request, options: options);
   }
 
   $grpc.ResponseFuture<$1.ListSettingsResponse> listSettings($1.ListSettingsRequest request, {$grpc.CallOptions? options}) {
@@ -75,13 +75,13 @@ abstract class SystemServiceBase extends $grpc.Service {
   $core.String get $name => 'api.setting.SystemService';
 
   SystemServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.PingRequest, $0.PingResponse>(
-        'Ping',
-        ping_Pre,
+    $addMethod($grpc.ServiceMethod<$0.InfoRequest, $0.InfoResponse>(
+        'Info',
+        info_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.PingRequest.fromBuffer(value),
-        ($0.PingResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $0.InfoRequest.fromBuffer(value),
+        ($0.InfoResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$1.ListSettingsRequest, $1.ListSettingsResponse>(
         'ListSettings',
         listSettings_Pre,
@@ -112,8 +112,8 @@ abstract class SystemServiceBase extends $grpc.Service {
         ($1.GetSettingResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.PingResponse> ping_Pre($grpc.ServiceCall call, $async.Future<$0.PingRequest> request) async {
-    return ping(call, await request);
+  $async.Future<$0.InfoResponse> info_Pre($grpc.ServiceCall call, $async.Future<$0.InfoRequest> request) async {
+    return info(call, await request);
   }
 
   $async.Future<$1.ListSettingsResponse> listSettings_Pre($grpc.ServiceCall call, $async.Future<$1.ListSettingsRequest> request) async {
@@ -132,7 +132,7 @@ abstract class SystemServiceBase extends $grpc.Service {
     return getSetting(call, await request);
   }
 
-  $async.Future<$0.PingResponse> ping($grpc.ServiceCall call, $0.PingRequest request);
+  $async.Future<$0.InfoResponse> info($grpc.ServiceCall call, $0.InfoRequest request);
   $async.Future<$1.ListSettingsResponse> listSettings($grpc.ServiceCall call, $1.ListSettingsRequest request);
   $async.Future<$1.ResetSettingResponse> resetSetting($grpc.ServiceCall call, $1.ResetSettingRequest request);
   $async.Future<$1.UpdateSettingResponse> updateSetting($grpc.ServiceCall call, $1.UpdateSettingRequest request);

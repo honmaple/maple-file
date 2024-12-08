@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:maple_file/app/grpc.dart';
+import 'package:maple_file/generated/proto/api/setting/info.pb.dart';
 import 'package:maple_file/generated/proto/api/setting/setting.pb.dart';
 import 'package:maple_file/generated/proto/api/setting/service.pbgrpc.dart';
 
@@ -22,18 +23,28 @@ class SystemService {
     return _client;
   }
 
-  Future<String> getSetting(String key) async {
-    GetSettingRequest request = GetSettingRequest(key: key);
-    GetSettingResponse response = await _client.getSetting(request);
-    return response.result.value;
+  Future<Info> info() async {
+    InfoRequest request = InfoRequest();
+    InfoResponse response = await _client.info(request);
+    return response.result;
   }
 
-  Future<void> updateSetting(String key, Object? value) async {
-    UpdateSettingRequest request = UpdateSettingRequest(
-      key: key,
-      value: jsonEncode(value),
-    );
-    UpdateSettingResponse response = await _client.updateSetting(request);
-    return;
+  Future<String> getSetting(String key) async {
+    final result = await doFuture(() async {
+      GetSettingRequest request = GetSettingRequest(key: key);
+      GetSettingResponse response = await _client.getSetting(request);
+      return response.result.value;
+    });
+    return result ?? "";
+  }
+
+  Future<void> updateSetting(String key, Object? value) {
+    return doFuture(() async {
+      UpdateSettingRequest request = UpdateSettingRequest(
+        key: key,
+        value: jsonEncode(value),
+      );
+      await _client.updateSetting(request);
+    });
   }
 }

@@ -1,0 +1,231 @@
+name: release
+
+on:
+  release:
+    types: [published]
+    paths:
+      - "app/**"
+      - "proto/**"
+      - "server/**"
+      - ".github/workflows/*.yml"
+
+env:
+  GO_VERSION: "1.23"
+  NODE_VERSION: "20"
+  FLUTTER_VERSION: "3.24.5"
+
+jobs:
+  get-version:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from pubspec.yaml
+        id: get_version
+        run: |
+          VERSION=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' app/pubspec.yaml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  build-macos-arm64-lib:
+    needs:
+      - get-version
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build dylib
+        env:
+          VERSION: ${{ needs.get-version.outputs.version }}
+        run: |
+          cd server
+          go build -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=$env:VERSION" -buildmode=c-shared -o libserver.dylib github.com/honmaple/maple-file/server/cmd/desktop
+
+      - name: Upload dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64-lib
+          path: server/libserver.dylib
+
+  build-macos:
+    needs:
+      - get-version
+      - build-macos-arm64-lib
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Setup NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install appdmg
+        run: |
+          python3 -m pip install setuptools --break-system-packages
+          npm install -g appdmg
+
+      - name: Download arm64 dylib
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-arm64-lib
+          path: server/arm64
+
+      - name: Build amd64 dylib
+        env:
+          VERSION: ${{ needs.get-version.outputs.version }}
+        run: |
+          cd server
+
+          go build -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=$env:VERSION" -buildmode=c-shared -o libserver.dylib github.com/honmaple/maple-file/server/cmd/desktop
+
+      - name: Create dylib
+        run: |
+          mkdir -p app/macos/Frameworks
+          cp server/libserver.dylib $PROJECT_DIR/app/macos/Frameworks/amd64-lib
+          cp server/arm64/libserver.dylib $PROJECT_DIR/app/macos/Frameworks/arm64-lib
+
+          cd app/macos/Frameworks
+          lipo -create -output libserver.dylib amd64-lib arm64-lib
+
+      - name: Build dmg
+        env:
+          VERSION: ${{ needs.get-version.outputs.version }}
+        run: |
+          cd app
+          flutter pub get
+          dart run build_runner build
+          flutter build macos
+
+          cd $PROJECT_DIR/app/build/macos/Build/Products/Release
+          cat>appdmg.json<<EOF
+          {
+          "title": "maple_file",
+          "icon": "maple_file.app/Contents/Resources/AppIcon.icns",
+          "contents": [
+          { "x": 448, "y": 344, "type": "link", "path": "/Applications" },
+          { "x": 192, "y": 344, "type": "file", "path": "maple_file.app" }
+          ]
+          }
+          EOF
+
+          mkdir dist
+          appdmg appdmg.json dist/maple-file-$VERSION-macos.dmg
+
+      - name: Upload dmg file
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-result
+          path: app/build/macos/Build/Products/Release/dist/*.dmg
+
+  build-android:
+    needs:
+      - get-version
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build Go aar
+        env:
+          VERSION: ${{ needs.get-version.outputs.version }}
+        run: |
+          mkdir app/android/app/libs
+
+          cd server
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go get golang.org/x/mobile/bind
+          gomobile init
+          gomobile bind -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=$env:VERSION" -o ../app/android/app/libs/server.aar -target=android -androidapi 21 -javapkg="com.honmaple.maple_file" github.com/honmaple/maple-file/server/cmd/mobile
+
+      - name: Build APK
+        env:
+          VERSION: ${{ needs.get-version.outputs.version }}
+        run: |
+          cd app
+          flutter pub get
+          dart run build_runner build
+          flutter build apk --no-tree-shake-icons --split-per-abi
+
+          cd build/app/outputs/flutter-apk
+          mv app-x86_64-release.apk maple-file-$VERSION-android-x86_64.apk
+          mv app-arm64-v8a-release.apk maple-file-$VERSION-android-arm64-v8a.apk
+          mv app-armeabi-v7a-release.apk maple-file-$VERSION-android-armeabi-v7a.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-result
+          path: |
+            app/build/app/outputs/flutter-apk/maple-file-*.apk
+
+  release:
+    needs:
+      - build-macos
+      - build_android
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download dmg file
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-result
+          path: macos-result
+
+      - name: Download apk file
+        uses: actions/download-artifact@v4
+        with:
+          name: android-result
+          path: android-result
+
+      - name: Release version
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release'
+        with:
+          files: |
+            macos-result/*.dmg
+            android-result/*.apk
+          token: ${{ secrets.GITHUB_TOKEN }}

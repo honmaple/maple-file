@@ -73,6 +73,9 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 		if err != nil {
 			return err
 		}
+		if info.IsDir() {
+			return errors.New("can't preview dir")
+		}
 
 		file, err := srv.fs.Open(req.GetPath())
 		if err != nil {

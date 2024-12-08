@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SystemServiceClient interface {
-	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
 	ListSettings(ctx context.Context, in *ListSettingsRequest, opts ...grpc.CallOption) (*ListSettingsResponse, error)
 	ResetSetting(ctx context.Context, in *ResetSettingRequest, opts ...grpc.CallOption) (*ResetSettingResponse, error)
 	UpdateSetting(ctx context.Context, in *UpdateSettingRequest, opts ...grpc.CallOption) (*UpdateSettingResponse, error)
@@ -37,9 +37,9 @@ func NewSystemServiceClient(cc grpc.ClientConnInterface) SystemServiceClient {
 	return &systemServiceClient{cc}
 }
 
-func (c *systemServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
-	out := new(PingResponse)
-	err := c.cc.Invoke(ctx, "/api.setting.SystemService/Ping", in, out, opts...)
+func (c *systemServiceClient) Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error) {
+	out := new(InfoResponse)
+	err := c.cc.Invoke(ctx, "/api.setting.SystemService/Info", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (c *systemServiceClient) GetSetting(ctx context.Context, in *GetSettingRequ
 // All implementations must embed UnimplementedSystemServiceServer
 // for forward compatibility
 type SystemServiceServer interface {
-	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	Info(context.Context, *InfoRequest) (*InfoResponse, error)
 	ListSettings(context.Context, *ListSettingsRequest) (*ListSettingsResponse, error)
 	ResetSetting(context.Context, *ResetSettingRequest) (*ResetSettingResponse, error)
 	UpdateSetting(context.Context, *UpdateSettingRequest) (*UpdateSettingResponse, error)
@@ -98,8 +98,8 @@ type SystemServiceServer interface {
 type UnimplementedSystemServiceServer struct {
 }
 
-func (UnimplementedSystemServiceServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+func (UnimplementedSystemServiceServer) Info(context.Context, *InfoRequest) (*InfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Info not implemented")
 }
 func (UnimplementedSystemServiceServer) ListSettings(context.Context, *ListSettingsRequest) (*ListSettingsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListSettings not implemented")
@@ -126,20 +126,20 @@ func RegisterSystemServiceServer(s grpc.ServiceRegistrar, srv SystemServiceServe
 	s.RegisterService(&SystemService_ServiceDesc, srv)
 }
 
-func _SystemService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PingRequest)
+func _SystemService_Info_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SystemServiceServer).Ping(ctx, in)
+		return srv.(SystemServiceServer).Info(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.setting.SystemService/Ping",
+		FullMethod: "/api.setting.SystemService/Info",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SystemServiceServer).Ping(ctx, req.(*PingRequest))
+		return srv.(SystemServiceServer).Info(ctx, req.(*InfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -224,8 +224,8 @@ var SystemService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SystemServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Ping",
-			Handler:    _SystemService_Ping_Handler,
+			MethodName: "Info",
+			Handler:    _SystemService_Info_Handler,
 		},
 		{
 			MethodName: "ListSettings",

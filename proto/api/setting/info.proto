@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package api.setting;
+
+option go_package = "api/setting";
+
+message Info {
+	string os = 1;
+	string arch = 2;
+	string runtime = 3;
+	string version = 4;
+	string description = 5;
+}
+
+message InfoRequest {}
+
+message InfoResponse {
+	Info result = 1;
+}

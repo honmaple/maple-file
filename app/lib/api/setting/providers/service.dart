@@ -30,12 +30,9 @@ class SystemService {
   }
 
   Future<String> getSetting(String key) async {
-    final result = await doFuture(() async {
-      GetSettingRequest request = GetSettingRequest(key: key);
-      GetSettingResponse response = await _client.getSetting(request);
-      return response.result.value;
-    });
-    return result ?? "";
+    GetSettingRequest request = GetSettingRequest(key: key);
+    GetSettingResponse response = await _client.getSetting(request);
+    return response.result.value;
   }
 
   Future<void> updateSetting(String key, Object? value) {

@@ -102,8 +102,8 @@ jobs:
       - name: Create dylib
         run: |
           mkdir -p app/macos/Frameworks
-          cp server/libserver.dylib $PROJECT_DIR/app/macos/Frameworks/amd64-lib
-          cp server/arm64/libserver.dylib $PROJECT_DIR/app/macos/Frameworks/arm64-lib
+          cp server/libserver.dylib app/macos/Frameworks/amd64-lib
+          cp server/arm64/libserver.dylib app/macos/Frameworks/arm64-lib
 
           cd app/macos/Frameworks
           lipo -create -output libserver.dylib amd64-lib arm64-lib
@@ -117,7 +117,7 @@ jobs:
           dart run build_runner build
           flutter build macos
 
-          cd $PROJECT_DIR/app/build/macos/Build/Products/Release
+          cd build/macos/Build/Products/Release
           cat>appdmg.json<<EOF
           {
           "title": "maple_file",
@@ -199,7 +199,7 @@ jobs:
   release:
     needs:
       - build-macos
-      - build_android
+      - build-android
     runs-on: ubuntu-22.04
 
     permissions:

@@ -120,7 +120,6 @@ class _FileViewState extends ConsumerState<FileView> {
       itemBuilder: (context, index) {
         final row = rows[index];
 
-        final size = (row.size / 1024 / 1024).toStringAsFixed(2);
         return GestureDetector(
           onTap: widget.onTap == null
               ? null
@@ -144,9 +143,9 @@ class _FileViewState extends ConsumerState<FileView> {
                 ),
                 if (Breakpoint.isDesktop(context) && row.type != "DIR")
                   Text(
-                      "文件大小: {size}MB".tr(
+                      "文件大小: {size}".tr(
                         context,
-                        args: {"size": size},
+                        args: {"size": Util.formatSize(row.size)},
                       ),
                       style: const TextStyle(fontSize: 12)),
               ],

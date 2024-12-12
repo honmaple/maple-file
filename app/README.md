@@ -19,3 +19,8 @@
   ```
   flutter build apk --no-tree-shake-icons --split-per-abi
   ```
+  
+- i18n
+  ```
+  dart run _script/extract_tr.dart 
+  ```

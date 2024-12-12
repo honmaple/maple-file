@@ -3,6 +3,7 @@ import 'package:path/path.dart' as filepath;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
@@ -80,7 +81,7 @@ class _FileSelectState extends ConsumerState<FileSelect> {
             onPressed: () async {
               final result = await showEditingDialog(
                 context,
-                "新建文件夹",
+                "新建文件夹".tr(context),
               );
               if (result != null) {
                 FileService().mkdir(widget.path, result).then((_) {

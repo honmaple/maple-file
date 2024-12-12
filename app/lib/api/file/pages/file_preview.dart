@@ -5,24 +5,26 @@ import 'package:path/path.dart' as filepath;
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
+import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
 import '../widgets/preview/text.dart';
 import '../widgets/preview/video.dart';
 import '../widgets/preview/image.dart';
 import '../widgets/preview/audio.dart';
+import '../widgets/file_action.dart';
+
+import '../providers/file.dart';
 
 class FilePreview extends ConsumerStatefulWidget {
-  final List<File> files;
-  final File? currentFile;
+  final File file;
 
-  const FilePreview({super.key, this.currentFile, required this.files});
+  const FilePreview({super.key, required this.file});
 
   factory FilePreview.fromRoute(ModalRoute? route) {
     final args = route?.settings.arguments as Map<String, dynamic>;
     return FilePreview(
-      files: args["files"] as List<File>,
-      currentFile: args["currentFile"],
+      file: args["file"],
     );
   }
 
@@ -31,24 +33,141 @@ class FilePreview extends ConsumerStatefulWidget {
 }
 
 class _FilePreviewState extends ConsumerState<FilePreview> {
-  late PageController _pageController;
-  late int currentIndex;
+  @override
+  Widget build(BuildContext context) {
+    if (PathUtil.isVideo(widget.file.name, type: widget.file.type)) {
+      return FileVideoPreview(
+        file: widget.file,
+        files: ref.read(fileProvider(widget.file.path)).valueOrNull,
+      );
+    }
+    if (PathUtil.isImage(widget.file.name, type: widget.file.type)) {
+      return FileImagePreview(
+        file: widget.file,
+        files: ref.read(fileProvider(widget.file.path)).valueOrNull,
+      );
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.file.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              showFileAction(context, widget.file, ref);
+            },
+          ),
+        ],
+      ),
+      body: _buildFile(widget.file),
+    );
+  }
+
+  _buildFile(File file) {
+    final remotePath = filepath.join(file.path, file.name);
+
+    if (PathUtil.isText(file.name, type: file.type)) {
+      return TextPreview.remote(remotePath);
+    }
+    if (PathUtil.isAudio(file.name, type: file.type)) {
+      return AudioPreview.remote(remotePath);
+    }
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: Column(
+        children: [
+          Center(
+            child: Column(
+              children: [
+                Icon(
+                  PathUtil.icon(file.name, type: file.type),
+                  size: 64,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  file.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "文件大小: {size}".tr(
+                    context,
+                    args: {"size": Util.formatSize(file.size)},
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 100),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              child: Text('下载'.tr(context)),
+              onPressed: () async {
+                await FileActionType.download.action(context, file, ref);
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "未知的文件类型，无法查看文件，请下载到本地查看".tr(context),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FileImagePreview extends StatefulWidget {
+  final File file;
+  final List<File>? files;
+
+  const FileImagePreview({super.key, required this.file, this.files});
+
+  @override
+  State<FileImagePreview> createState() => _FileImagePreviewState();
+}
+
+class _FileImagePreviewState extends State<FileImagePreview> {
+  late final PageController _pageController;
+
+  int _currentIndex = 0;
+  List<File> _currentFiles = [];
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.currentFile == null) {
-      currentIndex = 0;
-    } else {
-      final index = widget.files.indexWhere((file) =>
-          file.type == widget.currentFile?.type &&
-          file.name == widget.currentFile?.name);
-      if (index >= 0) {
-        currentIndex = index;
-      }
+    if (widget.files != null) {
+      _currentFiles = widget.files!.where((file) {
+        return PathUtil.isImage(file.name, type: file.type);
+      }).toList();
     }
-    _pageController = PageController(initialPage: currentIndex);
+
+    if (_currentFiles.isEmpty) {
+      _currentFiles = [widget.file];
+    }
+
+    final index = _currentFiles.indexWhere((file) =>
+        file.type == widget.file.type && file.name == widget.file.name);
+    if (index >= 0) {
+      _currentIndex = index;
+    }
+
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,50 +175,151 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text("预览".tr(context)),
+        title: Text(widget.file.name),
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Text("${currentIndex + 1}/${widget.files.length}"),
+            child: Text("${_currentIndex + 1}/${_currentFiles.length}"),
           ),
         ],
       ),
-      extendBodyBehindAppBar: true,
       body: PageView.builder(
-        itemCount: widget.files.length,
+        itemCount: _currentFiles.length,
         itemBuilder: (BuildContext context, int index) {
-          final file = widget.files[index];
-
-          final mimeType = Util.mimeType(file.name);
-          final remotePath = filepath.join(file.path, file.name);
-
-          if (mimeType.startsWith("text/")) {
-            return TextPreview.remote(remotePath);
-          }
-          if (mimeType.startsWith("image/")) {
-            return ImagePreview.remote(remotePath, fit: BoxFit.fitWidth);
-          }
-          if (mimeType.startsWith("video/")) {
-            return VideoPreview.remote(remotePath);
-          }
-          if (mimeType.startsWith("audio/")) {
-            return AudioPreview.remote(remotePath);
-          }
-          return Center(
-            child: Text(
-              "未知的文件类型".tr(context),
-              style: const TextStyle(color: Colors.white),
-            ),
+          final file = _currentFiles[index];
+          return ImagePreview.remote(
+            filepath.join(file.path, file.name),
+            fit: BoxFit.fitWidth,
           );
         },
         controller: _pageController,
         onPageChanged: (int index) {
           setState(() {
-            currentIndex = index;
+            _currentIndex = index;
           });
         },
+      ),
+      extendBodyBehindAppBar: true,
+    );
+  }
+}
+
+class FileVideoPreview extends StatefulWidget {
+  final File file;
+  final List<File>? files;
+
+  const FileVideoPreview({super.key, required this.file, this.files});
+
+  @override
+  State<FileVideoPreview> createState() => _FileVideoPreviewState();
+}
+
+class _FileVideoPreviewState extends State<FileVideoPreview>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  late File _currentFile;
+  List<File> _currentFiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _currentFile = widget.file;
+
+    if (widget.files != null) {
+      _currentFiles = widget.files!.where((file) {
+        return PathUtil.isVideo(file.name, type: file.type);
+      }).toList();
+    }
+
+    if (_currentFiles.isEmpty) {
+      _currentFiles = [widget.file];
+    }
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remotePath = filepath.join(_currentFile.path, _currentFile.name);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _currentFile.name,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      body: Column(
+        children: [
+          VideoPreview.remote(remotePath),
+          TabBar(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            controller: _tabController,
+            tabs: <Tab>[
+              Tab(text: "简介".tr(context)),
+              Tab(text: "播放列表".tr(context)),
+            ],
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        title: Text("文件名称".tr(context)),
+                        trailing: Text(_currentFile.name),
+                      ),
+                      ListTile(
+                        title: Text("文件大小".tr(context)),
+                        trailing: Text("${_currentFile.size}"),
+                      ),
+                    ],
+                  ),
+                  ListView.separated(
+                    separatorBuilder: (context, index) {
+                      return Divider(
+                        height: 0.1,
+                        color: Colors.grey[300],
+                      );
+                    },
+                    itemCount: _currentFiles.length,
+                    itemBuilder: (context, index) {
+                      final file = _currentFiles[index];
+                      final selected = _currentFile == file;
+                      return ListTile(
+                        leading: Icon(selected
+                            ? Icons.pause_circle_outlined
+                            : Icons.play_circle_outlined),
+                        title: Text(
+                          file.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        selected: selected,
+                        onTap: () {
+                          setState(() {
+                            _currentFile = file;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

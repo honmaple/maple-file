@@ -124,11 +124,16 @@ func (d *Webdav) Open(path string) (driver.FileReader, error) {
 		return nil, err
 	}
 
-	r, err := d.client.ReadStream(path)
-	if err != nil {
-		return nil, err
+	// r, err := d.client.ReadStream(path)
+	// if err != nil {
+	//	return nil, err
+	// }
+
+	rangeFunc := func(offset, length int64) (io.ReadCloser, error) {
+		return d.client.ReadStreamRange(path, offset, length)
 	}
-	return driver.ReadSeeker(r, info.Size()), nil
+	return driver.NewFileReader(info.Size(), rangeFunc)
+
 }
 
 func (d *Webdav) Create(path string) (driver.FileWriter, error) {

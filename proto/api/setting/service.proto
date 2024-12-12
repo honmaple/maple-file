@@ -15,11 +15,6 @@ service SystemService {
 		};
 	}
 
-	rpc ListSettings (ListSettingsRequest) returns (ListSettingsResponse) {
-		option (google.api.http) = {
-			get: "/api/settings"
-		};
-	}
 	rpc ResetSetting (ResetSettingRequest) returns (ResetSettingResponse) {
 		option (google.api.http) = {
 			post: "/api/settings/reset"

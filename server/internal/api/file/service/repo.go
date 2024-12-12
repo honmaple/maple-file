@@ -6,6 +6,7 @@ import (
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 var (
@@ -24,6 +25,9 @@ func (srv *Service) verifyRepo(repo *pb.Repo) error {
 	}
 	if repo.GetPath() == "" {
 		repo.Path = "/"
+	}
+	if path := util.CleanPath(repo.GetPath()); path != repo.GetPath() {
+		return errors.New("挂载目录格式错误")
 	}
 
 	oldRepo := new(pb.Repo)

@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"mime"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -63,46 +64,75 @@ func (f *emptyFile) MarshalJSON() ([]byte, error) {
 }
 
 type seeker struct {
-	io.ReadCloser
-	size  int64
-	first bool // http.ServeContent 会读取一小块以决定内容类型， 所以第一次read会返回假数据
+	r            io.ReadCloser
+	offset       int64
+	readAtOffset int64
+	size         int64
+	rangeFunc    func(int64, int64) (io.ReadCloser, error)
 }
 
-func (s *seeker) Read(p []byte) (n int, err error) {
-	if s.first && len(p) == 512 {
-		return 0, io.EOF
+func (s *seeker) Read(buf []byte) (n int, err error) {
+	n, err = s.ReadAt(buf, s.offset)
+	s.offset += int64(n)
+	return
+}
+
+func (s *seeker) ReadAt(buf []byte, off int64) (n int, err error) {
+	if off < 0 {
+		return -1, os.ErrInvalid
 	}
-	return s.ReadCloser.Read(p)
+
+	if off != s.readAtOffset && s.r != nil {
+		_ = s.r.Close()
+		s.r = nil
+	}
+
+	if s.r == nil {
+		s.r, err = s.rangeFunc(int64(off), 0)
+		s.readAtOffset = off
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	n, err = s.r.Read(buf)
+	s.readAtOffset += int64(n)
+	return
 }
 
 func (s *seeker) Seek(offset int64, whence int) (int64, error) {
-	if s.first {
-		s.first = false
+	oldOffset := s.offset
+	var newOffset int64
+	switch whence {
+	case io.SeekStart:
+		newOffset = offset
+	case io.SeekCurrent:
+		newOffset = oldOffset + offset
+	case io.SeekEnd:
+		return s.size, nil
+	default:
+		return -1, os.ErrInvalid
 	}
-	if offset == 0 {
-		switch whence {
-		case io.SeekStart:
-			return 0, nil
-		case io.SeekEnd:
-			return s.size, nil
-		}
+
+	if newOffset < 0 {
+		return oldOffset, os.ErrInvalid
 	}
-	if r, ok := s.ReadCloser.(io.ReadSeekCloser); ok {
-		return r.Seek(offset, whence)
+	if newOffset == oldOffset {
+		return oldOffset, nil
 	}
-	return 0, ErrNotSupport
+	s.offset = newOffset
+	return newOffset, nil
+}
+
+func (s *seeker) Close() error {
+	if s.r != nil {
+		return s.r.Close()
+	}
+	return nil
 }
 
 func Compare(src, dst File) bool {
 	return src.Size() == dst.Size() && src.ModTime().Equal(dst.ModTime())
-}
-
-func ReadSeeker(r io.ReadCloser, size int64) FileReader {
-	first := true
-	if _, ok := r.(io.ReadSeekCloser); ok {
-		first = false
-	}
-	return &seeker{r, size, first}
 }
 
 func NewFile(path string, info fs.FileInfo) File {
@@ -114,4 +144,11 @@ func NewFile(path string, info fs.FileInfo) File {
 		modTime: info.ModTime(),
 		isDir:   info.IsDir(),
 	}
+}
+
+func NewFileReader(size int64, rangeFunc func(int64, int64) (io.ReadCloser, error)) (FileReader, error) {
+	return &seeker{
+		size:      size,
+		rangeFunc: rangeFunc,
+	}, nil
 }

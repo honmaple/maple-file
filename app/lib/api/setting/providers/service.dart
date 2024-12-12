@@ -24,9 +24,18 @@ class SystemService {
   }
 
   Future<Info> info() async {
-    InfoRequest request = InfoRequest();
-    InfoResponse response = await _client.info(request);
-    return response.result;
+    final result = await doFuture(() async {
+      InfoRequest request = InfoRequest();
+      InfoResponse response = await _client.info(request);
+      return response.result;
+    });
+    return result ??
+        Info(
+          os: "unknown",
+          arch: "unknown",
+          runtime: "unknown",
+          version: "unknown",
+        );
   }
 
   Future<String> getSetting(String key) async {

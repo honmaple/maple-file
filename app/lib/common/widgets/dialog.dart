@@ -15,6 +15,7 @@ class CustomEditingDialog extends StatefulWidget {
     this.obscureText = false,
     this.keyboardType,
     this.inputFormatters,
+    this.selection,
     this.controller,
   });
 
@@ -24,6 +25,7 @@ class CustomEditingDialog extends StatefulWidget {
   final Widget? helper;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
+  final TextSelection? selection;
   final TextEditingController? controller;
 
   @override
@@ -43,6 +45,9 @@ class _CustomEditingDialogState extends State<CustomEditingDialog> {
     _controller = widget.controller ?? TextEditingController();
     if (widget.value != null) {
       _controller.text = widget.value!;
+    }
+    if (widget.selection != null) {
+      _controller.selection = widget.selection!;
     }
   }
 
@@ -318,6 +323,7 @@ Future<T?> showEditingDialog<T>(
   BuildContext context,
   String label, {
   String? value,
+  TextSelection? selection,
   TextEditingController? controller,
   bool obscureText = false,
   TextInputType? keyboardType,
@@ -331,6 +337,7 @@ Future<T?> showEditingDialog<T>(
         label: label,
         value: value,
         helper: helper,
+        selection: selection,
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,

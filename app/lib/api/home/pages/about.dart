@@ -12,7 +12,7 @@ class About extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("关于".tr(context), style: const TextStyle(fontSize: 16)),
+        title: Text("关于".tr(context)),
       ),
       body: CustomAsyncValue(
         value: ref.watch(infoProvider),
@@ -27,7 +27,7 @@ class About extends ConsumerWidget {
                       context,
                       args: {"version": resp.version},
                     )),
-                    Text(resp.description),
+                    if (resp.description != "") Text(resp.description),
                   ],
                 ),
               ),

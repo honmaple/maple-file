@@ -9,6 +9,7 @@ import "s3.dart";
 import "smb.dart";
 import "ftp.dart";
 import "sftp.dart";
+import "alist.dart";
 import "local.dart";
 import "upyun.dart";
 import "webdav.dart";
@@ -18,6 +19,7 @@ enum DriverType {
   ftp,
   smb,
   sftp,
+  alist,
   local,
   upyun,
   webdav,
@@ -30,6 +32,7 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.smb: "SMB",
       DriverType.ftp: "FTP",
       DriverType.sftp: "SFTP",
+      DriverType.alist: "Alist",
       DriverType.local: "本地",
       DriverType.upyun: "又拍云",
       DriverType.webdav: "Webdav",
@@ -138,6 +141,8 @@ class DriverForm extends StatelessWidget {
         return FTP(form: form);
       case "sftp":
         return SFTP(form: form);
+      case "alist":
+        return Alist(form: form);
       case "local":
         return Local(form: form);
       case "upyun":

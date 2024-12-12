@@ -9,4 +9,5 @@ type fileinfo struct {
 	name string
 }
 
-func (d *fileinfo) Name() string       { return d.name }
+func (d *fileinfo) Name() string { return d.name }
+

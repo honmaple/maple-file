@@ -157,7 +157,7 @@ func (d *S3) Open(path string) (driver.FileReader, error) {
 	if err != nil {
 		return nil, err
 	}
-	return driver.ReadSeeker(result.Body, *result.ContentLength), nil
+	return driver.NewFileReader(result.Body, *result.ContentLength)
 }
 
 func (d *S3) Create(path string) (driver.FileWriter, error) {

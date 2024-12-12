@@ -19,27 +19,122 @@ import '../providers/file_setting.dart';
 import '../providers/service.dart';
 
 enum FileActionType {
+  move,
+  copy,
+  rename,
+  remove,
   download,
-  selectionPinned,
-  selectionDelete,
-  selectionArchived,
+  selectionMove,
+  selectionCopy,
+  selectionRemove,
+  selectionDownload,
 }
 
 extension FileActionTypeExtension on FileActionType {
-  void action(BuildContext context, File file, WidgetRef ref) async {
+  Future<void> action(BuildContext context, File file, WidgetRef ref) async {
     switch (this) {
+      case FileActionType.move:
+        final Map<String, dynamic> args = {
+          "path": "/",
+          "title": "移动文件到".tr(context),
+          "filter": (File file) => file.type == "DIR",
+        };
+        final result = await Navigator.pushNamed(
+          context,
+          '/file/select',
+          arguments: args,
+        );
+        if (result != null) {
+          await FileService().move(
+            file.path,
+            result as String,
+            [file.name],
+          );
+        }
+        return;
+      case FileActionType.copy:
+        final Map<String, dynamic> args = {
+          "path": "/",
+          "title": "复制文件到".tr(context),
+          "filter": (File file) => file.type == "DIR",
+        };
+        final result = await Navigator.pushNamed(
+          context,
+          '/file/select',
+          arguments: args,
+        );
+        if (result != null) {
+          await FileService()
+              .copy(file.path, result as String, [file.name]).then((_) {
+            ref.invalidate(fileProvider(file.path));
+          });
+        }
+        return;
+      case FileActionType.rename:
+        final ext = filepath.extension(file.name);
+        final result = await showEditingDialog(
+          context,
+          "重命名".tr(context),
+          value: file.name,
+          selection: TextSelection(
+            baseOffset: 0,
+            extentOffset: file.name.length - ext.length,
+          ),
+        );
+        if (result != null) {
+          await FileService().rename(file.path, file.name, result).then((_) {
+            ref.invalidate(fileProvider(file.path));
+          });
+        }
+        return;
       case FileActionType.download:
         String? downloadPath = ref.read(fileSettingProvider.select((state) {
           return state.downloadPath;
         }));
-        downloadPath ??= await FilePicker.platform.getDirectoryPath();
-        showAlertDialog(context, title: Text("aaaa"));
+        if (downloadPath == null || downloadPath == "") {
+          downloadPath = await PathUtil.getDownloadsPath();
+        }
+        await FileService()
+            .download(
+          filepath.join(file.path, file.name),
+          io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
+        )
+            .then((_) {
+          ref.invalidate(taskProvider(TaskListStatus.running));
+        });
+        return;
+      case FileActionType.remove:
+        final result = await showAlertDialog<bool>(
+          context,
+          content: Text("确认删除文件{name}?".tr(
+            context,
+            args: {"name": file.name},
+          )),
+        );
+        if (result != null && result) {
+          await FileService().remove(file.path, [file.name]).then((_) {
+            ref.invalidate(fileProvider(file.path));
+          });
+        }
+        return;
       default:
+    }
+  }
+
+  Future<void> selectionAction(BuildContext context, WidgetRef ref) async {
+    final selection = ref.read(fileSelectionProvider);
+    switch (this) {
+      case FileActionType.selectionMove:
+        return;
+      case FileActionType.selectionCopy:
+      default:
+        return;
     }
   }
 }
 
 void showFileDetail(BuildContext context, File file) {
+  final size = Util.formatSize(file.size);
   showListDialog2(
     context,
     child: Column(
@@ -57,7 +152,7 @@ void showFileDetail(BuildContext context, File file) {
         ),
         ListTile(
           leading: Text("文件大小".tr(context)),
-          title: Text("${file.size}B"),
+          title: Text(size),
           minLeadingWidth: 16 * 4,
         ),
         ListTile(
@@ -82,7 +177,7 @@ Future<void> showFileAction(
   File file,
   WidgetRef ref,
 ) async {
-  final result = await showListDialog(context, items: [
+  final result = await showListDialog<FileActionType>(context, items: [
     ListDialogItem(
       child: ListTile(
         title: Text(file.name),
@@ -97,12 +192,22 @@ Future<void> showFileAction(
     ),
     ListDialogItem(
       label: "下载".tr(context),
-      value: "download",
+      value: FileActionType.download,
       icon: Icons.download,
     ),
     ListDialogItem(
+      label: "复制".tr(context),
+      value: FileActionType.copy,
+      icon: Icons.folder_copy_outlined,
+    ),
+    ListDialogItem(
+      label: "移动".tr(context),
+      value: FileActionType.move,
+      icon: Icons.move_up,
+    ),
+    ListDialogItem(
       label: "重命名".tr(context),
-      value: "rename",
+      value: FileActionType.rename,
       icon: Icons.drive_file_rename_outline,
     ),
     ListDialogItem(
@@ -110,53 +215,12 @@ Future<void> showFileAction(
     ),
     ListDialogItem(
       label: "删除".tr(context),
-      value: "delete",
+      value: FileActionType.remove,
       icon: Icons.delete,
     ),
   ]);
-
-  switch (result) {
-    case "rename":
-      final name = await showEditingDialog(
-        context,
-        "新建目录",
-        value: file.name,
-      );
-      if (name != null) {
-        FileService().rename(file.path, file.name, name);
-      }
-      break;
-    case "download":
-      String? downloadPath = ref.read(fileSettingProvider.select((state) {
-        return state.downloadPath;
-      }));
-      if (downloadPath == null || downloadPath == "") {
-        downloadPath = await PathUtil.getDownloadsPath();
-      }
-      FileService()
-          .download(
-        filepath.join(file.path, file.name),
-        io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
-      )
-          .then((_) {
-        ref.invalidate(taskProvider(TaskListStatus.running));
-      });
-      break;
-    case "delete":
-      final result = await showAlertDialog<bool>(
-        context,
-        content: Text("确认删除文件{name}?".tr(
-          context,
-          args: {"name": file.name},
-        )),
-      );
-      if (result != null && result) {
-        await FileService().remove(file.path, [file.name]).then((_) {
-          ref.invalidate(fileProvider(file.path));
-        });
-      }
-      break;
-  }
+  if (!context.mounted) return;
+  result?.action(context, file, ref);
 }
 
 class FilePopupAction extends ConsumerWidget {
@@ -370,12 +434,10 @@ class FileSelectionAction extends ConsumerStatefulWidget {
     super.key,
     required this.path,
     required this.selected,
-    this.callback,
   });
 
   final String path;
   final List<File> selected;
-  final void Function()? callback;
 
   @override
   ConsumerState<FileSelectionAction> createState() =>
@@ -393,171 +455,146 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
 
   @override
   Widget build(BuildContext context) {
-    return OverflowBar(
-      alignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        TextButton(
-          child: Wrap(
-            direction: Axis.vertical,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const Icon(Icons.folder_copy_outlined),
-              Text('复制'.tr(context)),
-            ],
-          ),
-          onPressed: () async {
-            final Map<String, dynamic> args = {
-              "path": "/",
-              "title": "复制文件到".tr(context),
-              "filter": (File file) => file.type == "DIR",
-            };
-            final result = await Navigator.pushNamed(
-              context,
-              '/file/select',
-              arguments: args,
-            );
-            if (result != null) {
-              FileService()
-                  .copy(
-                widget.path,
-                result as String,
-                widget.selected.map((i) => i.name).toList(),
-              )
-                  .then((_) {
-                widget.callback?.call();
-              });
-            }
-          },
-        ),
-        TextButton(
-          child: Wrap(
-            direction: Axis.vertical,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const Icon(Icons.move_up),
-              Text('移动'.tr(context)),
-            ],
-          ),
-          onPressed: () async {
-            final Map<String, dynamic> args = {
-              "path": "/",
-              "title": "移动文件到".tr(context),
-              "filter": (File file) => file.type == "DIR",
-            };
-            final result = await Navigator.pushNamed(
-              context,
-              '/file/select',
-              arguments: args,
-            );
-            if (result != null) {
-              FileService()
-                  .move(
-                widget.path,
-                result as String,
-                widget.selected.map((i) => i.name).toList(),
-              )
-                  .then((_) {
-                widget.callback?.call();
-                ref.invalidate(fileProvider(widget.path));
-              });
-            }
-          },
-        ),
-        if (widget.selected.length == 1)
-          TextButton(
-            child: Wrap(
-              direction: Axis.vertical,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                const Icon(Icons.drive_file_rename_outline),
-                Text('重命名'.tr(context)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.minWidth,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                TextButton(
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Icon(Icons.folder_copy_outlined),
+                      Text('复制'.tr(context)),
+                    ],
+                  ),
+                  onPressed: () async {
+                    final Map<String, dynamic> args = {
+                      "path": "/",
+                      "title": "复制文件到".tr(context),
+                      "filter": (File file) => file.type == "DIR",
+                    };
+                    final result = await Navigator.pushNamed(
+                      context,
+                      '/file/select',
+                      arguments: args,
+                    );
+                    if (result != null) {
+                      FileService()
+                          .copy(
+                        widget.path,
+                        result as String,
+                        widget.selected.map((i) => i.name).toList(),
+                      )
+                          .then((_) {
+                        ref.read(fileSelectionProvider.notifier).reset();
+                      });
+                    }
+                  },
+                ),
+                TextButton(
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Icon(Icons.move_up),
+                      Text('移动'.tr(context)),
+                    ],
+                  ),
+                  onPressed: () async {
+                    final Map<String, dynamic> args = {
+                      "path": "/",
+                      "title": "移动文件到".tr(context),
+                      "filter": (File file) => file.type == "DIR",
+                    };
+                    final result = await Navigator.pushNamed(
+                      context,
+                      '/file/select',
+                      arguments: args,
+                    );
+                    if (result != null) {
+                      FileService()
+                          .move(
+                        widget.path,
+                        result as String,
+                        widget.selected.map((i) => i.name).toList(),
+                      )
+                          .then((_) {
+                        ref.invalidate(fileProvider(widget.path));
+                        ref.read(fileSelectionProvider.notifier).reset();
+                      });
+                    }
+                  },
+                ),
+                if (widget.selected.length == 1)
+                  TextButton(
+                    child: Wrap(
+                      direction: Axis.vertical,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Icon(Icons.drive_file_rename_outline),
+                        Text('重命名'.tr(context)),
+                      ],
+                    ),
+                    onPressed: () {
+                      FileActionType.rename
+                          .action(context, widget.selected[0], ref)
+                          .then((_) {
+                        ref.read(fileSelectionProvider.notifier).reset();
+                      });
+                    },
+                  ),
+                TextButton(
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Icon(Icons.download_outlined),
+                      Text('下载'.tr(context)),
+                    ],
+                  ),
+                  onPressed: () async {},
+                ),
+                TextButton(
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Icon(Icons.delete_outlined),
+                      Text('删除'.tr(context)),
+                    ],
+                  ),
+                  onPressed: () async {
+                    final result = await showAlertDialog<bool>(
+                      context,
+                      content: Text("确认删除{n}个文件?".tr(
+                        context,
+                        args: {"n": widget.selected.length},
+                      )),
+                    );
+                    if (result != null && result) {
+                      await FileService()
+                          .remove(widget.path,
+                              widget.selected.map((i) => i.name).toList())
+                          .then((_) {
+                        ref.invalidate(fileProvider(widget.path));
+                        ref.read(fileSelectionProvider.notifier).reset();
+                      });
+                    }
+                  },
+                ),
               ],
             ),
-            onPressed: () async {
-              _controller.text = widget.selected[0].name;
-              _controller.selection = TextSelection(
-                baseOffset: 0,
-                extentOffset: _controller.text.length -
-                    filepath.extension(_controller.text).length,
-              );
-              final result = await showEditingDialog(
-                context,
-                "重命名".tr(context),
-                controller: _controller,
-              );
-              if (result != null) {
-                FileService()
-                    .rename(
-                  widget.path,
-                  widget.selected[0].name,
-                  result as String,
-                )
-                    .then((_) {
-                  widget.callback?.call();
-                  ref.invalidate(fileProvider(widget.path));
-                });
-              }
-            },
           ),
-        TextButton(
-          child: Wrap(
-            direction: Axis.vertical,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const Icon(Icons.more_horiz),
-              Text('更多'.tr(context)),
-            ],
-          ),
-          onPressed: () async {
-            final item = widget.selected[0];
-            final result = await showListDialog(context, items: [
-              if (widget.selected.length == 1)
-                ListDialogItem(
-                  child: ListTile(
-                    title: Text(widget.selected[0].name),
-                    trailing: TextButton(
-                      child: Text("查看详情".tr(context)),
-                      onPressed: () {
-                        showFileDetail(context, item);
-                      },
-                    ),
-                  ),
-                ),
-              ListDialogItem(
-                label: "下载",
-                value: "download",
-                icon: Icons.download,
-              ),
-              ListDialogItem(
-                child: const Divider(height: 4),
-              ),
-              ListDialogItem(
-                label: "删除",
-                value: "delete",
-                icon: Icons.delete,
-              ),
-            ]);
-
-            Future<void>? future;
-            switch (result) {
-              case "delete":
-                final result = await showAlertDialog<bool>(context,
-                    content: Text(("确认删除文件?")));
-                if (result != null && result) {
-                  future = FileService().remove(
-                    widget.path,
-                    widget.selected.map((i) => i.name).toList(),
-                  );
-                  break;
-                }
-            }
-            future?.then((_) {
-              widget.callback?.call();
-              ref.invalidate(fileProvider(widget.path));
-            });
-          },
-        ),
-      ],
+        );
+      },
     );
   }
 }

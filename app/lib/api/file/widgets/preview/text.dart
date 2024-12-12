@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:maple_file/app/grpc.dart';
 
@@ -42,7 +45,7 @@ class TextPreview extends StatefulWidget {
   TextPreview.remote(
     String path, {
     super.key,
-  })  : source = "http://${GRPC().addr}/api/file/preview/blob?path=$path",
+  })  : source = GRPC().previewURL(path),
         sourceType = SourceType.network;
 
   @override
@@ -66,23 +69,46 @@ class _TextPreviewState extends State<TextPreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
-        future: _getText(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return TextField(
-              controller: _controller,
+      body: Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: FutureBuilder(
+          future: _getText(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text("Error: ${snapshot.error}"),
+                );
+              }
+              return SingleChildScrollView(
+                child: Text(snapshot.data ?? ""),
+              );
+            }
+            return const Center(
+              child: CircularProgressIndicator(),
             );
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
+          },
+        ),
       ),
     );
   }
 
   Future<String> _getText() async {
-    return "";
+    switch (widget.sourceType) {
+      case SourceType.file:
+        return File(widget.source).readAsString();
+      case SourceType.asset:
+        return rootBundle.loadString(widget.source);
+      case SourceType.network:
+        try {
+          final response = await http.get(Uri.parse(widget.source));
+          if (response.statusCode == 200) {
+            return utf8.decode(response.bodyBytes);
+          }
+        } catch (e) {
+          print(e.toString());
+        }
+        return "Can't read this file";
+    }
   }
 }

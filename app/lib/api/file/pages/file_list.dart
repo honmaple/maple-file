@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/providers/selection.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
@@ -98,37 +97,21 @@ class _FileListState extends ConsumerState<FileList> {
     );
   }
 
-  bool _isMedia(File file) {
-    String fileType = file.type;
-    // 由于未知原因，golang后端服务访回的部分类型为空
-    if (fileType == "") {
-      fileType = Util.mimeType(file.name);
-    }
-    return fileType.startsWith("image/") || fileType.startsWith("video/");
-  }
-
-  _onTap(BuildContext context, File item) async {
-    if (item.type == "DIR") {
+  _onTap(BuildContext context, File file) async {
+    if (file.type == "DIR") {
       Navigator.of(context).pushNamed(
         '/file/list',
-        arguments: filepath.join(item.path, item.name),
+        arguments: filepath.join(file.path, file.name),
       );
       return;
     }
-
-    if (_isMedia(item)) {
-      final items = ref.read(fileProvider(widget.path)).valueOrNull ?? <File>[];
-      Navigator.pushNamed(
-        context,
-        '/file/preview',
-        arguments: {
-          "files": items.where(_isMedia).toList(),
-          "currentFile": item,
-        },
-      );
-      return;
-    }
-    await showFileAction(context, item, ref);
+    Navigator.pushNamed(
+      context,
+      '/file/preview',
+      arguments: {
+        "file": file,
+      },
+    );
   }
 
   _onLongPress(BuildContext context, File item) {
@@ -163,13 +146,10 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
         onTap: _onTap,
         onLongPress: _onLongPress,
       ),
-      bottomNavigationBar: (widget.selection.selected.isNotEmpty)
+      bottomNavigationBar: widget.selection.selected.isNotEmpty
           ? FileSelectionAction(
               path: widget.path,
               selected: widget.selection.selected,
-              callback: () {
-                ref.read(fileSelectionProvider.notifier).reset();
-              },
             )
           : null,
     );

@@ -9,7 +9,7 @@ class Help extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("帮助".tr(context), style: const TextStyle(fontSize: 16)),
+        title: Text("帮助".tr(context)),
       ),
       body: Center(
         child: Text("帮助".tr(context)),

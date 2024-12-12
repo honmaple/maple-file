@@ -46,16 +46,7 @@ func (d *SMB) Get(path string) (driver.File, error) {
 }
 
 func (d *SMB) Open(path string) (driver.FileReader, error) {
-	info, err := d.client.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := d.client.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	return driver.ReadSeeker(r, info.Size()), nil
+	return d.client.Open(path)
 }
 
 func (d *SMB) Create(path string) (driver.FileWriter, error) {

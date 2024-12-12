@@ -111,4 +111,12 @@ class GRPC {
       );
     }
   }
+
+  String previewURL(String path) {
+    return "http://$addr/api/file/preview/blob?path=$path";
+  }
+
+  String downloadURL(String path) {
+    return "http://$addr/api/file/download/blob?path=$path";
+  }
 }

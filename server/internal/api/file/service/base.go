@@ -83,10 +83,11 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 		}
 		defer file.Close()
 
-		return c.Stream(200, info.Type(), file)
+		http.ServeContent(c.Response(), c.Request(), info.Name(), info.ModTime(), file)
+		return nil
 	})
 
-	g.POST("/download/blob", func(c echo.Context) error {
+	g.GET("/download/blob", func(c echo.Context) error {
 		// Bind 必须增加query的tag
 		req := pb.PreviewFileRequest{
 			Path: c.QueryParams().Get("path"),
@@ -105,6 +106,10 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 			return err
 		}
 		defer file.Close()
+
+		if typ := info.Type(); typ != "" {
+			c.Response().Header().Set("Content-Type", info.Type())
+		}
 
 		http.ServeContent(c.Response(), c.Request(), info.Name(), info.ModTime(), file)
 		return nil

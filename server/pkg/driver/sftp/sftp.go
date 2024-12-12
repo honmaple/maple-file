@@ -48,7 +48,6 @@ func (d *SFTP) Get(path string) (driver.File, error) {
 }
 
 func (d *SFTP) Open(path string) (driver.FileReader, error) {
-	// d.client.OpenFile
 	return d.client.Open(path)
 }
 

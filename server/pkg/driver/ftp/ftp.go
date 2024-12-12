@@ -50,11 +50,10 @@ func (d *FTP) Open(path string) (driver.FileReader, error) {
 		return nil, err
 	}
 
-	r, err := d.client.Retr(path)
-	if err != nil {
-		return nil, err
+	rangeFunc := func(offset, length int64) (io.ReadCloser, error) {
+		return d.client.RetrFrom(path, uint64(offset))
 	}
-	return driver.ReadSeeker(r, int64(info.Size)), nil
+	return driver.NewFileReader(int64(info.Size), rangeFunc)
 }
 
 func (d *FTP) Create(path string) (driver.FileWriter, error) {

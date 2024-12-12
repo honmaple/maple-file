@@ -3,6 +3,7 @@ package upyun
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"path/filepath"
@@ -158,15 +159,26 @@ func (d *Upyun) Open(path string) (driver.FileReader, error) {
 		return nil, err
 	}
 
-	r, w := io.Pipe()
-	go func() {
-		_, err := d.client.Get(&upyun.GetObjectConfig{
-			Path:   path,
-			Writer: w,
-		})
-		w.CloseWithError(err)
-	}()
-	return driver.ReadSeeker(r, info.Size), nil
+	rangeFunc := func(offset, length int64) (io.ReadCloser, error) {
+		headers := make(map[string]string)
+		if length > 0 {
+			headers["Range"] = fmt.Sprintf("bytes=%d-%d", offset, offset+length-1)
+		} else {
+			headers["Range"] = fmt.Sprintf("bytes=%d-", offset)
+		}
+
+		r, w := io.Pipe()
+		go func() {
+			_, err := d.client.Get(&upyun.GetObjectConfig{
+				Path:    path,
+				Writer:  w,
+				Headers: headers,
+			})
+			w.CloseWithError(err)
+		}()
+		return r, nil
+	}
+	return driver.NewFileReader(info.Size, rangeFunc)
 }
 
 func (d *Upyun) Create(path string) (driver.FileWriter, error) {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/color.dart';
@@ -81,20 +82,20 @@ class _FileViewState extends ConsumerState<FileView> {
           ),
         );
       }
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
+            const Icon(
               Icons.hourglass_empty,
               size: 36,
               color: Colors.black54,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              "暂无文件",
-              style: TextStyle(color: Colors.black54),
+              "暂无文件".tr(context),
+              style: const TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -111,6 +112,10 @@ class _FileViewState extends ConsumerState<FileView> {
     final setting = ref.watch(fileSettingProvider);
 
     return SliverList.builder(
+      // separatorBuilder: (context, index) => Divider(
+      //   height: 0.5,
+      //   indent: 64,
+      // ),
       itemCount: rows.length,
       itemBuilder: (context, index) {
         final row = rows[index];
@@ -149,12 +154,14 @@ class _FileViewState extends ConsumerState<FileView> {
             selected: selection.contains(row),
             trailing: _isSelection(row)
                 ? _buildCheckbox(selection, row)
-                : IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    onPressed: () {
-                      showFileAction(context, row, ref);
-                    },
-                  ),
+                : widget.path != "/"
+                    ? IconButton(
+                        icon: const Icon(Icons.more_vert),
+                        onPressed: () {
+                          showFileAction(context, row, ref);
+                        },
+                      )
+                    : null,
           ),
         );
       },
@@ -221,13 +228,13 @@ class _FileViewState extends ConsumerState<FileView> {
         ),
         alignment: Alignment.center,
         child: Icon(
-          _getIcon(row),
+          PathUtil.icon(row.name, type: row.type),
           color: ColorUtil.foregroundColorWithString(row.name),
         ),
       );
     }
     return Icon(
-      _getIcon(row),
+      PathUtil.icon(row.name, type: row.type),
       size: 64 * size,
       color: setting.iconColor != null
           ? setting.color
@@ -252,26 +259,5 @@ class _FileViewState extends ConsumerState<FileView> {
       return true;
     }
     return false;
-  }
-
-  IconData _getIcon(File row) {
-    String fileType = row.type;
-    // 由于未知原因，golang后端服务访回的部分类型为空
-    if (fileType == "") {
-      fileType = Util.mimeType(row.name);
-    }
-    if (fileType == "DIR") {
-      return Icons.folder;
-    } else if (fileType.startsWith("text/")) {
-      return Icons.note;
-    } else if (fileType.startsWith("image/")) {
-      return Icons.image;
-    } else if (fileType.startsWith("video/")) {
-      return Icons.video_file;
-    } else if (fileType.startsWith("audio/")) {
-      return Icons.audio_file;
-    } else {
-      return Icons.note;
-    }
   }
 }

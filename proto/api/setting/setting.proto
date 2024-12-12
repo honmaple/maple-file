@@ -19,12 +19,6 @@ message Setting {
 	string value = 5;
 }
 
-message ListSettingsRequest {}
-
-message ListSettingsResponse {
-	repeated Setting results = 1;
-}
-
 message GetSettingRequest {
 	string key = 1;
 }

@@ -44,7 +44,7 @@ class VideoPreview extends StatefulWidget {
   VideoPreview.remote(
     String path, {
     super.key,
-  })  : source = "http://${GRPC().addr}/api/file/preview/blob?path=$path",
+  })  : source = GRPC().previewURL(path),
         sourceType = SourceType.network;
 
   @override
@@ -53,7 +53,7 @@ class VideoPreview extends StatefulWidget {
 
 class _VideoPreviewState extends State<VideoPreview> {
   late VideoPlayerController _videoPlayerController;
-  late Future<void> _initializeVideoPlayerFuture;
+  late ChewieController _chewieController;
 
   @override
   void initState() {
@@ -69,29 +69,37 @@ class _VideoPreviewState extends State<VideoPreview> {
         _videoPlayerController =
             VideoPlayerController.networkUrl(Uri.parse(widget.source));
     }
-    _initializeVideoPlayerFuture = _videoPlayerController.initialize();
+
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController,
+      aspectRatio: 16 / 9,
+      autoPlay: true,
+      looping: true,
+    );
   }
 
   @override
   void dispose() {
     _videoPlayerController.dispose();
+    _chewieController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder(
-        future: _initializeVideoPlayerFuture,
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: FutureBuilder(
+        future: _videoPlayerController.initialize(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text("Error: ${snapshot.error}"),
+              );
+            }
             return Chewie(
-              controller: ChewieController(
-                videoPlayerController: _videoPlayerController,
-                aspectRatio: 16 / 9,
-                autoPlay: false,
-                looping: true,
-              ),
+              controller: _chewieController,
             );
           }
           return const Center(

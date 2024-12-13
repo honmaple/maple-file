@@ -40,13 +40,14 @@ class _FileListState extends ConsumerState<FileList> {
 
   @override
   Widget build(BuildContext context) {
+    final taskCount = ref.watch(taskCountProvider(TaskListStatus.running));
     final selection = ref.watch(fileSelectionProvider);
     if (selection.enabled) {
       return FileSelectionList(path: widget.path, selection: selection);
     }
 
     return Scaffold(
-      appBar: buildAppBar(context),
+      appBar: buildAppBar(context, taskCount),
       body: FileView(
         path: widget.path,
         onTap: _onTap,
@@ -57,12 +58,11 @@ class _FileListState extends ConsumerState<FileList> {
     );
   }
 
-  buildAppBar(BuildContext context) {
+  buildAppBar(BuildContext context, int taskCount) {
     String title = "";
     if (widget.path != "/") {
       title = widget.path.split('/').last;
     }
-    final taskCount = ref.watch(taskCountProvider(TaskListStatus.running));
     return AppBar(
       leading: widget.path == "/"
           ? Container(

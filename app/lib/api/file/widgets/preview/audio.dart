@@ -1,95 +1,232 @@
-import 'dart:io';
+import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import 'package:path/path.dart' as filepath;
 import 'package:audioplayers/audioplayers.dart';
 
-import 'package:maple_file/app/grpc.dart';
+import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/dialog.dart';
 
 import 'source.dart';
 
-class AudioPreview extends StatefulWidget {
-  final String name;
-  final String source;
-  final SourceType sourceType;
+class AudioPreviewController extends ChangeNotifier {
+  final AudioPlayer _player;
 
-  const AudioPreview({
-    super.key,
-    required this.name,
-    required this.source,
-    required this.sourceType,
-  });
+  int _index = 0;
+  PreviewRepeat _repeat;
+  List<PreviewSource> _playlist;
 
-  AudioPreview.file(
-    File file, {
-    super.key,
-  })  : name = filepath.basename(file.path),
-        source = file.path,
-        sourceType = SourceType.file;
+  AudioPreviewController({
+    List<PreviewSource>? playlist,
+    PreviewRepeat? repeat,
+    int index = 0,
+  })  : _index = index,
+        _repeat = repeat ?? PreviewRepeat.list,
+        _playlist = playlist ?? [],
+        _player = AudioPlayer();
 
-  AudioPreview.asset(
-    String path, {
-    super.key,
-  })  : name = filepath.basename(path),
-        source = path,
-        sourceType = SourceType.asset;
+  AudioPlayer get player {
+    return _player;
+  }
 
-  AudioPreview.network(
-    String url, {
-    String? name,
-    super.key,
-  })  : name = name ?? filepath.basename(url),
-        source = url,
-        sourceType = SourceType.network;
+  List<PreviewSource> get playlist {
+    return _playlist;
+  }
 
-  AudioPreview.local(
-    String path, {
-    super.key,
-  })  : name = filepath.basename(path),
-        source = path,
-        sourceType = SourceType.file;
+  PreviewRepeat get currentRepeat {
+    return _repeat;
+  }
 
-  AudioPreview.remote(
-    String path, {
-    super.key,
-  })  : name = filepath.basename(path),
-        source = GRPC().previewURL(path),
-        sourceType = SourceType.network;
+  PlayerState get currentState {
+    return _player.state;
+  }
 
-  @override
-  State<AudioPreview> createState() => _AudioPreviewState();
-}
-
-class _AudioPreviewState extends State<AudioPreview> {
-  late final AudioPlayer _player;
-
-  late PlayerState _playerState;
+  PreviewSource get currentSource {
+    return _playlist[_index];
+  }
 
   Source get _source {
-    switch (widget.sourceType) {
+    final s = _playlist[_index];
+    switch (s.sourceType) {
       case SourceType.file:
-        return DeviceFileSource(widget.source);
+        return DeviceFileSource(s.source);
       case SourceType.asset:
-        return AssetSource(widget.source);
+        return AssetSource(s.source);
       case SourceType.network:
-        return UrlSource(widget.source);
+        return UrlSource(s.source);
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
+  int get _randomIndex {
+    if (_playlist.length <= 1) {
+      return 0;
+    }
+    int index = Random().nextInt(_playlist.length);
+    if (index == _index) {
+      index += 1;
+    }
+    if (index >= _playlist.length) {
+      index = 0;
+    }
+    return index;
+  }
 
-    _player = AudioPlayer();
+  void prev() {
+    switch (_repeat) {
+      case PreviewRepeat.one:
+      case PreviewRepeat.list:
+        _index--;
+        break;
+      case PreviewRepeat.random:
+        _index = _randomIndex;
+        break;
+    }
 
-    // _player.setReleaseMode(ReleaseMode.release);
-    _playerState = PlayerState.stopped;
+    if (_index < 0) {
+      _index = _playlist.length - 1;
+    }
+
+    _player.play(_source);
+
+    notifyListeners();
+  }
+
+  void next() {
+    switch (_repeat) {
+      case PreviewRepeat.one:
+      case PreviewRepeat.list:
+        _index++;
+        break;
+      case PreviewRepeat.random:
+        _index = _randomIndex;
+        break;
+    }
+
+    if (_index >= _playlist.length) {
+      _index = 0;
+    }
+
+    _player.play(_source);
+
+    notifyListeners();
+  }
+
+  Future<void> play(PreviewSource source) async {
+    final index = _playlist.indexWhere((s) {
+      return s.source == source.source && s.sourceType == source.sourceType;
+    });
+    if (index < 0) {
+      _playlist.add(source);
+      _index = _playlist.length - 1;
+    } else {
+      _index = index;
+    }
+    notifyListeners();
+
+    await _player.play(_source);
+  }
+
+  Future<void> pause() async {
+    await _player.pause();
+  }
+
+  Future<void> resume() async {
+    await _player.resume();
+  }
+
+  Future<void> toggle() async {
+    switch (_player.state) {
+      case PlayerState.playing:
+        await _player.pause();
+        break;
+      case PlayerState.paused:
+        await _player.resume();
+        break;
+      case PlayerState.stopped:
+        await _player.play(_source);
+        break;
+      case PlayerState.completed:
+        await _player.play(_source);
+        break;
+      case PlayerState.disposed:
+    }
+    notifyListeners();
+  }
+
+  void setSource(PreviewSource s) {
+    switch (s.sourceType) {
+      case SourceType.file:
+        _player.setSource(DeviceFileSource(s.source));
+      case SourceType.asset:
+        _player.setSource(AssetSource(s.source));
+      case SourceType.network:
+        _player.setSource(UrlSource(s.source));
+    }
+
+    notifyListeners();
+  }
+
+  void setRepeat(PreviewRepeat repeat) {
+    _repeat = repeat;
+    notifyListeners();
+  }
+
+  void toggleRepeat() {
+    switch (_repeat) {
+      case PreviewRepeat.one:
+        setRepeat(PreviewRepeat.list);
+        break;
+      case PreviewRepeat.list:
+        setRepeat(PreviewRepeat.random);
+        break;
+      case PreviewRepeat.random:
+        setRepeat(PreviewRepeat.one);
+        break;
+    }
   }
 
   @override
   void dispose() {
     _player.dispose();
 
+    super.dispose();
+  }
+}
+
+class AudioPreview extends StatefulWidget {
+  final AudioPreviewController? controller;
+
+  const AudioPreview({
+    super.key,
+    this.controller,
+  });
+
+  @override
+  State<AudioPreview> createState() => _AudioPreviewState();
+}
+
+class _AudioPreviewState extends State<AudioPreview> {
+  late final AudioPreviewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = widget.controller ?? AudioPreviewController();
+    _controller.addListener(() {
+      setState(() {});
+    });
+    _controller.player.onPlayerComplete.listen((event) {
+      _controller.next();
+    });
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -104,63 +241,52 @@ class _AudioPreviewState extends State<AudioPreview> {
         children: [
           Icon(Icons.music_note,
               size: 81, color: Theme.of(context).primaryColor),
-          Text(filepath.basenameWithoutExtension(widget.name)),
+          Text(filepath
+              .basenameWithoutExtension(_controller.currentSource.name)),
           const SizedBox(height: 300),
-          AudioPlayerSliver(
-            player: _player,
-            onComplete: () {
-              setState(() {
-                _playerState = PlayerState.stopped;
-              });
-            },
+          AudioPreviewSliver(
+            player: _controller.player,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  _controller.toggleRepeat();
+                },
                 iconSize: 32,
-                icon: const Icon(Icons.repeat),
+                icon: _buildRepeatIcon(),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  _controller.prev();
+                },
                 iconSize: 32,
                 icon: const Icon(Icons.skip_previous),
               ),
-              (_playerState == PlayerState.stopped ||
-                      _playerState == PlayerState.paused)
-                  ? IconButton(
-                      onPressed: () async {
-                        if (_playerState == PlayerState.stopped) {
-                          await _player.play(_source);
-                        } else {
-                          await _player.resume();
-                        }
-                        setState(() {
-                          _playerState = PlayerState.playing;
-                        });
-                      },
-                      iconSize: 42,
-                      icon: const Icon(Icons.play_circle_outline_rounded),
-                    )
-                  : IconButton(
-                      onPressed: () async {
-                        await _player.pause();
-                        setState(() {
-                          _playerState = PlayerState.paused;
-                        });
-                      },
-                      iconSize: 42,
-                      icon: const Icon(Icons.pause),
-                    ),
               IconButton(
-                onPressed: () {},
+                onPressed: () async {
+                  await _controller.toggle();
+                },
+                iconSize: 42,
+                icon: _buildPlayIcon(),
+              ),
+              IconButton(
+                onPressed: () {
+                  _controller.next();
+                },
                 iconSize: 32,
                 icon: const Icon(Icons.skip_next),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  showListDialog2(
+                    context,
+                    height: MediaQuery.sizeOf(context).height * 0.618,
+                    child: AudioPreviewPlaylist(controller: _controller),
+                  );
+                },
                 iconSize: 32,
                 icon: const Icon(Icons.format_list_bulleted),
               ),
@@ -171,26 +297,104 @@ class _AudioPreviewState extends State<AudioPreview> {
       ),
     );
   }
+
+  Widget _buildPlayIcon() {
+    if (_controller.currentState == PlayerState.stopped ||
+        _controller.currentState == PlayerState.paused) {
+      return const Icon(Icons.play_circle_outlined);
+    }
+    return const Icon(Icons.pause_circle_outlined);
+  }
+
+  Widget _buildRepeatIcon() {
+    switch (_controller.currentRepeat) {
+      case PreviewRepeat.one:
+        return const Icon(Icons.repeat_one);
+      case PreviewRepeat.list:
+        return const Icon(Icons.repeat);
+      case PreviewRepeat.random:
+        return const Icon(Icons.shuffle);
+    }
+  }
 }
 
-class AudioPlayerSliver extends StatefulWidget {
+class AudioPreviewPlaylist extends StatefulWidget {
+  final AudioPreviewController controller;
+
+  const AudioPreviewPlaylist({
+    super.key,
+    required this.controller,
+  });
+
+  @override
+  State<StatefulWidget> createState() {
+    return _AudioPreviewPlaylistState();
+  }
+}
+
+class _AudioPreviewPlaylistState extends State<AudioPreviewPlaylist> {
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Text(
+              "当前播放列表({length})".tr(context, args: {
+                "length": widget.controller.playlist.length,
+              }),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          Divider(
+            height: 0.1,
+            color: Colors.grey[300],
+          ),
+          for (final source in widget.controller.playlist)
+            _buildPlaylist(source)
+        ],
+      ),
+    );
+  }
+
+  _buildPlaylist(PreviewSource source) {
+    final selected = widget.controller.currentSource == source;
+    return ListTile(
+      title: Text(source.name),
+      trailing: selected
+          ? widget.controller.currentState == PlayerState.playing
+              ? const Icon(Icons.pause_circle_outlined)
+              : const Icon(Icons.play_circle_outlined)
+          : const Icon(Icons.play_circle_outlined),
+      selected: selected,
+      onTap: () async {
+        if (selected) {
+          await widget.controller.toggle();
+        } else {
+          await widget.controller.play(source);
+        }
+        setState(() {});
+      },
+    );
+  }
+}
+
+class AudioPreviewSliver extends StatefulWidget {
   final AudioPlayer player;
 
-  final Function()? onComplete;
-
-  const AudioPlayerSliver({
+  const AudioPreviewSliver({
     required this.player,
-    this.onComplete,
     super.key,
   });
 
   @override
   State<StatefulWidget> createState() {
-    return _AudioPlayerSliverState();
+    return _AudioPreviewSliverState();
   }
 }
 
-class _AudioPlayerSliverState extends State<AudioPlayerSliver> {
+class _AudioPreviewSliverState extends State<AudioPreviewSliver> {
   Duration? _duration;
   Duration? _position;
 
@@ -284,7 +488,6 @@ class _AudioPlayerSliverState extends State<AudioPlayerSliver> {
     );
 
     _playerCompleteSubscription = player.onPlayerComplete.listen((event) {
-      widget.onComplete?.call();
       setState(() {
         _position = Duration.zero;
       });

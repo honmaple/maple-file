@@ -93,7 +93,7 @@ class I18n {
     }
     String result = l[key] ?? key;
     if (result == "") {
-      return key;
+      result = key;
     }
     if (args == null) {
       return result;

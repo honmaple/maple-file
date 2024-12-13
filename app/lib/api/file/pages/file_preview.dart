@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:path/path.dart' as filepath;
 
+import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/path.dart';
@@ -12,6 +13,7 @@ import '../widgets/preview/text.dart';
 import '../widgets/preview/video.dart';
 import '../widgets/preview/image.dart';
 import '../widgets/preview/audio.dart';
+import '../widgets/preview/source.dart';
 import '../widgets/file_action.dart';
 
 import '../providers/file.dart';
@@ -47,6 +49,12 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
         files: ref.read(fileProvider(widget.file.path)).valueOrNull,
       );
     }
+    if (PathUtil.isAudio(widget.file.name, type: widget.file.type)) {
+      return FileAudioPreview(
+        file: widget.file,
+        files: ref.read(fileProvider(widget.file.path)).valueOrNull,
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.file.name),
@@ -69,56 +77,56 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
     if (PathUtil.isText(file.name, type: file.type)) {
       return TextPreview.remote(remotePath);
     }
-    if (PathUtil.isAudio(file.name, type: file.type)) {
-      return AudioPreview.remote(remotePath);
-    }
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Center(
-            child: Column(
-              children: [
-                Icon(
-                  PathUtil.icon(file.name, type: file.type),
-                  size: 64,
-                  color: Theme.of(context).primaryColor,
+          Column(
+            children: [
+              Icon(
+                PathUtil.icon(file.name, type: file.type),
+                size: 64,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                file.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "文件大小: {size}".tr(
+                  context,
+                  args: {"size": Util.formatSize(file.size)},
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  file.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  child: Text('下载'.tr(context)),
+                  onPressed: () async {
+                    await FileActionType.download.action(context, file, ref);
+                  },
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  "文件大小: {size}".tr(
-                    context,
-                    args: {"size": Util.formatSize(file.size)},
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 100),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              child: Text('下载'.tr(context)),
-              onPressed: () async {
-                await FileActionType.download.action(context, file, ref);
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "未知的文件类型，无法查看文件，请下载到本地查看".tr(context),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "未知的文件类型，无法查看文件，请下载到本地查看".tr(context),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          )
         ],
       ),
     );
@@ -321,6 +329,71 @@ class _FileVideoPreviewState extends State<FileVideoPreview>
           ),
         ],
       ),
+    );
+  }
+}
+
+class FileAudioPreview extends StatefulWidget {
+  final File file;
+  final List<File>? files;
+
+  const FileAudioPreview({super.key, required this.file, this.files});
+
+  @override
+  State<FileAudioPreview> createState() => _FileAudioPreviewState();
+}
+
+class _FileAudioPreviewState extends State<FileAudioPreview>
+    with SingleTickerProviderStateMixin {
+  late final AudioPreviewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    List<File> currentFiles = [];
+    if (widget.files != null) {
+      currentFiles = widget.files!.where((file) {
+        return PathUtil.isAudio(file.name, type: file.type);
+      }).toList();
+    }
+
+    if (currentFiles.isEmpty) {
+      currentFiles = [widget.file];
+    }
+
+    int index = currentFiles.indexWhere((file) {
+      return file.type == widget.file.type && file.name == widget.file.name;
+    });
+    if (index < 0) {
+      index = 0;
+    }
+
+    _controller = AudioPreviewController(
+      index: index,
+      playlist: currentFiles.map((file) {
+        final remotePath = filepath.join(file.path, file.name);
+        return PreviewSource.network(GRPC().previewURL(remotePath));
+      }).toList(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _controller.currentSource.name,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      body: AudioPreview(controller: _controller),
     );
   }
 }

@@ -185,6 +185,7 @@ Future<void> showFileAction(
           label: Text("查看详情".tr(context)),
           icon: const Icon(Icons.info_outlined),
           onPressed: () {
+            Navigator.of(context).pop();
             showFileDetail(context, file);
           },
         ),

@@ -69,26 +69,6 @@
       }
     },
     "/api/settings": {
-      "get": {
-        "operationId": "SystemService_ListSettings",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/settingListSettingsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "SystemService"
-        ]
-      },
       "post": {
         "operationId": "SystemService_UpdateSetting",
         "responses": {
@@ -213,18 +193,6 @@
       "properties": {
         "result": {
           "$ref": "#/definitions/apisettingInfo"
-        }
-      }
-    },
-    "settingListSettingsResponse": {
-      "type": "object",
-      "properties": {
-        "results": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/settingSetting"
-          }
         }
       }
     },

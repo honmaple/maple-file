@@ -199,7 +199,7 @@ class _FileImagePreviewState extends State<FileImagePreview> {
           final file = _currentFiles[index];
           return ImagePreview.remote(
             filepath.join(file.path, file.name),
-            fit: BoxFit.fitWidth,
+            fit: BoxFit.fitHeight,
           );
         },
         controller: _pageController,
@@ -209,126 +209,7 @@ class _FileImagePreviewState extends State<FileImagePreview> {
           });
         },
       ),
-      extendBodyBehindAppBar: true,
-    );
-  }
-}
-
-class FileVideoPreview extends StatefulWidget {
-  final File file;
-  final List<File>? files;
-
-  const FileVideoPreview({super.key, required this.file, this.files});
-
-  @override
-  State<FileVideoPreview> createState() => _FileVideoPreviewState();
-}
-
-class _FileVideoPreviewState extends State<FileVideoPreview>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-
-  late File _currentFile;
-  List<File> _currentFiles = [];
-
-  @override
-  void initState() {
-    super.initState();
-
-    _currentFile = widget.file;
-
-    if (widget.files != null) {
-      _currentFiles = widget.files!.where((file) {
-        return PathUtil.isVideo(file.name, type: file.type);
-      }).toList();
-    }
-
-    if (_currentFiles.isEmpty) {
-      _currentFiles = [widget.file];
-    }
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final remotePath = filepath.join(_currentFile.path, _currentFile.name);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _currentFile.name,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      body: Column(
-        children: [
-          VideoPreview.remote(remotePath),
-          TabBar(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            controller: _tabController,
-            tabs: <Tab>[
-              Tab(text: "简介".tr(context)),
-              Tab(text: "播放列表".tr(context)),
-            ],
-          ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        title: Text("文件名称".tr(context)),
-                        trailing: Text(_currentFile.name),
-                      ),
-                      ListTile(
-                        title: Text("文件大小".tr(context)),
-                        trailing: Text("${_currentFile.size}"),
-                      ),
-                    ],
-                  ),
-                  ListView.separated(
-                    separatorBuilder: (context, index) {
-                      return Divider(
-                        height: 0.1,
-                        color: Colors.grey[300],
-                      );
-                    },
-                    itemCount: _currentFiles.length,
-                    itemBuilder: (context, index) {
-                      final file = _currentFiles[index];
-                      final selected = _currentFile == file;
-                      return ListTile(
-                        leading: Icon(selected
-                            ? Icons.pause_circle_outlined
-                            : Icons.play_circle_outlined),
-                        title: Text(
-                          file.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        selected: selected,
-                        onTap: () {
-                          setState(() {
-                            _currentFile = file;
-                          });
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      // extendBodyBehindAppBar: true,
     );
   }
 }
@@ -370,11 +251,12 @@ class _FileAudioPreviewState extends State<FileAudioPreview>
     }
 
     _controller = AudioPreviewController(
-      index: index,
-      playlist: currentFiles.map((file) {
+      currentFiles.map((file) {
         final remotePath = filepath.join(file.path, file.name);
         return PreviewSource.network(GRPC().previewURL(remotePath));
       }).toList(),
+      index: index,
+      autoPlay: true,
     );
   }
 
@@ -394,6 +276,134 @@ class _FileAudioPreviewState extends State<FileAudioPreview>
         ),
       ),
       body: AudioPreview(controller: _controller),
+    );
+  }
+}
+
+class FileVideoPreview extends StatefulWidget {
+  final File file;
+  final List<File>? files;
+
+  const FileVideoPreview({super.key, required this.file, this.files});
+
+  @override
+  State<FileVideoPreview> createState() => _FileVideoPreviewState();
+}
+
+class _FileVideoPreviewState extends State<FileVideoPreview>
+    with SingleTickerProviderStateMixin {
+  late final VideoPreviewController _controller;
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    List<File> currentFiles = [];
+    if (widget.files != null) {
+      currentFiles = widget.files!.where((file) {
+        return PathUtil.isVideo(file.name, type: file.type);
+      }).toList();
+    }
+
+    if (currentFiles.isEmpty) {
+      currentFiles = [widget.file];
+    }
+
+    int index = currentFiles.indexWhere((file) {
+      return file.type == widget.file.type && file.name == widget.file.name;
+    });
+    if (index < 0) {
+      index = 0;
+    }
+
+    _controller = VideoPreviewController(
+      currentFiles.map((file) {
+        final remotePath = filepath.join(file.path, file.name);
+        return PreviewSource.network(GRPC().previewURL(remotePath));
+      }).toList(),
+      index: index,
+      autoPlay: true,
+    );
+
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _controller.currentSource.name,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      body: Column(
+        children: [
+          VideoPreview(controller: _controller),
+          TabBar(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            controller: _tabController,
+            tabs: <Tab>[
+              Tab(text: "简介".tr(context)),
+              Tab(text: "播放列表".tr(context)),
+            ],
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        title: Text("文件名称".tr(context)),
+                        trailing: Text(_controller.currentSource.name),
+                      ),
+                    ],
+                  ),
+                  ListView.separated(
+                    separatorBuilder: (context, index) {
+                      return Divider(
+                        height: 0.1,
+                        color: Colors.grey[300],
+                      );
+                    },
+                    itemCount: _controller.playlist.length,
+                    itemBuilder: (context, index) {
+                      final source = _controller.playlist[index];
+                      final selected = _controller.currentSource == source;
+                      return ListTile(
+                        leading: Icon(selected
+                            ? Icons.pause_circle_outlined
+                            : Icons.play_circle_outlined),
+                        title: Text(
+                          source.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        selected: selected,
+                        onTap: () {
+                          _controller.play(source);
+                          setState(() {});
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 
+import '../providers/file.dart';
 import '../providers/repo.dart';
+import '../providers/service.dart';
 
 class RepoList extends ConsumerStatefulWidget {
   const RepoList({super.key});
@@ -38,12 +40,24 @@ class _RepoListState extends ConsumerState<RepoList> {
                         for (final item in items)
                           ListTile(
                             title: Text(item.name),
-                            trailing: Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Text(item.driver),
-                                const Icon(Icons.chevron_right),
-                              ],
+                            subtitle: Text(
+                              "存储类型：{driver}".tr(
+                                context,
+                                args: {"driver": item.driver},
+                              ),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            trailing: Switch(
+                              value: item.status,
+                              onChanged: (result) async {
+                                await FileService()
+                                    .updateRepo(item.copyWith((r) {
+                                  r.status = result;
+                                })).then((_) {
+                                  ref.invalidate(repoProvider);
+                                  ref.invalidate(fileProvider(item.path));
+                                });
+                              },
                             ),
                             onTap: () {
                               Navigator.pushNamed(

@@ -40,7 +40,7 @@ class _FileListState extends ConsumerState<FileList> {
 
   @override
   Widget build(BuildContext context) {
-    final taskCount = ref.watch(taskCountProvider(TaskListStatus.running));
+    final taskCount = ref.watch(taskCountProvider(TaskType.running));
     final selection = ref.watch(fileSelectionProvider);
     if (selection.enabled) {
       return FileSelectionList(path: widget.path, selection: selection);

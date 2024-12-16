@@ -32,28 +32,6 @@ final $typed_data.Uint8List settingDescriptor = $convert.base64Decode(
     'bGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSEAoDa2V5GAQgASgJUgNrZXkSFAoFdm'
     'FsdWUYBSABKAlSBXZhbHVl');
 
-@$core.Deprecated('Use listSettingsRequestDescriptor instead')
-const ListSettingsRequest$json = {
-  '1': 'ListSettingsRequest',
-};
-
-/// Descriptor for `ListSettingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listSettingsRequestDescriptor = $convert.base64Decode(
-    'ChNMaXN0U2V0dGluZ3NSZXF1ZXN0');
-
-@$core.Deprecated('Use listSettingsResponseDescriptor instead')
-const ListSettingsResponse$json = {
-  '1': 'ListSettingsResponse',
-  '2': [
-    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.api.setting.Setting', '10': 'results'},
-  ],
-};
-
-/// Descriptor for `ListSettingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listSettingsResponseDescriptor = $convert.base64Decode(
-    'ChRMaXN0U2V0dGluZ3NSZXNwb25zZRIuCgdyZXN1bHRzGAEgAygLMhQuYXBpLnNldHRpbmcuU2'
-    'V0dGluZ1IHcmVzdWx0cw==');
-
 @$core.Deprecated('Use getSettingRequestDescriptor instead')
 const GetSettingRequest$json = {
   '1': 'GetSettingRequest',

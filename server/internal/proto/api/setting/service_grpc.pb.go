@@ -23,7 +23,6 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SystemServiceClient interface {
 	Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error)
-	ListSettings(ctx context.Context, in *ListSettingsRequest, opts ...grpc.CallOption) (*ListSettingsResponse, error)
 	ResetSetting(ctx context.Context, in *ResetSettingRequest, opts ...grpc.CallOption) (*ResetSettingResponse, error)
 	UpdateSetting(ctx context.Context, in *UpdateSettingRequest, opts ...grpc.CallOption) (*UpdateSettingResponse, error)
 	GetSetting(ctx context.Context, in *GetSettingRequest, opts ...grpc.CallOption) (*GetSettingResponse, error)
@@ -40,15 +39,6 @@ func NewSystemServiceClient(cc grpc.ClientConnInterface) SystemServiceClient {
 func (c *systemServiceClient) Info(ctx context.Context, in *InfoRequest, opts ...grpc.CallOption) (*InfoResponse, error) {
 	out := new(InfoResponse)
 	err := c.cc.Invoke(ctx, "/api.setting.SystemService/Info", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *systemServiceClient) ListSettings(ctx context.Context, in *ListSettingsRequest, opts ...grpc.CallOption) (*ListSettingsResponse, error) {
-	out := new(ListSettingsResponse)
-	err := c.cc.Invoke(ctx, "/api.setting.SystemService/ListSettings", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +77,6 @@ func (c *systemServiceClient) GetSetting(ctx context.Context, in *GetSettingRequ
 // for forward compatibility
 type SystemServiceServer interface {
 	Info(context.Context, *InfoRequest) (*InfoResponse, error)
-	ListSettings(context.Context, *ListSettingsRequest) (*ListSettingsResponse, error)
 	ResetSetting(context.Context, *ResetSettingRequest) (*ResetSettingResponse, error)
 	UpdateSetting(context.Context, *UpdateSettingRequest) (*UpdateSettingResponse, error)
 	GetSetting(context.Context, *GetSettingRequest) (*GetSettingResponse, error)
@@ -100,9 +89,6 @@ type UnimplementedSystemServiceServer struct {
 
 func (UnimplementedSystemServiceServer) Info(context.Context, *InfoRequest) (*InfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Info not implemented")
-}
-func (UnimplementedSystemServiceServer) ListSettings(context.Context, *ListSettingsRequest) (*ListSettingsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListSettings not implemented")
 }
 func (UnimplementedSystemServiceServer) ResetSetting(context.Context, *ResetSettingRequest) (*ResetSettingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetSetting not implemented")
@@ -140,24 +126,6 @@ func _SystemService_Info_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SystemServiceServer).Info(ctx, req.(*InfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SystemService_ListSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListSettingsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SystemServiceServer).ListSettings(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.setting.SystemService/ListSettings",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SystemServiceServer).ListSettings(ctx, req.(*ListSettingsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -226,10 +194,6 @@ var SystemService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Info",
 			Handler:    _SystemService_Info_Handler,
-		},
-		{
-			MethodName: "ListSettings",
-			Handler:    _SystemService_ListSettings_Handler,
 		},
 		{
 			MethodName: "ResetSetting",

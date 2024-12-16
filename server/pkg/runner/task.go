@@ -79,14 +79,14 @@ type memoryTask struct {
 	children      []Task
 	subTask       Runner
 
-	mu     sync.RWMutex
-	buf    *bytes.Buffer
-	ctx    context.Context
-	cancel context.CancelFunc
-	logger Logger
-	runner Runner
-	option Option
-	donec  chan struct{}
+	mu       sync.RWMutex
+	buf      *bytes.Buffer
+	ctx      context.Context
+	cancel   context.CancelFunc
+	logger   Logger
+	runner   Runner
+	taskFunc func(Task) error
+	donec    chan struct{}
 }
 
 func (t *memoryTask) DryRun() bool {
@@ -219,7 +219,7 @@ func (t *memoryTask) Run() {
 
 		t.state = STATE_CANCELED
 	default:
-		err := t.option.Execute(t)
+		err := t.taskFunc(t)
 
 		t.mu.Lock()
 		defer t.mu.Unlock()
@@ -274,30 +274,22 @@ func WithLogger(logger Logger) taskOption {
 	}
 }
 
-func NewTaskByOption(ctx context.Context, opt Option, taskOpts ...taskOption) Task {
+func NewTask(ctx context.Context, name string, fn func(Task) error, taskOpts ...taskOption) Task {
 	task := &memoryTask{
-		id:     GenerateUUID(),
-		state:  STATE_PENDING,
-		donec:  make(chan struct{}),
-		buf:    bytes.NewBuffer(nil),
-		option: opt,
-		// runner: m,
-	}
-	task.name = opt.String()
-
-	if task.logger == nil {
-		task.logger = NewLogger(task.buf)
+		id:       GenerateUUID(),
+		state:    STATE_PENDING,
+		donec:    make(chan struct{}),
+		buf:      bytes.NewBuffer(nil),
+		name:     name,
+		taskFunc: fn,
 	}
 	for _, opt := range taskOpts {
 		opt(task)
 	}
+	if task.logger == nil {
+		task.logger = NewLogger(task.buf)
+	}
+
 	task.ctx, task.cancel = context.WithCancel(ctx)
 	return task
-}
-
-func NewTask(ctx context.Context, name string, fn func(Task) error, taskOpts ...taskOption) Task {
-	return NewTaskByOption(ctx, &FuncOption{
-		Name: name,
-		Func: fn,
-	}, taskOpts...)
 }

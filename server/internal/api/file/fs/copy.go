@@ -10,28 +10,32 @@ import (
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
-type CopyOption struct {
-	SrcFS    FS     `json:"src_fs"`
+type CopyTask struct {
+	FS       FS     `json:"fs"`
 	SrcPath  string `json:"src_path"`
-	DstFS    FS     `json:"dst_fs"`
 	DstPath  string `json:"dst_path"`
 	Override bool   `json:"override"`
 }
 
-func (opt *CopyOption) Kind() string {
-	return "copy"
+func (opt *CopyTask) String() string {
+	return fmt.Sprintf("复制 [%s] to [%s]", opt.SrcPath, opt.DstPath)
 }
 
-func (opt *CopyOption) String() string {
-	return fmt.Sprintf("复制 [%s] to [%s]", filepath.Join(opt.SrcFS.MountPath(), opt.SrcPath), filepath.Join(opt.DstFS.MountPath(), opt.DstPath))
-}
-
-func (opt *CopyOption) Execute(task runner.Task) error {
-	if opt.SrcFS.Repo().Id == opt.DstFS.Repo().Id {
-		return opt.SrcFS.Copy(task.Context(), opt.SrcPath, opt.DstPath)
+func (opt *CopyTask) Execute(task runner.Task) error {
+	srcFS, srcPath, err := opt.FS.GetFS(opt.SrcPath)
+	if err != nil {
+		return err
 	}
-	return _copy(task, opt.SrcFS, opt.SrcPath, opt.DstFS, opt.DstPath)
 
+	dstFS, dstPath, err := opt.FS.GetFS(opt.DstPath)
+	if err != nil {
+		return err
+	}
+
+	if srcFS == dstFS {
+		return srcFS.Copy(task.Context(), srcPath, dstPath)
+	}
+	return _copy(task, srcFS, srcPath, dstFS, dstPath)
 }
 
 func _copy(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, dstPath string) error {

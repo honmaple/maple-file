@@ -11,14 +11,13 @@ import (
 
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	"github.com/honmaple/maple-file/server/internal/app"
-	"github.com/honmaple/maple-file/server/pkg/driver"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 )
 
 type Service struct {
 	pb.UnimplementedFileServiceServer
-	fs  driver.FS
+	fs  fs.FS
 	app *app.App
 }
 

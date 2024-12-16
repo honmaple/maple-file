@@ -13,21 +13,6 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
-@$core.Deprecated('Use driverDescriptor instead')
-const Driver$json = {
-  '1': 'Driver',
-  '2': [
-    {'1': 'DRIVER_UNSPECIFIED', '2': 0},
-    {'1': 'DRIVER_LOCAL', '2': 1},
-    {'1': 'DRIVER_WEBDAV', '2': 2},
-  ],
-};
-
-/// Descriptor for `Driver`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List driverDescriptor = $convert.base64Decode(
-    'CgZEcml2ZXISFgoSRFJJVkVSX1VOU1BFQ0lGSUVEEAASEAoMRFJJVkVSX0xPQ0FMEAESEQoNRF'
-    'JJVkVSX1dFQkRBVhAC');
-
 @$core.Deprecated('Use repoDescriptor instead')
 const Repo$json = {
   '1': 'Repo',
@@ -36,8 +21,8 @@ const Repo$json = {
     {'1': 'created_at', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     {'1': 'updated_at', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     {'1': 'name', '3': 4, '4': 1, '5': 9, '10': 'name'},
-    {'1': 'desc', '3': 5, '4': 1, '5': 9, '10': 'desc'},
-    {'1': 'path', '3': 6, '4': 1, '5': 9, '10': 'path'},
+    {'1': 'path', '3': 5, '4': 1, '5': 9, '10': 'path'},
+    {'1': 'status', '3': 6, '4': 1, '5': 8, '10': 'status'},
     {'1': 'driver', '3': 7, '4': 1, '5': 9, '10': 'driver'},
     {'1': 'option', '3': 8, '4': 1, '5': 9, '10': 'option'},
   ],
@@ -47,9 +32,9 @@ const Repo$json = {
 final $typed_data.Uint8List repoDescriptor = $convert.base64Decode(
     'CgRSZXBvEg4KAmlkGAEgASgFUgJpZBI5CgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3'
     'RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUu'
-    'cHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSEgoEbmFtZRgEIAEoCVIEbmFtZRISCgRkZX'
-    'NjGAUgASgJUgRkZXNjEhIKBHBhdGgYBiABKAlSBHBhdGgSFgoGZHJpdmVyGAcgASgJUgZkcml2'
-    'ZXISFgoGb3B0aW9uGAggASgJUgZvcHRpb24=');
+    'cHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSEgoEbmFtZRgEIAEoCVIEbmFtZRISCgRwYX'
+    'RoGAUgASgJUgRwYXRoEhYKBnN0YXR1cxgGIAEoCFIGc3RhdHVzEhYKBmRyaXZlchgHIAEoCVIG'
+    'ZHJpdmVyEhYKBm9wdGlvbhgIIAEoCVIGb3B0aW9u');
 
 @$core.Deprecated('Use listReposRequestDescriptor instead')
 const ListReposRequest$json = {

@@ -26,10 +26,6 @@ class SystemServiceClient extends $grpc.Client {
       '/api.setting.SystemService/Info',
       ($0.InfoRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.InfoResponse.fromBuffer(value));
-  static final _$listSettings = $grpc.ClientMethod<$1.ListSettingsRequest, $1.ListSettingsResponse>(
-      '/api.setting.SystemService/ListSettings',
-      ($1.ListSettingsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $1.ListSettingsResponse.fromBuffer(value));
   static final _$resetSetting = $grpc.ClientMethod<$1.ResetSettingRequest, $1.ResetSettingResponse>(
       '/api.setting.SystemService/ResetSetting',
       ($1.ResetSettingRequest value) => value.writeToBuffer(),
@@ -51,10 +47,6 @@ class SystemServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.InfoResponse> info($0.InfoRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$info, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$1.ListSettingsResponse> listSettings($1.ListSettingsRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$listSettings, request, options: options);
   }
 
   $grpc.ResponseFuture<$1.ResetSettingResponse> resetSetting($1.ResetSettingRequest request, {$grpc.CallOptions? options}) {
@@ -82,13 +74,6 @@ abstract class SystemServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.InfoRequest.fromBuffer(value),
         ($0.InfoResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$1.ListSettingsRequest, $1.ListSettingsResponse>(
-        'ListSettings',
-        listSettings_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $1.ListSettingsRequest.fromBuffer(value),
-        ($1.ListSettingsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$1.ResetSettingRequest, $1.ResetSettingResponse>(
         'ResetSetting',
         resetSetting_Pre,
@@ -116,10 +101,6 @@ abstract class SystemServiceBase extends $grpc.Service {
     return info(call, await request);
   }
 
-  $async.Future<$1.ListSettingsResponse> listSettings_Pre($grpc.ServiceCall call, $async.Future<$1.ListSettingsRequest> request) async {
-    return listSettings(call, await request);
-  }
-
   $async.Future<$1.ResetSettingResponse> resetSetting_Pre($grpc.ServiceCall call, $async.Future<$1.ResetSettingRequest> request) async {
     return resetSetting(call, await request);
   }
@@ -133,7 +114,6 @@ abstract class SystemServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.InfoResponse> info($grpc.ServiceCall call, $0.InfoRequest request);
-  $async.Future<$1.ListSettingsResponse> listSettings($grpc.ServiceCall call, $1.ListSettingsRequest request);
   $async.Future<$1.ResetSettingResponse> resetSetting($grpc.ServiceCall call, $1.ResetSettingRequest request);
   $async.Future<$1.UpdateSettingResponse> updateSetting($grpc.ServiceCall call, $1.UpdateSettingRequest request);
   $async.Future<$1.GetSettingResponse> getSetting($grpc.ServiceCall call, $1.GetSettingRequest request);

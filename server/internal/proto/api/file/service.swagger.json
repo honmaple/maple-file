@@ -429,11 +429,11 @@
                   "type": "string",
                   "title": "@gotags: gorm:\"not null;unique\""
                 },
-                "desc": {
-                  "type": "string"
-                },
                 "path": {
                   "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
                 },
                 "driver": {
                   "type": "string"
@@ -763,11 +763,11 @@
           "type": "string",
           "title": "@gotags: gorm:\"not null;unique\""
         },
-        "desc": {
-          "type": "string"
-        },
         "path": {
           "type": "string"
+        },
+        "status": {
+          "type": "boolean"
         },
         "driver": {
           "type": "string"

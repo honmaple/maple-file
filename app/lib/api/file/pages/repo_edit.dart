@@ -33,7 +33,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
   void initState() {
     super.initState();
 
-    _form = widget.repo ?? Repo(path: "/");
+    _form = widget.repo ?? Repo(path: "/", status: true);
   }
 
   bool get _isEditing {
@@ -113,45 +113,86 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       });
                     },
                   ),
+                  ListTile(
+                    title: Text('存储状态'.tr(context)),
+                    trailing: Switch(
+                      value: _form.status,
+                      onChanged: (result) {
+                        setState(() {
+                          _form.status = result;
+                        });
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-            if (_form.driver != "") DriverForm(form: _form),
             if (_form.driver != "")
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  child: Text('测试连接'.tr(context)),
-                  onPressed: () async {
-                    await FileService().testRepo(_form);
-                  },
-                ),
-              ),
-            if (_form.driver != "") const SizedBox(height: 4),
-            if (_form.driver != "")
-              SizedBox(
-                width: double.infinity,
-                child: _isEditing
-                    ? ElevatedButton(
-                        child: Text('确认修改'.tr(context)),
-                        onPressed: () async {
-                          await FileService().updateRepo(_form).then((_) {
-                            ref.invalidate(repoProvider);
-                            ref.invalidate(fileProvider(_form.path));
-                            if (context.mounted) Navigator.of(context).pop();
-                          });
-                        },
-                      )
-                    : ElevatedButton(
-                        child: Text('确认添加'.tr(context)),
-                        onPressed: () async {
-                          await FileService().createRepo(_form).then((_) {
-                            ref.invalidate(repoProvider);
-                            ref.invalidate(fileProvider(_form.path));
-                            if (context.mounted) Navigator.of(context).pop();
-                          });
-                        },
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DriverForm(form: _form),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      child: Text('测试连接'.tr(context)),
+                      onPressed: () async {
+                        await FileService().testRepo(_form);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: double.infinity,
+                    child: _isEditing
+                        ? ElevatedButton(
+                            child: Text('确认修改'.tr(context)),
+                            onPressed: () async {
+                              final nav = Navigator.of(context);
+                              await FileService().updateRepo(_form).then((_) {
+                                ref.invalidate(repoProvider);
+                                ref.invalidate(fileProvider(_form.path));
+                                nav.pop();
+                              });
+                            },
+                          )
+                        : ElevatedButton(
+                            child: Text('确认添加'.tr(context)),
+                            onPressed: () async {
+                              final nav = Navigator.of(context);
+                              await FileService().createRepo(_form).then((_) {
+                                ref.invalidate(repoProvider);
+                                ref.invalidate(fileProvider(_form.path));
+                                nav.pop();
+                              });
+                            },
+                          ),
+                  ),
+                  if (_isEditing) const SizedBox(height: 4),
+                  if (_isEditing)
+                    Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              child: Icon(
+                                Icons.error_outline,
+                                size: 16,
+                              ),
+                            ),
+                            const TextSpan(text: " "),
+                            TextSpan(
+                              text: "删除或者修改存储可能会导致正在进行中的任务中断，请确认任务完成后再操作",
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
+                    )
+                ],
               ),
           ],
         ),

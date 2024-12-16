@@ -100,7 +100,7 @@ extension FileActionTypeExtension on FileActionType {
           io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
         )
             .then((_) {
-          ref.invalidate(taskProvider(TaskListStatus.running));
+          ref.invalidate(taskProvider(TaskType.running));
         });
         return;
       case FileActionType.remove:

@@ -1,20 +1,16 @@
 package alist
 
 import (
-	"bytes"
 	"context"
-	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	httputil "github.com/honmaple/maple-file/server/pkg/util/http"
 	"github.com/tidwall/gjson"
 )
 
@@ -32,43 +28,34 @@ func (opt *Option) NewFS() (driver.FS, error) {
 type Alist struct {
 	driver.Base
 	opt    *Option
-	client *http.Client
 	token  string
+	client *httputil.Client
 }
 
 var _ driver.FS = (*Alist)(nil)
 
-func (d *Alist) request(ctx context.Context, method, url string, r io.Reader, opts ...func(*http.Request)) (io.ReadCloser, error) {
+func (d *Alist) request(ctx context.Context, method, url string, opts ...httputil.Option) (io.ReadCloser, error) {
 	if strings.HasPrefix(url, "/") {
 		url = strings.TrimSuffix(d.opt.Endpoint, "/") + url
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, r)
-	if err != nil {
-		return nil, err
+	if opts == nil {
+		opts = make([]httputil.Option, 0)
 	}
 
-	headers := map[string]string{
-		"X-Real-IP":  randomIP(),
-		"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5, AppleWebKit/605.1.15 (KHTML, like Gecko,",
-	}
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
+	opts = append(opts, httputil.WithContext(ctx))
 	if d.token != "" {
-		req.Header.Set("Authorization", d.token)
+		opts = append(opts, httputil.WithHeaders(map[string]string{
+			"Authorization": d.token,
+		}))
 	}
 
-	for _, opt := range opts {
-		opt(req)
-	}
-
-	resp, err := d.client.Do(req)
+	resp, err := d.client.Request(method, url, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode == http.StatusPartialContent || resp.StatusCode == http.StatusOK {
+	if code := resp.StatusCode; code == http.StatusPartialContent || code == http.StatusOK {
 		return resp.Body, nil
 	}
 	resp.Body.Close()
@@ -76,28 +63,7 @@ func (d *Alist) request(ctx context.Context, method, url string, r io.Reader, op
 }
 
 func (d *Alist) requestWithData(ctx context.Context, method, url string, data map[string]any) ([]byte, error) {
-	var (
-		body io.Reader
-	)
-
-	if method != http.MethodGet && data != nil {
-		buf, err := json.Marshal(data)
-		if err != nil {
-			return nil, err
-		}
-		body = bytes.NewBuffer(buf)
-	}
-
-	r, err := d.request(ctx, method, url, body, func(req *http.Request) {
-		if method == http.MethodGet && data != nil {
-			q := req.URL.Query()
-			for k, v := range data {
-				q.Add(k, fmt.Sprintf("%v", v))
-			}
-			req.URL.RawQuery = q.Encode()
-		}
-		req.Header.Set("Content-Type", "application/json")
-	})
+	r, err := d.request(ctx, method, url, httputil.WithJson(data))
 	if err != nil {
 		return nil, err
 	}
@@ -194,13 +160,13 @@ func (d *Alist) Open(path string) (driver.FileReader, error) {
 	}
 
 	rangeFunc := func(offset, length int64) (io.ReadCloser, error) {
-		return d.request(context.Background(), http.MethodGet, url, nil, func(req *http.Request) {
+		return d.request(context.Background(), http.MethodGet, url, httputil.WithNeverTimeout(), httputil.WithRequest(func(req *http.Request) {
 			if length > 0 {
 				req.Header.Add("Range", fmt.Sprintf("bytes=%d-%d", offset, offset+length-1))
 			} else {
 				req.Header.Add("Range", fmt.Sprintf("bytes=%d-", offset))
 			}
-		})
+		}))
 	}
 	return driver.NewFileReader(result.Get("data.size").Int(), rangeFunc)
 }
@@ -208,10 +174,10 @@ func (d *Alist) Open(path string) (driver.FileReader, error) {
 func (d *Alist) Create(path string) (driver.FileWriter, error) {
 	r, w := io.Pipe()
 	go func() {
-		resp, err := d.request(context.Background(), http.MethodPut, "/api/fs/put", r, func(req *http.Request) {
+		resp, err := d.request(context.Background(), http.MethodPut, "/api/fs/put", httputil.WithBody(r), httputil.WithNeverTimeout(), httputil.WithRequest(func(req *http.Request) {
 			req.Header.Set("File-Path", path)
 			req.Header.Set("Password", "")
-		})
+		}))
 		if err != nil {
 			r.CloseWithError(err)
 			return
@@ -220,24 +186,6 @@ func (d *Alist) Create(path string) (driver.FileWriter, error) {
 		r.Close()
 	}()
 	return w, nil
-}
-
-func newClient() *http.Client {
-	transport := &http.Transport{
-		IdleConnTimeout:       120 * time.Second,
-		ResponseHeaderTimeout: 20 * time.Second,
-		Dial: (&net.Dialer{
-			Timeout:   3 * time.Second,
-			KeepAlive: 60 * time.Second,
-		}).Dial,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-	}
-	return &http.Client{
-		Transport: transport,
-		Timeout:   10 * time.Second,
-	}
 }
 
 func (d *Alist) login() error {
@@ -270,7 +218,7 @@ func (d *Alist) login() error {
 func New(opt *Option) (driver.FS, error) {
 	d := &Alist{
 		opt:    opt,
-		client: newClient(),
+		client: httputil.New(),
 	}
 
 	if err := d.login(); err != nil {

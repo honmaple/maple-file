@@ -1,12 +1,9 @@
 package fs
 
 import (
-	"context"
 	"errors"
 	"path/filepath"
 	"strings"
-	"sync"
-	"time"
 
 	"github.com/honmaple/maple-file/server/internal/app"
 	"github.com/honmaple/maple-file/server/pkg/driver"
@@ -17,8 +14,11 @@ import (
 
 type FS interface {
 	driver.FS
-	Repo() *pb.Repo
-	MountPath() string
+	GetFS(string) (driver.FS, string, error)
+	GetRepo(string) (*pb.Repo, error)
+	CreateRepo(*pb.Repo)
+	UpdateRepo(*pb.Repo, *pb.Repo)
+	DeleteRepo(*pb.Repo)
 }
 
 type repoFS struct {
@@ -34,78 +34,47 @@ func (d *repoFS) MountPath() string {
 	return filepath.Join(d.repo.GetPath(), d.repo.GetName())
 }
 
-type rootFS struct {
+type defaultFS struct {
 	driver.FS
 	app   *app.App
+	cache util.Cache[string, driver.FS]
 	repos util.Cache[string, *pb.Repo]
-
-	mu       sync.RWMutex
-	lastTime time.Time
 }
 
-func (d *rootFS) Copy(ctx context.Context, src string, dst string) error {
-	srcFS, srcPath, err := d.fn(src)
+func (d *defaultFS) GetFS(path string) (driver.FS, string, error) {
+	repo, err := d.GetRepo(path)
 	if err != nil {
-		return err
+		return nil, "", err
 	}
-	dstFS, dstPath, err := d.fn(dst)
+	if !repo.Status {
+		return nil, "", errors.New("存储未激活")
+	}
+
+	rootPath := filepath.Join(repo.GetPath(), repo.GetName())
+
+	realPath := strings.TrimPrefix(path, rootPath)
+	if !strings.HasPrefix(realPath, "/") {
+		realPath = "/" + realPath
+	}
+	if v, ok := d.cache.Load(rootPath); ok {
+		return v, realPath, nil
+	}
+
+	fs, err := driver.DriverFS(repo.Driver, repo.Option)
 	if err != nil {
-		return err
+		return nil, "", err
 	}
-	d.app.Runner.SubmitByOption(&CopyOption{
-		SrcFS:   srcFS,
-		SrcPath: srcPath,
-		DstFS:   dstFS,
-		DstPath: dstPath,
-	})
-	return nil
+	d.cache.Store(rootPath, fs)
+	return fs, realPath, nil
 }
 
-func (d *rootFS) Move(ctx context.Context, src string, dst string) error {
-	srcFS, srcPath, err := d.fn(src)
-	if err != nil {
-		return err
-	}
-	dstFS, dstPath, err := d.fn(dst)
-	if err != nil {
-		return err
-	}
-	if srcFS.Repo().GetId() != dstFS.Repo().GetId() {
-		return driver.ErrNotSupport
-	}
-	d.app.Runner.SubmitByOption(&MoveOption{
-		SrcFS:   srcFS,
-		SrcPath: srcPath,
-		DstFS:   dstFS,
-		DstPath: dstPath,
-	})
-	return nil
-}
-
-func (d *rootFS) Remove(ctx context.Context, path string) error {
-	srcFS, srcPath, err := d.fn(path)
-	if err != nil {
-		return err
-	}
-	d.app.Runner.SubmitByOption(&RemoveOption{FS: srcFS, Path: srcPath})
-	return nil
-}
-
-func (d *rootFS) fn(path string) (FS, string, error) {
+func (d *defaultFS) GetRepo(path string) (*pb.Repo, error) {
 	path = util.CleanPath(path)
 
 	var (
 		repo    *pb.Repo
 		pathstr = path
 	)
-
-	d.mu.RLock()
-	lastTime := d.lastTime
-	d.mu.RUnlock()
-
-	if lastTime.Add(time.Second * 30).Before(time.Now()) {
-		d.loadRepos()
-	}
 
 	for {
 		if v, ok := d.repos.Load(pathstr); ok {
@@ -119,46 +88,49 @@ func (d *rootFS) fn(path string) (FS, string, error) {
 		pathstr = pathstr[:index]
 	}
 	if repo == nil {
-		return nil, "", errors.New("错误的路径")
+		return nil, errors.New("错误的路径")
 	}
-
-	realPath := strings.TrimPrefix(path, filepath.Join(repo.GetPath(), repo.GetName()))
-	if !strings.HasPrefix(realPath, "/") {
-		realPath = "/" + realPath
-	}
-
-	fs, err := driver.DriverFS(repo.Driver, repo.Option)
-	if err != nil {
-		return nil, "", err
-	}
-	return &repoFS{FS: fs, repo: repo}, realPath, nil
+	return repo, nil
 }
 
-func (d *rootFS) driverFn(path string) (driver.FS, string, error) {
-	return d.fn(path)
+func (d *defaultFS) CreateRepo(repo *pb.Repo) {
+	d.repos.Store(filepath.Join(repo.GetPath(), repo.GetName()), repo)
 }
 
-func (d *rootFS) loadRepos() error {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (d *defaultFS) UpdateRepo(oldRepo, repo *pb.Repo) {
+	d.DeleteRepo(oldRepo)
+	d.CreateRepo(repo)
+}
 
+func (d *defaultFS) DeleteRepo(repo *pb.Repo) {
+	rootPath := filepath.Join(repo.GetPath(), repo.GetName())
+
+	fs, ok := d.cache.Load(rootPath)
+	if ok {
+		_ = fs.Close()
+	}
+
+	d.repos.Delete(rootPath)
+	d.cache.Delete(rootPath)
+}
+
+func (d *defaultFS) loadRepos() error {
 	repos := make([]*pb.Repo, 0)
 	d.app.DB.Model(pb.Repo{}).Find(&repos)
 
-	d.repos.Reset()
 	for _, repo := range repos {
 		d.repos.Store(filepath.Join(repo.GetPath(), repo.GetName()), repo)
 	}
-	d.lastTime = time.Now()
 	return nil
 }
 
-func New(app *app.App) driver.FS {
-	d := &rootFS{
+func New(app *app.App) FS {
+	d := &defaultFS{
 		app:   app,
+		cache: util.NewCache[string, driver.FS](),
 		repos: util.NewCache[string, *pb.Repo](),
 	}
-	d.FS = driver.NewFS(d.driverFn, nil)
+	d.FS = driver.NewFS(d.GetFS, nil)
 
 	d.loadRepos()
 	return d

@@ -193,6 +193,11 @@ func (d *Upyun) Create(path string) (driver.FileWriter, error) {
 	return w, nil
 }
 
+func (d *Upyun) Close() error {
+	d.client.Close()
+	return nil
+}
+
 func New(opt *Option) (driver.FS, error) {
 	d := &Upyun{
 		opt: opt,

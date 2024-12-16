@@ -17,14 +17,21 @@ class AudioPreviewController extends ChangeNotifier {
   PreviewRepeat _repeat;
   List<PreviewSource> _playlist;
 
-  AudioPreviewController({
-    List<PreviewSource>? playlist,
+  AudioPreviewController(
+    List<PreviewSource> playlist, {
     PreviewRepeat? repeat,
     int index = 0,
-  })  : _index = index,
+    bool autoPlay = false,
+  })  : assert(playlist.isNotEmpty, "playlist is empty"),
+        assert(index < playlist.length && index >= 0, "playlist index error"),
+        _index = index,
         _repeat = repeat ?? PreviewRepeat.list,
-        _playlist = playlist ?? [],
-        _player = AudioPlayer();
+        _playlist = playlist,
+        _player = AudioPlayer() {
+    if (autoPlay) {
+      play(currentSource);
+    }
+  }
 
   AudioPlayer get player {
     return _player;
@@ -195,11 +202,11 @@ class AudioPreviewController extends ChangeNotifier {
 }
 
 class AudioPreview extends StatefulWidget {
-  final AudioPreviewController? controller;
+  final AudioPreviewController controller;
 
   const AudioPreview({
     super.key,
-    this.controller,
+    required this.controller,
   });
 
   @override
@@ -213,7 +220,7 @@ class _AudioPreviewState extends State<AudioPreview> {
   void initState() {
     super.initState();
 
-    _controller = widget.controller ?? AudioPreviewController();
+    _controller = widget.controller;
     _controller.addListener(() {
       setState(() {});
     });
@@ -224,9 +231,6 @@ class _AudioPreviewState extends State<AudioPreview> {
 
   @override
   void dispose() {
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
     super.dispose();
   }
 

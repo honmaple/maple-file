@@ -15,16 +15,14 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 import '../../google/protobuf/timestamp.pb.dart' as $2;
 
-export 'repo.pbenum.dart';
-
 class Repo extends $pb.GeneratedMessage {
   factory Repo({
     $core.int? id,
     $2.Timestamp? createdAt,
     $2.Timestamp? updatedAt,
     $core.String? name,
-    $core.String? desc,
     $core.String? path,
+    $core.bool? status,
     $core.String? driver,
     $core.String? option,
   }) {
@@ -41,11 +39,11 @@ class Repo extends $pb.GeneratedMessage {
     if (name != null) {
       $result.name = name;
     }
-    if (desc != null) {
-      $result.desc = desc;
-    }
     if (path != null) {
       $result.path = path;
+    }
+    if (status != null) {
+      $result.status = status;
     }
     if (driver != null) {
       $result.driver = driver;
@@ -64,8 +62,8 @@ class Repo extends $pb.GeneratedMessage {
     ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
     ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
     ..aOS(4, _omitFieldNames ? '' : 'name')
-    ..aOS(5, _omitFieldNames ? '' : 'desc')
-    ..aOS(6, _omitFieldNames ? '' : 'path')
+    ..aOS(5, _omitFieldNames ? '' : 'path')
+    ..aOB(6, _omitFieldNames ? '' : 'status')
     ..aOS(7, _omitFieldNames ? '' : 'driver')
     ..aOS(8, _omitFieldNames ? '' : 'option')
     ..hasRequiredFields = false
@@ -137,22 +135,22 @@ class Repo extends $pb.GeneratedMessage {
   void clearName() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.String get desc => $_getSZ(4);
+  $core.String get path => $_getSZ(4);
   @$pb.TagNumber(5)
-  set desc($core.String v) { $_setString(4, v); }
+  set path($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
-  $core.bool hasDesc() => $_has(4);
+  $core.bool hasPath() => $_has(4);
   @$pb.TagNumber(5)
-  void clearDesc() => clearField(5);
+  void clearPath() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.String get path => $_getSZ(5);
+  $core.bool get status => $_getBF(5);
   @$pb.TagNumber(6)
-  set path($core.String v) { $_setString(5, v); }
+  set status($core.bool v) { $_setBool(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasPath() => $_has(5);
+  $core.bool hasStatus() => $_has(5);
   @$pb.TagNumber(6)
-  void clearPath() => clearField(6);
+  void clearStatus() => clearField(6);
 
   @$pb.TagNumber(7)
   $core.String get driver => $_getSZ(6);

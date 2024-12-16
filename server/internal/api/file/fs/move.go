@@ -4,33 +4,39 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
-type MoveOption struct {
-	SrcFS    FS     `json:"src_fs"`
+type MoveTask struct {
+	FS       FS     `json:"src_fs"`
 	SrcPath  string `json:"src_path"`
-	DstFS    FS     `json:"dst_fs"`
 	DstPath  string `json:"dst_path"`
 	Override bool   `json:"override"`
 }
 
-func (opt *MoveOption) Kind() string {
-	return "move"
+func (opt *MoveTask) String() string {
+	return fmt.Sprintf("移动 [%s] to [%s]", opt.SrcPath, opt.DstPath)
 }
 
-func (opt *MoveOption) String() string {
-	return fmt.Sprintf("移动 [%s] to [%s]", filepath.Join(opt.SrcFS.MountPath(), opt.SrcPath), filepath.Join(opt.DstFS.MountPath(), opt.DstPath))
-}
-
-func (opt *MoveOption) Execute(task runner.Task) error {
-	if opt.SrcFS.Repo().Id == opt.DstFS.Repo().Id {
-		return opt.SrcFS.Move(task.Context(), opt.SrcPath, opt.DstPath)
+func (opt *MoveTask) Execute(task runner.Task) error {
+	srcFS, srcPath, err := opt.FS.GetFS(opt.SrcPath)
+	if err != nil {
+		return err
 	}
-	return move(task, opt.SrcFS, opt.SrcPath, opt.DstFS, opt.DstPath)
+
+	dstFS, dstPath, err := opt.FS.GetFS(opt.DstPath)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSuffix(opt.SrcPath, srcPath) == strings.TrimSuffix(opt.DstPath, dstPath) {
+		return srcFS.Move(task.Context(), srcPath, dstPath)
+	}
+	return move(task, srcFS, srcPath, dstFS, dstPath)
 }
 
 func move(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, dstPath string) error {

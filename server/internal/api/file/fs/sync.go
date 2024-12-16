@@ -9,23 +9,22 @@ import (
 	"github.com/honmaple/maple-file/server/pkg/runner"
 )
 
-type SyncOption struct {
-	SrcFS   FS
+type SyncTask struct {
+	FS      FS
 	SrcPath string `json:"src_path"`
-	DstFS   FS
 	DstPath string `json:"dst_path"`
 }
 
-func (opt *SyncOption) Kind() string {
+func (opt *SyncTask) Kind() string {
 	return "sync"
 }
 
-func (opt *SyncOption) String() string {
+func (opt *SyncTask) String() string {
 	return fmt.Sprintf("Sync [%s] to [%s]", opt.SrcPath, opt.DstPath)
 }
 
-func (opt *SyncOption) Execute(task runner.Task) error {
-	return _sync(task, opt.SrcFS, opt.SrcPath, opt.DstFS, opt.DstPath)
+func (opt *SyncTask) Execute(task runner.Task) error {
+	return _sync(task, opt.FS, opt.SrcPath, opt.FS, opt.DstPath)
 }
 
 func _sync(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, dstPath string) error {

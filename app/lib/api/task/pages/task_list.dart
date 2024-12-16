@@ -35,12 +35,12 @@ class _TaskListState extends ConsumerState<TaskList>
   void initState() {
     super.initState();
 
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      ref.invalidate(taskProvider(TaskListStatus.running));
-      ref.invalidate(taskProvider(TaskListStatus.finished));
-      ref.invalidate(taskProvider(TaskListStatus.failed));
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      ref.invalidate(taskProvider(TaskType.running));
+      ref.invalidate(taskProvider(TaskType.finished));
+      ref.invalidate(taskProvider(TaskType.failed));
     });
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: TaskType.values.length, vsync: this);
   }
 
   @override
@@ -69,9 +69,8 @@ class _TaskListState extends ConsumerState<TaskList>
               // ),
               // indicatorColor: Colors.black,
               tabs: <Tab>[
-                Tab(text: '正在进行'.tr(context)),
-                Tab(text: '已完成'.tr(context)),
-                Tab(text: '已失败'.tr(context)),
+                for (final value in TaskType.values)
+                  Tab(text: value.label(context)),
               ],
             ),
           ),
@@ -79,9 +78,7 @@ class _TaskListState extends ConsumerState<TaskList>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildList(context, TaskListStatus.running),
-                _buildList(context, TaskListStatus.finished),
-                _buildList(context, TaskListStatus.failed),
+                for (final value in TaskType.values) _buildList(context, value),
               ],
             ),
           ),
@@ -90,40 +87,46 @@ class _TaskListState extends ConsumerState<TaskList>
     );
   }
 
-  _buildList(BuildContext context, TaskListStatus status) {
+  _buildList(BuildContext context, TaskType status) {
     return CustomRefresh(
       onRefresh: () => ref.invalidate(taskProvider(status)),
       childBuilder: (context, physics) {
-        return CustomAsyncValue(
-          value: ref.watch(taskProvider(status)),
-          builder: (items) {
-            if (items.isEmpty) {
-              return Center(
-                child: Wrap(
-                  direction: Axis.vertical,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.task_outlined,
-                      size: 36,
-                      color: Theme.of(context).colorScheme.primary,
+        return CustomScrollView(
+          physics: physics,
+          slivers: [
+            CustomSliverAsyncValue(
+              value: ref.watch(taskProvider(status)),
+              builder: (items) {
+                if (items.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Wrap(
+                        direction: Axis.vertical,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.task_outlined,
+                            size: 36,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          Text("暂无任务".tr(context)),
+                        ],
+                      ),
                     ),
-                    Text("暂无任务".tr(context)),
-                  ],
-                ),
-              );
-            }
-            return ListView.builder(
-              physics: physics,
-              itemCount: items.length + 1,
-              itemBuilder: (BuildContext context, int index) {
-                if (index == 0) {
-                  return _buildListHeader(context, items, status);
+                  );
                 }
-                return _buildListItem(context, items[index - 1]);
+                return SliverList.builder(
+                  itemCount: items.length + 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index == 0) {
+                      return _buildListHeader(context, items, status);
+                    }
+                    return _buildListItem(context, items[index - 1]);
+                  },
+                );
               },
-            );
-          },
+            ),
+          ],
         );
       },
     );
@@ -132,12 +135,12 @@ class _TaskListState extends ConsumerState<TaskList>
   _buildListHeader(
     BuildContext context,
     List<Task> items,
-    TaskListStatus status,
+    TaskType status,
   ) {
     return ListTile(
-      leading: status == TaskListStatus.running
+      leading: status == TaskType.running
           ? Text("剩余任务(${items.length})")
-          : status == TaskListStatus.finished
+          : status == TaskType.finished
               ? Text("已完成(${items.length})")
               : Text("已失败(${items.length})"),
       trailing: Wrap(
@@ -150,7 +153,7 @@ class _TaskListState extends ConsumerState<TaskList>
                   .removeTask(items.map((item) => item.id).toList());
             },
           ),
-          if (status == TaskListStatus.running)
+          if (status == TaskType.running)
             TextButton.icon(
               icon: const Icon(Icons.play_circle, size: 16),
               label: Text("全部暂停".tr(context)),
@@ -255,7 +258,7 @@ class _TaskListState extends ConsumerState<TaskList>
               ),
             ),
             Text(
-              stateLabel[item.state] ?? "未知状态",
+              item.state.label(context),
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.black, fontSize: 12),

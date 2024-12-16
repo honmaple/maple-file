@@ -64,7 +64,7 @@ func (srv *Service) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest) (
 	if err := result.Error; err != nil {
 		return nil, err
 	}
-	// srv.repos.Store(filepath.Join(opt.GetPath(), opt.GetName()), opt)
+	srv.fs.CreateRepo(opt)
 	return &pb.CreateRepoResponse{Result: opt}, nil
 }
 
@@ -88,11 +88,11 @@ func (srv *Service) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (
 	if name := opt.GetName(); name != "" && name != ins.GetName() {
 		diff["name"] = name
 	}
-	if desc := opt.GetDesc(); desc != ins.GetDesc() {
-		diff["desc"] = desc
-	}
 	if path := opt.GetPath(); path != ins.GetPath() {
 		diff["path"] = path
+	}
+	if status := opt.GetStatus(); status != ins.GetStatus() {
+		diff["status"] = status
 	}
 	if option := opt.GetOption(); option != ins.GetOption() {
 		diff["option"] = option
@@ -108,16 +108,18 @@ func (srv *Service) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (
 	if err := result.Error; err != nil {
 		return nil, err
 	}
+	srv.fs.UpdateRepo(ins, opt)
 	return &pb.UpdateRepoResponse{Result: ins}, nil
 }
 
 func (srv *Service) DeleteRepo(ctx context.Context, req *pb.DeleteRepoRequest) (*pb.DeleteRepoResponse, error) {
 	ins := new(pb.Repo)
-
 	err := srv.app.DB.WithContext(ctx).Delete(ins, "id = ?", req.GetId()).Error
 	if err != nil {
 		return nil, err
 	}
+
+	srv.fs.DeleteRepo(ins)
 	return &pb.DeleteRepoResponse{}, nil
 }
 
@@ -135,6 +137,7 @@ func (srv *Service) TestRepo(ctx context.Context, req *pb.TestRepoRequest) (*pb.
 	if err != nil {
 		return nil, err
 	}
+	defer fs.Close()
 
 	if _, err := fs.List(ctx, "/"); err != nil {
 		return nil, err

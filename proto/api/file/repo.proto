@@ -6,13 +6,6 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "api/file";
 
-enum Driver {
-	DRIVER_UNSPECIFIED = 0;
-
-	DRIVER_LOCAL = 1;
-	DRIVER_WEBDAV = 2;
-}
-
 message Repo {
 	// @gotags: gorm:"primary_key;auto_increment"
 	int32 id = 1;
@@ -23,8 +16,8 @@ message Repo {
 
 	// @gotags: gorm:"not null;unique"
 	string name = 4;
-	string desc = 5;
-	string path = 6;
+	string path = 5;
+	bool   status = 6;
 	string driver = 7;
 	string option = 8;
 }

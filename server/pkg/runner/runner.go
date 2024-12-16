@@ -56,12 +56,7 @@ func (m *runner) Submit(name string, fn func(Task) error, taskOpts ...taskOption
 }
 
 func (m *runner) SubmitByOption(opt Option, taskOpts ...taskOption) Task {
-	task := NewTaskByOption(m.ctx, opt, taskOpts...)
-
-	m.tasks.Store(task.Id(), task)
-
-	go m.Execute(task)
-	return task
+	return m.Submit(opt.String(), opt.Execute, taskOpts...)
 }
 
 func (m *runner) Get(id string) (Task, bool) {

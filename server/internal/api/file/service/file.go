@@ -8,10 +8,11 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 	settingpb "github.com/honmaple/maple-file/server/internal/proto/api/setting"
-	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
 	"github.com/spf13/viper"
 )
@@ -46,7 +47,7 @@ func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.Lis
 
 	path := util.CleanPath(filter.GetString("path"))
 
-	q := srv.app.DB.WithContext(ctx).Model(pb.Repo{}).Where("path = ?", path).Order("name DESC")
+	q := srv.app.DB.WithContext(ctx).Model(pb.Repo{}).Where("status = ? AND path = ?", true, path).Order("name DESC")
 
 	repos := make([]*pb.Repo, 0)
 	if err := q.Find(&repos).Error; err != nil {
@@ -102,9 +103,11 @@ func (srv *Service) Move(ctx context.Context, req *pb.MoveFileRequest) (*pb.Move
 		oldPath := filepath.Join(req.GetPath(), name)
 
 		fmt.Println("move", oldPath, newPath)
-		if err := srv.fs.Move(ctx, oldPath, newPath); err != nil {
-			return nil, err
-		}
+
+		srv.app.Runner.SubmitByOption(&fs.MoveTask{
+			SrcPath: oldPath,
+			DstPath: newPath,
+		})
 	}
 	return &pb.MoveFileResponse{}, nil
 }
@@ -115,9 +118,12 @@ func (srv *Service) Copy(ctx context.Context, req *pb.CopyFileRequest) (*pb.Copy
 		oldPath := filepath.Join(req.GetPath(), name)
 
 		fmt.Println("copy", oldPath, newPath)
-		if err := srv.fs.Copy(ctx, oldPath, newPath); err != nil {
-			return nil, err
-		}
+
+		srv.app.Runner.SubmitByOption(&fs.CopyTask{
+			FS:      srv.fs,
+			SrcPath: oldPath,
+			DstPath: newPath,
+		})
 	}
 	return &pb.CopyFileResponse{}, nil
 }
@@ -125,9 +131,11 @@ func (srv *Service) Copy(ctx context.Context, req *pb.CopyFileRequest) (*pb.Copy
 func (srv *Service) Remove(ctx context.Context, req *pb.RemoveFileRequest) (*pb.RemoveFileResponse, error) {
 	for _, name := range req.GetNames() {
 		fmt.Println("remove", filepath.Join(req.GetPath(), name))
-		if err := srv.fs.Remove(ctx, filepath.Join(req.GetPath(), name)); err != nil {
-			return nil, err
-		}
+
+		srv.app.Runner.SubmitByOption(&fs.RemoveTask{
+			FS:   srv.fs,
+			Path: filepath.Join(req.GetPath(), name),
+		})
 	}
 	return &pb.RemoveFileResponse{}, nil
 }
@@ -164,29 +172,12 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 		filename = renameFile(cf.GetString("upload.format"), filename)
 	}
 
-	path := filepath.Join(req.GetPath(), filename)
-
-	task := srv.app.Runner.Submit(fmt.Sprintf("上传文件 %s", filename), func(task runner.Task) error {
-		file, err := srv.fs.Create(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		fsize := util.PrettyByteSize(int(req.GetSize()))
-
-		task.SetProgressState(fmt.Sprintf("0/%s", fsize))
-
-		_, err = util.Copy(task.Context(), file, reader, func(progress int64) {
-			if size := req.GetSize(); size > 0 {
-				task.SetProgress(float64(progress) / float64(size))
-			}
-			task.SetProgressState(fmt.Sprintf("%s/%s", util.PrettyByteSize(int(progress)), fsize))
-		})
-		if err != nil {
-			return err
-		}
-		return nil
+	task := srv.app.Runner.SubmitByOption(&fs.UploadTask{
+		FS:       srv.fs,
+		Path:     req.GetPath(),
+		Size:     int64(req.GetSize()),
+		Filename: filename,
+		Reader:   reader,
 	})
 	<-task.Done()
 
@@ -194,7 +185,9 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 		return nil, err
 	}
 
-	info, err := srv.fs.Get(path)
+	time.Sleep(time.Second)
+
+	info, err := srv.fs.Get(filepath.Join(req.GetPath(), filename))
 	if err != nil {
 		return nil, err
 	}
@@ -242,39 +235,15 @@ func (srv *Service) Preview(req *pb.PreviewFileRequest, stream pb.FileService_Pr
 }
 
 func (srv *Service) Download(req *pb.DownloadFileRequest, stream pb.FileService_DownloadServer) error {
-	info, err := srv.fs.Get(req.GetPath())
-	if err != nil {
-		return err
-	}
-	if info.IsDir() {
-		// TODO 打包后下载
-		return errors.New("can't download dir")
-	}
-
-	src, err := srv.fs.Open(req.GetPath())
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
 	dst := chunkFunc(func(chunk []byte) error {
 		return stream.Send(&pb.DownloadFileResponse{
 			Chunk: chunk,
 		})
 	})
-
-	task := srv.app.Runner.Submit(fmt.Sprintf("下载 [%s]", req.GetPath()), func(task runner.Task) error {
-		fsize := util.PrettyByteSize(int(info.Size()))
-
-		task.SetProgressState(fmt.Sprintf("0/%s", fsize))
-
-		_, err := util.Copy(stream.Context(), dst, src, func(progress int64) {
-			if size := info.Size(); size > 0 {
-				task.SetProgress(float64(progress) / float64(size))
-			}
-			task.SetProgressState(fmt.Sprintf("%s/%s", util.PrettyByteSize(int(progress)), fsize))
-		})
-		return err
+	task := srv.app.Runner.SubmitByOption(&fs.DownloadTask{
+		FS:     srv.fs,
+		Path:   req.GetPath(),
+		Writer: dst,
 	})
 	<-task.Done()
 	return task.Err()

@@ -2,52 +2,41 @@ package fs
 
 import (
 	"fmt"
-	"mime/multipart"
+	"io"
 	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
-type UploadOption struct {
-	FS   FS                   `json:"fs"`
-	Path string               `json:"path"`
-	File multipart.FileHeader `json:"file"`
+type UploadTask struct {
+	FS       FS        `json:"fs"`
+	Path     string    `json:"path"`
+	Size     int64     `json:"size"`
+	Filename string    `json:"filename"`
+	Reader   io.Reader `json:"reader"`
 }
 
-func (opt *UploadOption) Kind() string {
-	return "copy"
+func (opt *UploadTask) String() string {
+	return fmt.Sprintf("上传 [%s] 到 [%s]", opt.Filename, opt.Path)
 }
 
-func (opt *UploadOption) String() string {
-	return ""
-}
-
-func (opt *UploadOption) Execute(task runner.Task) error {
-	src, err := opt.File.Open()
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	dst, err := opt.FS.Create(filepath.Join(opt.Path, opt.File.Filename))
+func (opt *UploadTask) Execute(task runner.Task) error {
+	dst, err := opt.FS.Create(filepath.Join(opt.Path, opt.Filename))
 	if err != nil {
 		return err
 	}
 	defer dst.Close()
 
-	fsize := util.PrettyByteSize(int(opt.File.Size))
+	fsize := util.PrettyByteSize(int(opt.Size))
 
 	task.SetProgressState(fmt.Sprintf("0/%s", fsize))
 
-	_, err = util.Copy(task.Context(), dst, src, func(progress int64) {
-		if size := opt.File.Size; size > 0 {
+	_, err = util.Copy(task.Context(), dst, opt.Reader, func(progress int64) {
+		if size := opt.Size; size > 0 {
 			task.SetProgress(float64(progress) / float64(size))
 		}
 		task.SetProgressState(fmt.Sprintf("%s/%s", util.PrettyByteSize(int(progress)), fsize))
 	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

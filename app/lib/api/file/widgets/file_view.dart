@@ -138,16 +138,14 @@ class _FileViewState extends ConsumerState<FileView> {
               spacing: 8,
               children: [
                 Text(
-                  TimeUtil.pbToString(row.updatedAt, "yyyy-MM-dd HH:mm:ss"),
+                  TimeUtil.pbToString(row.updatedAt, "yyyy-MM-dd HH:mm"),
                   style: const TextStyle(fontSize: 12),
                 ),
-                if (Breakpoint.isDesktop(context) && row.type != "DIR")
+                if (row.type != "DIR")
                   Text(
-                      "文件大小: {size}".tr(
-                        context,
-                        args: {"size": Util.formatSize(row.size)},
-                      ),
-                      style: const TextStyle(fontSize: 12)),
+                    Util.formatSize(row.size),
+                    style: const TextStyle(fontSize: 12),
+                  ),
               ],
             ),
             selected: selection.contains(row),

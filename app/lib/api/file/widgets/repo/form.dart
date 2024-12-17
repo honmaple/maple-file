@@ -13,6 +13,7 @@ import "alist.dart";
 import "local.dart";
 import "upyun.dart";
 import "webdav.dart";
+import "mirror.dart";
 
 enum DriverType {
   s3,
@@ -23,6 +24,7 @@ enum DriverType {
   local,
   upyun,
   webdav,
+  mirror,
 }
 
 extension DriverTypeTypeExtension on DriverType {
@@ -36,6 +38,7 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.local: "本地",
       DriverType.upyun: "又拍云",
       DriverType.webdav: "Webdav",
+      DriverType.mirror: "Mirror",
     };
     return labels[this] ?? "unknown";
   }
@@ -149,6 +152,8 @@ class DriverForm extends StatelessWidget {
         return Upyun(form: form);
       case "webdav":
         return Webdav(form: form);
+      case "mirror":
+        return Mirror(form: form);
       default:
         return const SizedBox.shrink();
     }

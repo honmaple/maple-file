@@ -1,8 +1,11 @@
 module github.com/honmaple/maple-file/server
 
-go 1.22.2
+go 1.23
+
+toolchain go1.23.4
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/aws/aws-sdk-go v1.51.21
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
@@ -18,7 +21,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/crypto v0.29.0
 	golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028
-	golang.org/x/net v0.27.0
+	golang.org/x/net v0.29.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
@@ -30,6 +33,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect

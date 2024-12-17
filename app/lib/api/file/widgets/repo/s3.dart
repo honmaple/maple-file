@@ -23,9 +23,7 @@ class _S3State extends State<S3> {
   void initState() {
     super.initState();
 
-    _option = widget.form.option == ""
-        ? {"port": 22}
-        : jsonDecode(widget.form.option);
+    _option = widget.form.option == "" ? {} : jsonDecode(widget.form.option);
   }
 
   @override
@@ -34,7 +32,7 @@ class _S3State extends State<S3> {
       child: Column(
         children: [
           DriverFormField(
-            label: "主机/IP".tr(context),
+            label: "接入点".tr(context),
             value: _option["endpoint"],
             isRequired: true,
             onTap: (result) {
@@ -85,7 +83,6 @@ class _S3State extends State<S3> {
             type: DriverFormFieldType.password,
             label: "访问密钥".tr(context),
             value: _option["secret_key"],
-            isRequired: true,
             onTap: (result) {
               setState(() {
                 _option["secret_key"] = result;

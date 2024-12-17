@@ -191,7 +191,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                    )
+                    ),
                 ],
               ),
           ],

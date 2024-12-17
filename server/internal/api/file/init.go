@@ -9,6 +9,8 @@ import (
 	_ "github.com/honmaple/maple-file/server/pkg/driver/alist"
 	_ "github.com/honmaple/maple-file/server/pkg/driver/ftp"
 	_ "github.com/honmaple/maple-file/server/pkg/driver/local"
+	_ "github.com/honmaple/maple-file/server/pkg/driver/mirror"
+	_ "github.com/honmaple/maple-file/server/pkg/driver/s3"
 	_ "github.com/honmaple/maple-file/server/pkg/driver/sftp"
 	_ "github.com/honmaple/maple-file/server/pkg/driver/smb"
 	_ "github.com/honmaple/maple-file/server/pkg/driver/upyun"

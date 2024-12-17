@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
@@ -66,6 +68,36 @@ class _LocalState extends State<Local> {
             ],
           ),
         ),
+        if (Util.isAndroid())
+          FutureBuilder(
+            future: Permission.manageExternalStorage.status,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && (snapshot.data?.isDenied ?? false)) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 4),
+                    Text(
+                      "本地文件的访问需要授权设备的读写权限".tr(context),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    TextButton(
+                      child: Text("去设置 >>".tr(context)),
+                      onPressed: () async {
+                        await Permission.manageExternalStorage
+                            .onDeniedCallback(() {
+                          Messenger.showSnackBar(
+                            Text("拒绝权限可能会导致本地存储无法获取到文件信息".tr(context)),
+                          );
+                        }).request();
+                      },
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(

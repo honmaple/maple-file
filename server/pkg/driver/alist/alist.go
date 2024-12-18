@@ -15,10 +15,10 @@ import (
 )
 
 type Option struct {
-	Endpoint string `json:"endpoint"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	RootPath string `json:"root_path"`
+	Endpoint string `json:"endpoint"  validate:"required"`
+	Username string `json:"username"  validate:"required"`
+	Password string `json:"password"  validate:"required"`
+	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -216,6 +216,10 @@ func (d *Alist) login() error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
+	}
+
 	d := &Alist{
 		opt:    opt,
 		client: httputil.New(),

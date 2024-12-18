@@ -33,10 +33,14 @@ class Breakpoint {
       MediaQuery.of(context).size.width < end &&
       MediaQuery.of(context).size.width >= start;
 
+  static const Breakpoint small = Breakpoint(start: 0, end: 600);
   static const Breakpoint mobile = Breakpoint(start: 0, end: 450);
   static const Breakpoint tablet = Breakpoint(start: 450, end: 800);
   static const Breakpoint desktop =
       Breakpoint(start: 800, end: double.infinity);
+
+  static bool isSmall(BuildContext context) =>
+      Breakpoint.small.isActive(context);
 
   static bool isMobile(BuildContext context) =>
       Breakpoint.mobile.isActive(context);

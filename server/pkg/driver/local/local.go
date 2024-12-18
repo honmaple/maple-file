@@ -13,7 +13,7 @@ import (
 
 type Option struct {
 	DirPerm  uint32 `json:"-"`
-	RootPath string `json:"root_path"`
+	RootPath string `json:"root_path" validate:"required,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -210,6 +210,10 @@ func (d *Local) Remove(ctx context.Context, path string) error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
+	}
+
 	if opt.DirPerm == 0 {
 		opt.DirPerm = 0755
 	}

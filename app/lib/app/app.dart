@@ -61,14 +61,5 @@ class App {
     }
   }
 
-  Future<void> initPermission() async {
-    if (Util.isAndroid()) {
-      // final status = await Permission.manageExternalStorage.status;
-      // if (status.isDenied) {
-      //   await Permission.manageExternalStorage.onDeniedCallback(() {
-      //     Messenger.showSnackBar(const Text("拒绝权限可能会导致本地存储无法获取到文件信息"));
-      //   }).request();
-      // }
-    }
-  }
+  Future<void> initPermission() async {}
 }

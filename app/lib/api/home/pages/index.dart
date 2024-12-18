@@ -55,13 +55,11 @@ class _IndexState extends ConsumerState<Index> {
 }
 
 class DesktopIndex extends ConsumerStatefulWidget {
-  final Widget? child;
   final String? initialRoute;
   final RouteFactory? onGenerateRoute;
 
   const DesktopIndex({
     super.key,
-    this.child,
     this.initialRoute,
     this.onGenerateRoute,
   });
@@ -72,8 +70,11 @@ class DesktopIndex extends ConsumerStatefulWidget {
 
 class _DesktopIndexState extends ConsumerState<DesktopIndex> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  final _navigatorKey1 = GlobalKey<NavigatorState>();
+  final _navigatorKey2 = GlobalKey<NavigatorState>();
 
   int _selectedIndex = 0;
+  bool _extended = false;
 
   @override
   Widget build(BuildContext context) {
@@ -84,19 +85,17 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
       },
       child: Scaffold(
         body: Row(
-          // mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 32),
+                _extended ? _buildMenu() : const SizedBox(height: 32),
                 Expanded(
                   child: NavigationRail(
-                    // minExtendedWidth: 200,
-                    extended: false,
-                    labelType: NavigationRailLabelType.all,
+                    minExtendedWidth: 200,
+                    extended: _extended,
+                    labelType: _extended ? null : NavigationRailLabelType.all,
                     selectedIndex: _selectedIndex,
-                    // groupAlignment: groupAlignment,
                     onDestinationSelected: _onDestinationSelected,
                     destinations: <NavigationRailDestination>[
                       NavigationRailDestination(
@@ -114,22 +113,29 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                     ],
                   ),
                 ),
-                // IconButton(
-                //   icon: Icon(Icons.settings),
-                //   onPressed: () {
-                //     _navigatorKey.currentState?.pushNamed('/setting');
-                //   },
-                // ),
+                if (!_extended) _buildMenu(),
+                if (!_extended) const SizedBox(height: 8)
               ],
             ),
             VerticalDivider(thickness: 1, width: 1, color: Colors.grey[300]),
             Expanded(
-              child: widget.child ??
-                  Navigator(
-                    key: _navigatorKey,
-                    initialRoute: widget.initialRoute,
-                    onGenerateRoute: widget.onGenerateRoute,
-                  ),
+              child: [
+                Navigator(
+                  key: _navigatorKey,
+                  initialRoute: "/file/list",
+                  onGenerateRoute: widget.onGenerateRoute,
+                ),
+                Navigator(
+                  key: _navigatorKey1,
+                  initialRoute: "/task/list",
+                  onGenerateRoute: widget.onGenerateRoute,
+                ),
+                Navigator(
+                  key: _navigatorKey2,
+                  initialRoute: "/setting",
+                  onGenerateRoute: widget.onGenerateRoute,
+                ),
+              ].elementAt(_selectedIndex),
             ),
           ],
         ),
@@ -137,13 +143,20 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
     );
   }
 
+  _buildMenu() {
+    return IconButton(
+      icon: Icon(_extended ? Icons.menu_open : Icons.menu),
+      onPressed: () {
+        setState(() {
+          _extended = !_extended;
+        });
+      },
+    );
+  }
+
   _onDestinationSelected(int index) {
-    if (index != _selectedIndex) {
-      final routes = ["/file/list", "/task/list", "/setting"];
-      _navigatorKey.currentState?.pushNamed(routes[index]);
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }

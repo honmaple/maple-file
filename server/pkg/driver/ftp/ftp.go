@@ -8,16 +8,15 @@ import (
 	"time"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
-
 	"github.com/jlaffaye/ftp"
 )
 
 type Option struct {
-	Host     string `json:"host"`
+	Host     string `json:"host"      validate:"required"`
 	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	RootPath string `json:"root_path"`
+	Username string `json:"username"  validate:"required"`
+	Password string `json:"password"  validate:"required"`
+	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -139,8 +138,8 @@ func (d *FTP) Remove(ctx context.Context, path string) error {
 }
 
 func New(opt *Option) (driver.FS, error) {
-	if opt.Username == "" || opt.Password == "" {
-		return nil, driver.ErrOption
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
 	}
 
 	if opt.Port == 0 {

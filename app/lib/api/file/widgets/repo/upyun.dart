@@ -53,18 +53,6 @@ class _UpyunState extends ConsumerState<Upyun> {
       child: Column(
         children: [
           DriverFormField(
-            label: "接入点".tr(context),
-            value: _option.endpoint,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.endpoint = result;
-              });
-
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          DriverFormField(
             label: "存储桶".tr(context),
             value: _option.bucket,
             isRequired: true,

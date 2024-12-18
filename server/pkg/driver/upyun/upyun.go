@@ -9,16 +9,14 @@ import (
 	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
-
 	"github.com/upyun/go-sdk/v3/upyun"
 )
 
 type Option struct {
-	Endpoint string `json:"endpoint"`
-	Bucket   string `json:"bucket"`
-	Operator string `json:"operator"`
-	Password string `json:"password"`
-	RootPath string `json:"root_path"`
+	Bucket   string `json:"bucket"    validate:"required"`
+	Operator string `json:"operator"  validate:"required"`
+	Password string `json:"password"  validate:"required"`
+	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -199,6 +197,10 @@ func (d *Upyun) Close() error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
+	}
+
 	d := &Upyun{
 		opt: opt,
 		client: upyun.NewUpYun(&upyun.UpYunConfig{

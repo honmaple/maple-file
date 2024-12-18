@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	PROCESS     = "maple-file"
 	VERSION     = "dev"
 	DESCRIPTION = "Upload or download file, manage cloud file"
 )

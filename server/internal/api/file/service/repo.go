@@ -36,7 +36,7 @@ func (srv *Service) verifyRepo(repo *pb.Repo) error {
 		return errors.New("重复挂载")
 	}
 	// TODO: 禁止挂载到不存在的目录
-	return driver.VerifyOption(repo.GetDriver(), repo.GetOption())
+	return driver.Verify(repo.GetDriver(), repo.GetOption())
 }
 
 func (srv *Service) ListRepos(ctx context.Context, req *pb.ListReposRequest) (*pb.ListReposResponse, error) {

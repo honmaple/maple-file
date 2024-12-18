@@ -223,13 +223,15 @@ Future<T?> showListDialog<T>(
   return showListDialog2(
     context,
     height: height,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: _dialogChildren(
-        context,
-        items: items,
-        cancelAction: cancelAction,
+    child: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: _dialogChildren(
+          context,
+          items: items,
+          cancelAction: cancelAction,
+        ),
       ),
     ),
   );

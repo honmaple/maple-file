@@ -18,12 +18,12 @@ import (
 )
 
 type Option struct {
-	Endpoint  string `json:"endpoint"`
-	Bucket    string `json:"bucket"`
+	Endpoint  string `json:"endpoint"    validate:"required"`
+	Bucket    string `json:"bucket"      validate:"required"`
 	Region    string `json:"region"`
 	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"`
-	RootPath  string `json:"root_path"`
+	SecretKey string `json:"secret_key"  validate:"required_with=AccessKey"`
+	RootPath  string `json:"root_path"   validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -305,8 +305,8 @@ func (d *S3) Get(path string) (driver.File, error) {
 }
 
 func New(opt *Option) (driver.FS, error) {
-	if opt.Endpoint == "" || opt.Bucket == "" {
-		return nil, driver.ErrOption
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
 	}
 	if opt.Region == "" {
 		opt.Region = "maple-file"

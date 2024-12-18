@@ -14,13 +14,12 @@ import (
 )
 
 type Option struct {
-	Host           string `json:"host"`
-	Port           int    `json:"port"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	PrivateKey     string `json:"private_key"`
-	PrivateKeyPath string `json:"private_key_path"`
-	RootPath       string `json:"root_path"`
+	Host       string `json:"host"        validate:"required"`
+	Port       int    `json:"port"`
+	Username   string `json:"username"    validate:"required"`
+	Password   string `json:"password"    validate:"required_without=PrivateKey"`
+	PrivateKey string `json:"private_key" validate:"required_without=Password"`
+	RootPath   string `json:"root_path"   validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -144,6 +143,10 @@ func (d *SFTP) Remove(ctx context.Context, path string) error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
+	}
+
 	config := &ssh.ClientConfig{
 		User:            opt.Username,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),

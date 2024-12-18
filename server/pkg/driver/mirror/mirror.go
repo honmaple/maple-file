@@ -17,9 +17,9 @@ import (
 )
 
 type Option struct {
-	Endpoint string `json:"endpoint"`
+	Endpoint string `json:"endpoint"  validate:"required"`
 	Format   string `json:"format"`
-	RootPath string `json:"root_path"`
+	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {

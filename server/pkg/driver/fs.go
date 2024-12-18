@@ -44,15 +44,6 @@ func (Base) Close() error                                       { return nil }
 
 var allOptions map[string]OptionCreator
 
-func VerifyOption(driver string, option string) error {
-	creator, ok := allOptions[driver]
-	if !ok {
-		return fmt.Errorf("The driver %s not found", driver)
-	}
-	opt := creator()
-	return json.Unmarshal([]byte(option), opt)
-}
-
 func DriverFS(driver string, option string) (FS, error) {
 	creator, ok := allOptions[driver]
 	if !ok {
@@ -65,8 +56,20 @@ func DriverFS(driver string, option string) (FS, error) {
 	return opt.NewFS()
 }
 
-func Exists(typ string) bool {
-	_, ok := allOptions[typ]
+func Verify(driver string, option string) error {
+	creator, ok := allOptions[driver]
+	if !ok {
+		return fmt.Errorf("The driver %s not found", driver)
+	}
+	opt := creator()
+	if err := json.Unmarshal([]byte(option), opt); err != nil {
+		return err
+	}
+	return VerifyOption(opt)
+}
+
+func Exists(driver string) bool {
+	_, ok := allOptions[driver]
 	return ok
 }
 

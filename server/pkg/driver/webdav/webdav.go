@@ -14,11 +14,11 @@ import (
 )
 
 type Option struct {
-	Endpoint string      `json:"Endpoint"`
-	Username string      `json:"username"`
-	Password string      `json:"password"`
+	Endpoint string      `json:"endpoint"  validate:"required"`
+	Username string      `json:"username"  validate:"required"`
+	Password string      `json:"password"  validate:"required"`
 	DirPerm  os.FileMode `json:"dir_perm"`
-	RootPath string      `json:"root_path"`
+	RootPath string      `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -124,11 +124,6 @@ func (d *Webdav) Open(path string) (driver.FileReader, error) {
 		return nil, err
 	}
 
-	// r, err := d.client.ReadStream(path)
-	// if err != nil {
-	//	return nil, err
-	// }
-
 	rangeFunc := func(offset, length int64) (io.ReadCloser, error) {
 		return d.client.ReadStreamRange(path, offset, length)
 	}
@@ -158,6 +153,9 @@ func (d *Webdav) Close() error {
 }
 
 func New(opt *Option) (driver.FS, error) {
+	if err := driver.VerifyOption(opt); err != nil {
+		return nil, err
+	}
 	// if opt.DirPerm == 0 {
 	//	opt.DirPerm = 755
 	// }

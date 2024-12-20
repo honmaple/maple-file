@@ -2,10 +2,8 @@ package upyun
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
@@ -31,83 +29,26 @@ type Upyun struct {
 
 var _ driver.FS = (*Upyun)(nil)
 
-func (d *Upyun) walkDir(ctx context.Context, root string, fi fs.FileInfo, fn driver.WalkDirFunc) error {
-	if fi == nil {
-		i, err := d.client.GetInfo(root)
-		if err != nil {
-			return err
-		}
-		fi = &fileinfo{i}
-
-		if err = fn(driver.NewFile(root, fi), nil); err != nil {
-			return err
-		}
-	}
-
-	if !fi.IsDir() {
-		return nil
-	}
-
-	iter := ""
-	for {
-		infos, it, err := d.client.ListObjects(&upyun.ListObjectsConfig{
-			Path: root,
-			Iter: iter,
-		})
-		if err != nil {
-			return err
-		}
-		for _, i := range infos {
-			info := &fileinfo{i}
-			file := driver.NewFile(root, info)
-
-			if err := fn(file, nil); err != nil {
-				if info.IsDir() && errors.Is(err, fs.SkipDir) {
-					continue
-				}
-				return err
-			}
-			if !info.IsDir() {
-				continue
-			}
-			if err := d.walkDir(ctx, filepath.Join(root, info.Name()), info, fn); err != nil {
-				return err
-			}
-		}
-		if it == "" {
-			break
-		}
-		iter = it
-	}
-	return nil
-}
-
 func (d *Upyun) List(ctx context.Context, path string) ([]driver.File, error) {
-	info, err := d.client.GetInfo(path)
-	if err != nil {
+	errs := make(chan error, 1)
+
+	infos := make(chan *upyun.FileInfo)
+	go func() {
+		errs <- d.client.List(&upyun.GetObjectsConfig{
+			Path:        path,
+			ObjectsChan: infos,
+		})
+	}()
+
+	files := make([]driver.File, 0)
+	for info := range infos {
+		files = append(files, driver.NewFile(path, &fileinfo{info}))
+	}
+
+	if err := <-errs; err != nil {
 		return nil, err
 	}
-
-	fi := &fileinfo{info}
-
-	if fi.IsDir() {
-		files := make([]driver.File, 0)
-
-		if err := d.walkDir(ctx, path, fi, func(file driver.File, err error) error {
-			if err != nil {
-				return err
-			}
-			files = append(files, file)
-			if file.IsDir() {
-				return fs.SkipDir
-			}
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-		return files, nil
-	}
-	return []driver.File{driver.NewFile(path, fi)}, nil
+	return files, nil
 }
 
 func (d *Upyun) Rename(ctx context.Context, path, newName string) error {
@@ -188,7 +129,7 @@ func (d *Upyun) Create(path string) (driver.FileWriter, error) {
 }
 
 func (d *Upyun) Close() error {
-	d.client.Close()
+	// 不要执行d.client.Close(), 会导致 panic: close of nil channel
 	return nil
 }
 

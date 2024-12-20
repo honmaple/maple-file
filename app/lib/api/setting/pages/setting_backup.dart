@@ -60,6 +60,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
             ],
           ),
         ),
+        const SizedBox(height: 4),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -88,6 +89,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
             },
           ),
         ),
+        const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(

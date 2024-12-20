@@ -2,9 +2,7 @@ package webdav
 
 import (
 	"context"
-	"errors"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -32,51 +30,6 @@ type Webdav struct {
 }
 
 var _ driver.FS = (*Webdav)(nil)
-
-func (d *Webdav) walkDir(ctx context.Context, root string, fi fs.FileInfo, fn driver.WalkDirFunc) error {
-	if fi == nil {
-		i, err := d.client.Stat(root)
-		if err != nil {
-			return err
-		}
-		fi = i
-
-		if err = fn(driver.NewFile(root, fi), nil); err != nil {
-			return err
-		}
-	}
-	if !fi.IsDir() {
-		return nil
-	}
-
-	infos, err := d.client.ReadDir(root)
-	if err != nil {
-		return err
-	}
-
-	for _, info := range infos {
-		path := filepath.Join(root, info.Name())
-		file := driver.NewFile(path, info)
-
-		if err := fn(file, nil); err != nil {
-			if info.IsDir() && errors.Is(err, fs.SkipDir) {
-				continue
-			}
-			return err
-		}
-		if !info.IsDir() {
-			continue
-		}
-		if err := d.walkDir(ctx, path, info, fn); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (d *Webdav) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	return d.walkDir(ctx, root, nil, fn)
-}
 
 func (d *Webdav) List(ctx context.Context, path string) ([]driver.File, error) {
 	fi, err := d.client.Stat(path)

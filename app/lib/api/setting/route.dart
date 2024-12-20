@@ -4,6 +4,7 @@ import 'package:maple_file/common/widgets/responsive.dart';
 import "pages/setting.dart";
 import "pages/setting_theme.dart";
 import "pages/setting_locale.dart";
+import "pages/setting_backup.dart";
 
 Future<void> init(CustomRouter router) async {
   router.registerMany({
@@ -24,6 +25,9 @@ Future<void> init(CustomRouter router) async {
     },
     '/setting/locale': (context) {
       return const SettingLocale();
+    },
+    '/setting/backup': (context) {
+      return const SettingBackup();
     },
   });
 }

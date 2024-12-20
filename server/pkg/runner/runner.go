@@ -11,7 +11,7 @@ type (
 		Context() context.Context
 		Execute(Task)
 		Submit(string, func(Task) error, ...taskOption) Task
-		SubmitByOption(Option, ...taskOption) Task
+		SubmitByTask(Task) Task
 		Get(string) (Task, bool)
 		GetAll(...func(Task) bool) []Task
 		Retry(string) error
@@ -21,7 +21,7 @@ type (
 		Remove(string) error
 		RemoveAll(...func(Task) bool)
 	}
-	TaskFilter func(Task) bool
+	TaskFilterFunc func(Task) bool
 )
 
 type runner struct {
@@ -47,16 +47,14 @@ func (m *runner) Execute(task Task) {
 }
 
 func (m *runner) Submit(name string, fn func(Task) error, taskOpts ...taskOption) Task {
-	task := NewTask(m.ctx, name, fn, taskOpts...)
+	return m.SubmitByTask(NewTask(m.ctx, name, fn, taskOpts...))
+}
 
+func (m *runner) SubmitByTask(task Task) Task {
 	m.tasks.Store(task.Id(), task)
 
 	go m.Execute(task)
 	return task
-}
-
-func (m *runner) SubmitByOption(opt Option, taskOpts ...taskOption) Task {
-	return m.Submit(opt.String(), opt.Execute, taskOpts...)
 }
 
 func (m *runner) Get(id string) (Task, bool) {

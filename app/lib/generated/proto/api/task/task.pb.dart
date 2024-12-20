@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import '../../google/protobuf/timestamp.pb.dart' as $1;
+import '../../google/protobuf/timestamp.pb.dart' as $2;
 import 'task.pbenum.dart';
 
 export 'task.pbenum.dart';
@@ -21,14 +21,14 @@ export 'task.pbenum.dart';
 class Task extends $pb.GeneratedMessage {
   factory Task({
     $core.String? id,
-    $1.Timestamp? startTime,
-    $1.Timestamp? endTime,
+    $2.Timestamp? startTime,
+    $2.Timestamp? endTime,
     $core.String? name,
+    TaskState? state,
     $core.double? progress,
     $core.String? progressState,
-    $core.String? kind,
-    $core.String? option,
-    TaskState? state,
+    $core.String? log,
+    $core.String? err,
   }) {
     final $result = create();
     if (id != null) {
@@ -43,20 +43,20 @@ class Task extends $pb.GeneratedMessage {
     if (name != null) {
       $result.name = name;
     }
+    if (state != null) {
+      $result.state = state;
+    }
     if (progress != null) {
       $result.progress = progress;
     }
     if (progressState != null) {
       $result.progressState = progressState;
     }
-    if (kind != null) {
-      $result.kind = kind;
+    if (log != null) {
+      $result.log = log;
     }
-    if (option != null) {
-      $result.option = option;
-    }
-    if (state != null) {
-      $result.state = state;
+    if (err != null) {
+      $result.err = err;
     }
     return $result;
   }
@@ -66,14 +66,14 @@ class Task extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Task', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.task'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOM<$1.Timestamp>(2, _omitFieldNames ? '' : 'startTime', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'endTime', subBuilder: $1.Timestamp.create)
-    ..aOS(5, _omitFieldNames ? '' : 'name')
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'progress', $pb.PbFieldType.OD)
-    ..aOS(8, _omitFieldNames ? '' : 'progressState')
-    ..aOS(9, _omitFieldNames ? '' : 'kind')
-    ..aOS(10, _omitFieldNames ? '' : 'option')
-    ..e<TaskState>(11, _omitFieldNames ? '' : 'state', $pb.PbFieldType.OE, defaultOrMaker: TaskState.TASK_STATE_UNSPECIFIED, valueOf: TaskState.valueOf, enumValues: TaskState.values)
+    ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'startTime', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'endTime', subBuilder: $2.Timestamp.create)
+    ..aOS(4, _omitFieldNames ? '' : 'name')
+    ..e<TaskState>(5, _omitFieldNames ? '' : 'state', $pb.PbFieldType.OE, defaultOrMaker: TaskState.TASK_STATE_UNSPECIFIED, valueOf: TaskState.valueOf, enumValues: TaskState.values)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'progress', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'progressState')
+    ..aOS(8, _omitFieldNames ? '' : 'log')
+    ..aOS(9, _omitFieldNames ? '' : 'err')
     ..hasRequiredFields = false
   ;
 
@@ -110,99 +110,91 @@ class Task extends $pb.GeneratedMessage {
 
   /// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
   @$pb.TagNumber(2)
-  $1.Timestamp get startTime => $_getN(1);
+  $2.Timestamp get startTime => $_getN(1);
   @$pb.TagNumber(2)
-  set startTime($1.Timestamp v) { setField(2, v); }
+  set startTime($2.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasStartTime() => $_has(1);
   @$pb.TagNumber(2)
   void clearStartTime() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Timestamp ensureStartTime() => $_ensure(1);
+  $2.Timestamp ensureStartTime() => $_ensure(1);
 
   /// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
   @$pb.TagNumber(3)
-  $1.Timestamp get endTime => $_getN(2);
+  $2.Timestamp get endTime => $_getN(2);
   @$pb.TagNumber(3)
-  set endTime($1.Timestamp v) { setField(3, v); }
+  set endTime($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasEndTime() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndTime() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Timestamp ensureEndTime() => $_ensure(2);
+  $2.Timestamp ensureEndTime() => $_ensure(2);
 
   /// @gotags: gorm:"not null;"
-  @$pb.TagNumber(5)
+  @$pb.TagNumber(4)
   $core.String get name => $_getSZ(3);
-  @$pb.TagNumber(5)
+  @$pb.TagNumber(4)
   set name($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(5)
+  @$pb.TagNumber(4)
   $core.bool hasName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearName() => clearField(4);
+
   @$pb.TagNumber(5)
-  void clearName() => clearField(5);
+  TaskState get state => $_getN(4);
+  @$pb.TagNumber(5)
+  set state(TaskState v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasState() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearState() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get progress => $_getN(5);
+  @$pb.TagNumber(6)
+  set progress($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProgress() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProgress() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.double get progress => $_getN(4);
+  $core.String get progressState => $_getSZ(6);
   @$pb.TagNumber(7)
-  set progress($core.double v) { $_setDouble(4, v); }
+  set progressState($core.String v) { $_setString(6, v); }
   @$pb.TagNumber(7)
-  $core.bool hasProgress() => $_has(4);
+  $core.bool hasProgressState() => $_has(6);
   @$pb.TagNumber(7)
-  void clearProgress() => clearField(7);
+  void clearProgressState() => clearField(7);
 
   @$pb.TagNumber(8)
-  $core.String get progressState => $_getSZ(5);
+  $core.String get log => $_getSZ(7);
   @$pb.TagNumber(8)
-  set progressState($core.String v) { $_setString(5, v); }
+  set log($core.String v) { $_setString(7, v); }
   @$pb.TagNumber(8)
-  $core.bool hasProgressState() => $_has(5);
+  $core.bool hasLog() => $_has(7);
   @$pb.TagNumber(8)
-  void clearProgressState() => clearField(8);
+  void clearLog() => clearField(8);
 
   @$pb.TagNumber(9)
-  $core.String get kind => $_getSZ(6);
+  $core.String get err => $_getSZ(8);
   @$pb.TagNumber(9)
-  set kind($core.String v) { $_setString(6, v); }
+  set err($core.String v) { $_setString(8, v); }
   @$pb.TagNumber(9)
-  $core.bool hasKind() => $_has(6);
+  $core.bool hasErr() => $_has(8);
   @$pb.TagNumber(9)
-  void clearKind() => clearField(9);
-
-  @$pb.TagNumber(10)
-  $core.String get option => $_getSZ(7);
-  @$pb.TagNumber(10)
-  set option($core.String v) { $_setString(7, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasOption() => $_has(7);
-  @$pb.TagNumber(10)
-  void clearOption() => clearField(10);
-
-  @$pb.TagNumber(11)
-  TaskState get state => $_getN(8);
-  @$pb.TagNumber(11)
-  set state(TaskState v) { setField(11, v); }
-  @$pb.TagNumber(11)
-  $core.bool hasState() => $_has(8);
-  @$pb.TagNumber(11)
-  void clearState() => clearField(11);
+  void clearErr() => clearField(9);
 }
 
 class ListTasksRequest extends $pb.GeneratedMessage {
   factory ListTasksRequest({
-    $core.int? pageNum,
-    $core.String? pageToken,
-    $core.String? state,
+    $core.Map<$core.String, $core.String>? filter,
   }) {
     final $result = create();
-    if (pageNum != null) {
-      $result.pageNum = pageNum;
-    }
-    if (pageToken != null) {
-      $result.pageToken = pageToken;
-    }
-    if (state != null) {
-      $result.state = state;
+    if (filter != null) {
+      $result.filter.addAll(filter);
     }
     return $result;
   }
@@ -211,9 +203,7 @@ class ListTasksRequest extends $pb.GeneratedMessage {
   factory ListTasksRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListTasksRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.task'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'pageNum', $pb.PbFieldType.O3)
-    ..aOS(2, _omitFieldNames ? '' : 'pageToken')
-    ..aOS(3, _omitFieldNames ? '' : 'state')
+    ..m<$core.String, $core.String>(1, _omitFieldNames ? '' : 'filter', entryClassName: 'ListTasksRequest.FilterEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('api.task'))
     ..hasRequiredFields = false
   ;
 
@@ -239,31 +229,7 @@ class ListTasksRequest extends $pb.GeneratedMessage {
   static ListTasksRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get pageNum => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set pageNum($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPageNum() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPageNum() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get pageToken => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set pageToken($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPageToken() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPageToken() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get state => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set state($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasState() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearState() => clearField(3);
+  $core.Map<$core.String, $core.String> get filter => $_getMap(0);
 }
 
 class ListTasksResponse extends $pb.GeneratedMessage {
@@ -281,7 +247,7 @@ class ListTasksResponse extends $pb.GeneratedMessage {
   factory ListTasksResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListTasksResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.task'), createEmptyInstance: create)
-    ..pc<Task>(3, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: Task.create)
+    ..pc<Task>(1, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: Task.create)
     ..hasRequiredFields = false
   ;
 
@@ -306,7 +272,7 @@ class ListTasksResponse extends $pb.GeneratedMessage {
   static ListTasksResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListTasksResponse>(create);
   static ListTasksResponse? _defaultInstance;
 
-  @$pb.TagNumber(3)
+  @$pb.TagNumber(1)
   $core.List<Task> get results => $_getList(0);
 }
 

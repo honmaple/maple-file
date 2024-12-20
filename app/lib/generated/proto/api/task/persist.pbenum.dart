@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: api/setting/ping.proto
+//  source: api/task/persist.proto
 //
 // @dart = 2.12
 

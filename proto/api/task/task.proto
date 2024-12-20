@@ -27,22 +27,20 @@ message Task {
 	google.protobuf.Timestamp end_time   = 3;
 
 	// @gotags: gorm:"not null;"
-	string name = 5;
-	double progress = 7;
-	string progress_state = 8;
-	string kind = 9;
-	string option = 10;
-	TaskState state = 11;
+	string    name = 4;
+	TaskState state = 5;
+	double progress = 6;
+	string progress_state = 7;
+	string log = 8;
+	string err = 9;
 }
 
 message ListTasksRequest {
-	int32  page_num = 1;
-	string page_token = 2;
-	string state = 3;
+	map<string, string> filter = 1;
 }
 
 message ListTasksResponse {
-	repeated Task results = 3;
+	repeated Task results = 1;
 }
 
 message RetryTaskRequest {

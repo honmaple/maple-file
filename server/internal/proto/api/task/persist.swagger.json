@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/setting/ping.proto",
+    "title": "api/task/persist.proto",
     "version": "version not set"
   },
   "consumes": [

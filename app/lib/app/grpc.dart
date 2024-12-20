@@ -10,19 +10,32 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 import '../generated/ffi/libserver.dart';
 
-Future<T?> doFuture<T>(
-  Future<T> Function() callback,
-) async {
-  Widget bar;
+class Response<T> {
+  final T? data;
+  final String? error;
+
+  const Response({this.data, this.error});
+
+  bool get hasErr => error != null;
+  bool get hasData => data != null;
+}
+
+Future<Response<T>> doFuture<T>(
+  Future<T> Function() callback, {
+  bool showError = true,
+}) async {
+  String err;
   try {
-    return await callback();
+    return Response(data: await callback());
   } on GrpcError catch (e) {
-    bar = Text(e.message ?? e.toString());
+    err = e.message ?? e.toString();
   } catch (e) {
-    bar = Text(e.toString());
+    err = e.toString();
   }
-  Messenger.showSnackBar(bar);
-  return null;
+  if (showError) {
+    Messenger.showSnackBar(Text(err));
+  }
+  return Response(error: err);
 }
 
 class GRPC {

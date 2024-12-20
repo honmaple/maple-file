@@ -64,23 +64,6 @@ func (d *FTP) Create(path string) (driver.FileWriter, error) {
 	return w, nil
 }
 
-func (d *FTP) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	walker := d.client.Walk(root)
-	for walker.Next() {
-		if walker.Err() != nil {
-			continue
-		}
-		err := fn(driver.NewFile(walker.Path(), &fileinfo{walker.Stat()}), walker.Err())
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (d *FTP) List(ctx context.Context, path string) ([]driver.File, error) {
 	fi, err := d.client.GetEntry(path)
 	if err != nil {

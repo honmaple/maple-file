@@ -82,10 +82,6 @@ func (d *Upyun) walkDir(ctx context.Context, root string, fi fs.FileInfo, fn dri
 	return nil
 }
 
-func (d *Upyun) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	return d.walkDir(ctx, root, nil, fn)
-}
-
 func (d *Upyun) List(ctx context.Context, path string) ([]driver.File, error) {
 	info, err := d.client.GetInfo(path)
 	if err != nil {

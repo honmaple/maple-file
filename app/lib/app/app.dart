@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:window_manager/window_manager.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:permission_handler/permission_handler.dart';
 
 import '../common/utils/util.dart';
 
@@ -27,6 +27,8 @@ class App {
   static const initialRoute = "/";
 
   static final router = CustomRouter();
+
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   App._internal() {
     print("init app");

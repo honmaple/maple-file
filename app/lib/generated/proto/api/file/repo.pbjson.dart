@@ -65,13 +65,13 @@ final $typed_data.Uint8List listReposRequestDescriptor = $convert.base64Decode(
 const ListReposResponse$json = {
   '1': 'ListReposResponse',
   '2': [
-    {'1': 'results', '3': 3, '4': 3, '5': 11, '6': '.api.file.Repo', '10': 'results'},
+    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.api.file.Repo', '10': 'results'},
   ],
 };
 
 /// Descriptor for `ListReposResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listReposResponseDescriptor = $convert.base64Decode(
-    'ChFMaXN0UmVwb3NSZXNwb25zZRIoCgdyZXN1bHRzGAMgAygLMg4uYXBpLmZpbGUuUmVwb1IHcm'
+    'ChFMaXN0UmVwb3NSZXNwb25zZRIoCgdyZXN1bHRzGAEgAygLMg4uYXBpLmZpbGUuUmVwb1IHcm'
     'VzdWx0cw==');
 
 @$core.Deprecated('Use createRepoRequestDescriptor instead')

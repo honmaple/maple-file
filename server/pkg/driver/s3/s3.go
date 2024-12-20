@@ -47,46 +47,6 @@ func (d *S3) getPath(path string, isDir bool) string {
 	return path
 }
 
-func (d *S3) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	root = d.getPath(root, true)
-
-	input := &s3.ListObjectsInput{
-		Bucket:  aws.String(d.opt.Bucket),
-		Prefix:  aws.String(root),
-		MaxKeys: aws.Int64(1000),
-	}
-
-	for {
-		result, err := d.client.ListObjectsWithContext(ctx, input)
-		if err != nil {
-			return err
-		}
-
-		// 处理目录
-		for _, object := range result.CommonPrefixes {
-			err := fn(driver.NewFile(*input.Prefix, &dirinfo{object}), nil)
-			if err != nil {
-				return err
-			}
-		}
-
-		// 处理文件
-		for _, object := range result.Contents {
-			err := fn(driver.NewFile(*input.Prefix, &fileinfo{object}), nil)
-			if err != nil {
-				return err
-			}
-		}
-
-		if result.IsTruncated != nil && *result.IsTruncated {
-			input.Marker = result.NextMarker
-		} else {
-			break
-		}
-	}
-	return nil
-}
-
 func (d *S3) List(ctx context.Context, path string) ([]driver.File, error) {
 	input := &s3.ListObjectsInput{
 		Bucket:    aws.String(d.opt.Bucket),

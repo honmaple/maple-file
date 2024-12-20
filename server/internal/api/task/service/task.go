@@ -32,6 +32,9 @@ func (srv *Service) ListTasks(ctx context.Context, in *pb.ListTasksRequest) (*pb
 			StartTime:     timestamppb.New(m.StartTime()),
 			EndTime:       timestamppb.New(m.EndTime()),
 		}
+		if err := m.Err(); err != nil {
+			result.Err = err.Error()
+		}
 		results = append(results, result)
 	}
 	return &pb.ListTasksResponse{Results: results}, nil

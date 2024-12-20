@@ -35,7 +35,7 @@ class FileService {
       ListFilesResponse response = await _client.list(request);
       return response.results;
     });
-    return result ?? <File>[];
+    return result.data ?? <File>[];
   }
 
   Future<void> move(
@@ -153,8 +153,8 @@ class FileService {
   Future<List<File>?> upload(
     String path,
     List<io.File> files,
-  ) {
-    return doFuture(() async {
+  ) async {
+    final result = await doFuture(() async {
       List<File> results = <File>[];
 
       for (final file in files) {
@@ -164,10 +164,11 @@ class FileService {
       }
       return results;
     });
+    return result.data;
   }
 
-  Future<Uint8List?> preview(String path) {
-    return doFuture(() async {
+  Future<Uint8List?> preview(String path) async {
+    final result = await doFuture(() async {
       PreviewFileRequest request = PreviewFileRequest(path: path);
 
       final response = _client.preview(request);
@@ -188,6 +189,7 @@ class FileService {
       }
       return bytes;
     });
+    return result.data;
   }
 
   Future<void> download(String path, io.File file) {
@@ -216,7 +218,7 @@ class FileService {
       ListReposResponse response = await _client.listRepos(request);
       return response.results;
     });
-    return result ?? <Repo>[];
+    return result.data ?? <Repo>[];
   }
 
   Future<void> testRepo(Repo payload) {
@@ -230,25 +232,27 @@ class FileService {
     });
   }
 
-  Future<void> createRepo(Repo payload) {
-    return doFuture(() {
+  Future<Response<Repo>> createRepo(Repo payload) {
+    return doFuture(() async {
       CreateRepoRequest request = CreateRepoRequest(payload: payload);
-      return _client.createRepo(request);
+      CreateRepoResponse response = await _client.createRepo(request);
+      return response.result;
     });
   }
 
-  Future<void> updateRepo(Repo payload) async {
-    return doFuture(() {
-      UpdateRepoRequest request = UpdateRepoRequest();
-      request.payload = payload;
-      return _client.updateRepo(request);
+  Future<Response<Repo>> updateRepo(Repo payload) {
+    return doFuture(() async {
+      UpdateRepoRequest request = UpdateRepoRequest(payload: payload);
+      UpdateRepoResponse response = await _client.updateRepo(request);
+      return response.result;
     });
   }
 
-  Future<void> deleteRepo(int id) async {
+  Future<void> deleteRepo(int id) {
     return doFuture(() {
       DeleteRepoRequest request = DeleteRepoRequest(id: id);
       return _client.deleteRepo(request);
     });
   }
+
 }

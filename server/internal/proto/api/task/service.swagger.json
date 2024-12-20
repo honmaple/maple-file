@@ -80,7 +80,169 @@
         ]
       }
     },
-    "/api/task/move": {
+    "/api/task/persist": {
+      "post": {
+        "operationId": "TaskService_CreatePersistTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskCreatePersistTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/taskCreatePersistTaskRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TaskService"
+        ]
+      }
+    },
+    "/api/task/persist/list": {
+      "get": {
+        "operationId": "TaskService_ListPersistTasks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskListPersistTasksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "filter",
+            "description": "This is a request variable of the map type. The query format is \"map_name[key]=value\", e.g. If the map name is Age, the key type is string, and the value type is integer, the query parameter is expressed as Age[\"bob\"]=18",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TaskService"
+        ]
+      }
+    },
+    "/api/task/persist/{id}": {
+      "delete": {
+        "operationId": "TaskService_DeletePersistTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskDeletePersistTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "TaskService"
+        ]
+      }
+    },
+    "/api/task/persist/{payload.id}": {
+      "put": {
+        "operationId": "TaskService_UpdatePersistTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/taskUpdatePersistTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "payload.id",
+            "description": "@gotags: gorm:\"primary_key;auto_increment\"",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+                },
+                "name": {
+                  "type": "string",
+                  "title": "@gotags: gorm:\"not null;unique\""
+                },
+                "status": {
+                  "type": "boolean"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "option": {
+                  "type": "string"
+                },
+                "cronOption": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "TaskService"
+        ]
+      }
+    },
+    "/api/task/remove": {
       "post": {
         "operationId": "TaskService_RemoveTask",
         "responses": {
@@ -188,18 +350,48 @@
     "taskCancelTaskResponse": {
       "type": "object"
     },
+    "taskCreatePersistTaskRequest": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/definitions/taskPersistTask"
+        }
+      }
+    },
+    "taskCreatePersistTaskResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/taskPersistTask"
+        }
+      }
+    },
+    "taskDeletePersistTaskResponse": {
+      "type": "object"
+    },
+    "taskExecutePersistTaskResponse": {
+      "type": "object"
+    },
+    "taskListPersistTasksResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/taskPersistTask"
+          }
+        }
+      }
+    },
     "taskListTasksRequest": {
       "type": "object",
       "properties": {
-        "pageNum": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "pageToken": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
+        "filter": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -212,6 +404,42 @@
             "type": "object",
             "$ref": "#/definitions/taskTask"
           }
+        }
+      }
+    },
+    "taskPersistTask": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "name": {
+          "type": "string",
+          "title": "@gotags: gorm:\"not null;unique\""
+        },
+        "status": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "option": {
+          "type": "string"
+        },
+        "cronOption": {
+          "type": "string"
         }
       }
     },
@@ -264,6 +492,9 @@
           "type": "string",
           "title": "@gotags: gorm:\"not null;\""
         },
+        "state": {
+          "$ref": "#/definitions/taskTaskState"
+        },
         "progress": {
           "type": "number",
           "format": "double"
@@ -271,14 +502,11 @@
         "progressState": {
           "type": "string"
         },
-        "kind": {
+        "log": {
           "type": "string"
         },
-        "option": {
+        "err": {
           "type": "string"
-        },
-        "state": {
-          "$ref": "#/definitions/taskTaskState"
         }
       }
     },
@@ -294,6 +522,14 @@
         "TASK_STATE_FAILED"
       ],
       "default": "TASK_STATE_UNSPECIFIED"
+    },
+    "taskUpdatePersistTaskResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/taskPersistTask"
+        }
+      }
     }
   }
 }

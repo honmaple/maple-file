@@ -38,6 +38,7 @@ class MyApp extends ConsumerWidget {
     final locale = Locale(appearance.locale);
 
     return MaterialApp(
+      navigatorKey: App.navigatorKey,
       title: '红枫云盘'.tr(context),
       locale: I18n.delegate.isSupported(locale) ? locale : null,
       scrollBehavior: const MaterialScrollBehavior().copyWith(

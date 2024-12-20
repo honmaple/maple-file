@@ -205,6 +205,7 @@ func (t *memoryTask) SetProgressState(p string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.progressState = p
+	t.logger.Info(p)
 }
 
 func (t *memoryTask) Run() {

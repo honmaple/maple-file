@@ -42,12 +42,12 @@ const Task$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'start_time', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startTime'},
     {'1': 'end_time', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endTime'},
-    {'1': 'name', '3': 5, '4': 1, '5': 9, '10': 'name'},
-    {'1': 'progress', '3': 7, '4': 1, '5': 1, '10': 'progress'},
-    {'1': 'progress_state', '3': 8, '4': 1, '5': 9, '10': 'progressState'},
-    {'1': 'kind', '3': 9, '4': 1, '5': 9, '10': 'kind'},
-    {'1': 'option', '3': 10, '4': 1, '5': 9, '10': 'option'},
-    {'1': 'state', '3': 11, '4': 1, '5': 14, '6': '.api.task.TaskState', '10': 'state'},
+    {'1': 'name', '3': 4, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'state', '3': 5, '4': 1, '5': 14, '6': '.api.task.TaskState', '10': 'state'},
+    {'1': 'progress', '3': 6, '4': 1, '5': 1, '10': 'progress'},
+    {'1': 'progress_state', '3': 7, '4': 1, '5': 9, '10': 'progressState'},
+    {'1': 'log', '3': 8, '4': 1, '5': 9, '10': 'log'},
+    {'1': 'err', '3': 9, '4': 1, '5': 9, '10': 'err'},
   ],
 };
 
@@ -55,37 +55,47 @@ const Task$json = {
 final $typed_data.Uint8List taskDescriptor = $convert.base64Decode(
     'CgRUYXNrEg4KAmlkGAEgASgJUgJpZBI5CgpzdGFydF90aW1lGAIgASgLMhouZ29vZ2xlLnByb3'
     'RvYnVmLlRpbWVzdGFtcFIJc3RhcnRUaW1lEjUKCGVuZF90aW1lGAMgASgLMhouZ29vZ2xlLnBy'
-    'b3RvYnVmLlRpbWVzdGFtcFIHZW5kVGltZRISCgRuYW1lGAUgASgJUgRuYW1lEhoKCHByb2dyZX'
-    'NzGAcgASgBUghwcm9ncmVzcxIlCg5wcm9ncmVzc19zdGF0ZRgIIAEoCVINcHJvZ3Jlc3NTdGF0'
-    'ZRISCgRraW5kGAkgASgJUgRraW5kEhYKBm9wdGlvbhgKIAEoCVIGb3B0aW9uEikKBXN0YXRlGA'
-    'sgASgOMhMuYXBpLnRhc2suVGFza1N0YXRlUgVzdGF0ZQ==');
+    'b3RvYnVmLlRpbWVzdGFtcFIHZW5kVGltZRISCgRuYW1lGAQgASgJUgRuYW1lEikKBXN0YXRlGA'
+    'UgASgOMhMuYXBpLnRhc2suVGFza1N0YXRlUgVzdGF0ZRIaCghwcm9ncmVzcxgGIAEoAVIIcHJv'
+    'Z3Jlc3MSJQoOcHJvZ3Jlc3Nfc3RhdGUYByABKAlSDXByb2dyZXNzU3RhdGUSEAoDbG9nGAggAS'
+    'gJUgNsb2cSEAoDZXJyGAkgASgJUgNlcnI=');
 
 @$core.Deprecated('Use listTasksRequestDescriptor instead')
 const ListTasksRequest$json = {
   '1': 'ListTasksRequest',
   '2': [
-    {'1': 'page_num', '3': 1, '4': 1, '5': 5, '10': 'pageNum'},
-    {'1': 'page_token', '3': 2, '4': 1, '5': 9, '10': 'pageToken'},
-    {'1': 'state', '3': 3, '4': 1, '5': 9, '10': 'state'},
+    {'1': 'filter', '3': 1, '4': 3, '5': 11, '6': '.api.task.ListTasksRequest.FilterEntry', '10': 'filter'},
   ],
+  '3': [ListTasksRequest_FilterEntry$json],
+};
+
+@$core.Deprecated('Use listTasksRequestDescriptor instead')
+const ListTasksRequest_FilterEntry$json = {
+  '1': 'FilterEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': {'7': true},
 };
 
 /// Descriptor for `ListTasksRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listTasksRequestDescriptor = $convert.base64Decode(
-    'ChBMaXN0VGFza3NSZXF1ZXN0EhkKCHBhZ2VfbnVtGAEgASgFUgdwYWdlTnVtEh0KCnBhZ2VfdG'
-    '9rZW4YAiABKAlSCXBhZ2VUb2tlbhIUCgVzdGF0ZRgDIAEoCVIFc3RhdGU=');
+    'ChBMaXN0VGFza3NSZXF1ZXN0Ej4KBmZpbHRlchgBIAMoCzImLmFwaS50YXNrLkxpc3RUYXNrc1'
+    'JlcXVlc3QuRmlsdGVyRW50cnlSBmZpbHRlcho5CgtGaWx0ZXJFbnRyeRIQCgNrZXkYASABKAlS'
+    'A2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
 
 @$core.Deprecated('Use listTasksResponseDescriptor instead')
 const ListTasksResponse$json = {
   '1': 'ListTasksResponse',
   '2': [
-    {'1': 'results', '3': 3, '4': 3, '5': 11, '6': '.api.task.Task', '10': 'results'},
+    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.api.task.Task', '10': 'results'},
   ],
 };
 
 /// Descriptor for `ListTasksResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List listTasksResponseDescriptor = $convert.base64Decode(
-    'ChFMaXN0VGFza3NSZXNwb25zZRIoCgdyZXN1bHRzGAMgAygLMg4uYXBpLnRhc2suVGFza1IHcm'
+    'ChFMaXN0VGFza3NSZXNwb25zZRIoCgdyZXN1bHRzGAEgAygLMg4uYXBpLnRhc2suVGFza1IHcm'
     'VzdWx0cw==');
 
 @$core.Deprecated('Use retryTaskRequestDescriptor instead')

@@ -7,6 +7,7 @@ import (
 
 	"github.com/honmaple/maple-file/server/internal/app"
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
@@ -19,6 +20,8 @@ type FS interface {
 	CreateRepo(*pb.Repo)
 	UpdateRepo(*pb.Repo, *pb.Repo)
 	DeleteRepo(*pb.Repo)
+	SubmitTask(Task) runner.Task
+	SubmitTaskByOption(TaskOption) (runner.Task, error)
 }
 
 type repoFS struct {
@@ -112,6 +115,18 @@ func (d *defaultFS) DeleteRepo(repo *pb.Repo) {
 
 	d.repos.Delete(rootPath)
 	d.cache.Delete(rootPath)
+}
+
+func (d *defaultFS) SubmitTask(task Task) runner.Task {
+	return d.app.Runner.Submit(task.String(), task.Execute)
+}
+
+func (d *defaultFS) SubmitTaskByOption(opt TaskOption) (runner.Task, error) {
+	t, err := opt.NewTask(d)
+	if err != nil {
+		return nil, err
+	}
+	return d.app.Runner.Submit(t.String(), t.Execute), nil
 }
 
 func (d *defaultFS) loadRepos() error {

@@ -113,10 +113,9 @@ class DriverFormField extends StatelessWidget {
   ) {
     bool isEmpty = value == null || value == "";
     if (type == DriverFormFieldType.password) {
-      if (isEmpty) {
-        return Text("未设置".tr(context));
+      if (!isEmpty) {
+        return const Icon(Icons.more_horiz);
       }
-      return const Icon(Icons.more_horiz);
     }
     return Wrap(
       children: [

@@ -118,19 +118,6 @@ func copyFile(src, dst string) (err error) {
 	return
 }
 
-func (d *Local) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	return filepath.WalkDir(root, func(file string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return fn(nil, err)
-		}
-		info, err := entry.Info()
-		if err != nil {
-			return fn(nil, err)
-		}
-		return fn(driver.NewFile(file, info), nil)
-	})
-}
-
 func (d *Local) List(ctx context.Context, path string) ([]driver.File, error) {
 	fi, err := os.Stat(path)
 	if err != nil {

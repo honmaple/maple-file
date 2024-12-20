@@ -230,7 +230,7 @@ class ListReposResponse extends $pb.GeneratedMessage {
   factory ListReposResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListReposResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
-    ..pc<Repo>(3, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: Repo.create)
+    ..pc<Repo>(1, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: Repo.create)
     ..hasRequiredFields = false
   ;
 
@@ -255,7 +255,7 @@ class ListReposResponse extends $pb.GeneratedMessage {
   static ListReposResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListReposResponse>(create);
   static ListReposResponse? _defaultInstance;
 
-  @$pb.TagNumber(3)
+  @$pb.TagNumber(1)
   $core.List<Repo> get results => $_getList(0);
 }
 

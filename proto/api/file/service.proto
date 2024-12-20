@@ -87,4 +87,29 @@ service FileService {
 		};
 	}
 	rpc TestRepo (TestRepoRequest) returns (TestRepoResponse) {}
+
+
+	// rpc ListTasks (ListTasksRequest) returns (ListTasksResponse) {
+	//	option (google.api.http) = {
+	//		get: "/api/file/tasks"
+	//	};
+	// }
+	// rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {
+	//	option (google.api.http) = {
+	//		post: "/api/file/tasks"
+	//		body: "*"
+	//	};
+	// }
+	// rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {
+	//	option (google.api.http) = {
+	//		put: "/api/file/tasks/{payload.id}"
+	//		body: "payload"
+	//	};
+	// }
+	// rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse) {
+	//	option (google.api.http) = {
+	//		delete: "/api/file/tasks/{id}"
+	//	};
+	// }
+	// rpc ExecuteTask (ExecuteTaskRequest) returns (ExecuteTaskResponse) {}
 }

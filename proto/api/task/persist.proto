@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package api.task;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "api/task";
+
+message PersistTask {
+	// @gotags: gorm:"primary_key;auto_increment"
+	int32 id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp created_at = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp updated_at = 3;
+
+	// @gotags: gorm:"not null;unique"
+	string name = 4;
+	bool   status = 5;
+	string type = 6;
+	string option = 7;
+	string cron_option = 8;
+}
+
+message ListPersistTasksRequest {
+	map<string, string> filter = 1;
+}
+
+message ListPersistTasksResponse {
+	repeated PersistTask results = 1;
+}
+
+message CreatePersistTaskRequest {
+	PersistTask payload = 1;
+}
+
+message CreatePersistTaskResponse {
+	PersistTask result = 1;
+}
+
+message UpdatePersistTaskRequest {
+	PersistTask payload = 1;
+}
+
+message UpdatePersistTaskResponse {
+	PersistTask result = 1;
+}
+
+message DeletePersistTaskRequest {
+	int32 id = 1;
+}
+
+message DeletePersistTaskResponse {}
+
+message ExecutePersistTaskRequest {
+	int32 id = 1;
+}
+
+message ExecutePersistTaskResponse {}

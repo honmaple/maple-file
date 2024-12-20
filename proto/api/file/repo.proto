@@ -27,7 +27,7 @@ message ListReposRequest {
 }
 
 message ListReposResponse {
-	repeated Repo results = 3;
+	repeated Repo results = 1;
 }
 
 message CreateRepoRequest {

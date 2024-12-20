@@ -59,6 +59,7 @@ class _AlistState extends State<Alist> {
             type: DriverFormFieldType.password,
             label: "密码".tr(context),
             value: _option["password"],
+            isRequired: true,
             onTap: (result) {
               setState(() {
                 _option["password"] = result;

@@ -3,7 +3,6 @@ package smb
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"net"
 	"path/filepath"
 	"strings"
@@ -51,19 +50,6 @@ func (d *SMB) Open(path string) (driver.FileReader, error) {
 
 func (d *SMB) Create(path string) (driver.FileWriter, error) {
 	return d.client.Create(path)
-}
-
-func (d *SMB) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	return fs.WalkDir(d.client.DirFS(root), ".", func(path string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return fn(nil, err)
-		}
-		info, err := entry.Info()
-		if err != nil {
-			return fn(nil, err)
-		}
-		return fn(driver.NewFile(path, info), nil)
-	})
 }
 
 func (d *SMB) List(ctx context.Context, path string) ([]driver.File, error) {

@@ -4,6 +4,7 @@ package api.task;
 
 import "google/api/annotations.proto";
 import "api/task/task.proto";
+import "api/task/persist.proto";
 
 option go_package = "api/task";
 
@@ -28,8 +29,32 @@ service TaskService {
 	}
 	rpc RemoveTask (RemoveTaskRequest) returns (RemoveTaskResponse) {
 		option (google.api.http) = {
-			post: "/api/task/move"
+			post: "/api/task/remove"
 			body: "*"
 		};
 	}
+
+	rpc ListPersistTasks (ListPersistTasksRequest) returns (ListPersistTasksResponse) {
+		option (google.api.http) = {
+			get: "/api/task/persist/list"
+		};
+	}
+	rpc CreatePersistTask (CreatePersistTaskRequest) returns (CreatePersistTaskResponse) {
+		option (google.api.http) = {
+			post: "/api/task/persist"
+			body: "*"
+		};
+	}
+	rpc UpdatePersistTask (UpdatePersistTaskRequest) returns (UpdatePersistTaskResponse) {
+		option (google.api.http) = {
+			put: "/api/task/persist/{payload.id}"
+			body: "payload"
+		};
+	}
+	rpc DeletePersistTask (DeletePersistTaskRequest) returns (DeletePersistTaskResponse) {
+		option (google.api.http) = {
+			delete: "/api/task/persist/{id}"
+		};
+	}
+	rpc ExecutePersistTask (ExecutePersistTaskRequest) returns (ExecutePersistTaskResponse) {}
 }

@@ -38,6 +38,16 @@ class PathUtil {
     }
   }
 
+  static Future<String> getApplicationPath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return dir.path;
+  }
+
+  static Future<String> getDatabasePath() async {
+    final dir = await getApplicationDocumentsDirectory();
+    return filepath.join(dir.path, "server.db");
+  }
+
   static RegExp exp = RegExp(r'(.*?)\.(\d+)$');
 
   static String autoRename(String path) {
@@ -115,4 +125,51 @@ class PathUtil {
   static bool isFolder(String name, {String? type}) {
     return type == "DIR" || name.endsWith("/");
   }
+
+  static const List<String> imageTypes = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.svg',
+    '.ico',
+    '.tiff',
+    '.bmp',
+    '.swf',
+    '.webp',
+  ];
+
+  static const List<String> videoTypes = [
+    '.mp4',
+    '.mkv',
+    '.avi',
+    '.mov',
+    '.rmvb',
+    '.webm',
+    '.wmv',
+    '.flv',
+    '.3gp',
+    '.mpeg',
+    '.mpg',
+    '.rm',
+    '.m4v',
+    '.f4v',
+    '.vob',
+    '.mts',
+    '.ts'
+  ];
+
+  static const List<String> audioTypes = [
+    '.mp3',
+    '.wav',
+    '.flac',
+    '.ac3',
+    '.aiff',
+    '.ape',
+    '.aac',
+    '.ogg',
+    '.wma',
+    '.m4a',
+    '.opus',
+  ];
 }

@@ -55,6 +55,17 @@ class Setting extends StatelessWidget {
                       navigatorState(context).pushNamed('/setting/locale');
                     },
                   ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.backup,
+                      color: themeData.colorScheme.primary,
+                    ),
+                    title: Text("备份与恢复".tr(context)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      navigatorState(context).pushNamed('/setting/backup');
+                    },
+                  ),
                 ],
               ),
             ),
@@ -74,6 +85,17 @@ class Setting extends StatelessWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/file/setting/repo');
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.sync,
+                      color: themeData.colorScheme.primary,
+                    ),
+                    title: Text('同步备份'.tr(context)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      navigatorState(context).pushNamed('/file/setting/task');
                     },
                   ),
                   ListTile(

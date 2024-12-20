@@ -26,6 +26,11 @@ type TaskServiceClient interface {
 	RetryTask(ctx context.Context, in *RetryTaskRequest, opts ...grpc.CallOption) (*RetryTaskResponse, error)
 	CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*CancelTaskResponse, error)
 	RemoveTask(ctx context.Context, in *RemoveTaskRequest, opts ...grpc.CallOption) (*RemoveTaskResponse, error)
+	ListPersistTasks(ctx context.Context, in *ListPersistTasksRequest, opts ...grpc.CallOption) (*ListPersistTasksResponse, error)
+	CreatePersistTask(ctx context.Context, in *CreatePersistTaskRequest, opts ...grpc.CallOption) (*CreatePersistTaskResponse, error)
+	UpdatePersistTask(ctx context.Context, in *UpdatePersistTaskRequest, opts ...grpc.CallOption) (*UpdatePersistTaskResponse, error)
+	DeletePersistTask(ctx context.Context, in *DeletePersistTaskRequest, opts ...grpc.CallOption) (*DeletePersistTaskResponse, error)
+	ExecutePersistTask(ctx context.Context, in *ExecutePersistTaskRequest, opts ...grpc.CallOption) (*ExecutePersistTaskResponse, error)
 }
 
 type taskServiceClient struct {
@@ -72,6 +77,51 @@ func (c *taskServiceClient) RemoveTask(ctx context.Context, in *RemoveTaskReques
 	return out, nil
 }
 
+func (c *taskServiceClient) ListPersistTasks(ctx context.Context, in *ListPersistTasksRequest, opts ...grpc.CallOption) (*ListPersistTasksResponse, error) {
+	out := new(ListPersistTasksResponse)
+	err := c.cc.Invoke(ctx, "/api.task.TaskService/ListPersistTasks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) CreatePersistTask(ctx context.Context, in *CreatePersistTaskRequest, opts ...grpc.CallOption) (*CreatePersistTaskResponse, error) {
+	out := new(CreatePersistTaskResponse)
+	err := c.cc.Invoke(ctx, "/api.task.TaskService/CreatePersistTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) UpdatePersistTask(ctx context.Context, in *UpdatePersistTaskRequest, opts ...grpc.CallOption) (*UpdatePersistTaskResponse, error) {
+	out := new(UpdatePersistTaskResponse)
+	err := c.cc.Invoke(ctx, "/api.task.TaskService/UpdatePersistTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) DeletePersistTask(ctx context.Context, in *DeletePersistTaskRequest, opts ...grpc.CallOption) (*DeletePersistTaskResponse, error) {
+	out := new(DeletePersistTaskResponse)
+	err := c.cc.Invoke(ctx, "/api.task.TaskService/DeletePersistTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskServiceClient) ExecutePersistTask(ctx context.Context, in *ExecutePersistTaskRequest, opts ...grpc.CallOption) (*ExecutePersistTaskResponse, error) {
+	out := new(ExecutePersistTaskResponse)
+	err := c.cc.Invoke(ctx, "/api.task.TaskService/ExecutePersistTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskServiceServer is the server API for TaskService service.
 // All implementations must embed UnimplementedTaskServiceServer
 // for forward compatibility
@@ -80,6 +130,11 @@ type TaskServiceServer interface {
 	RetryTask(context.Context, *RetryTaskRequest) (*RetryTaskResponse, error)
 	CancelTask(context.Context, *CancelTaskRequest) (*CancelTaskResponse, error)
 	RemoveTask(context.Context, *RemoveTaskRequest) (*RemoveTaskResponse, error)
+	ListPersistTasks(context.Context, *ListPersistTasksRequest) (*ListPersistTasksResponse, error)
+	CreatePersistTask(context.Context, *CreatePersistTaskRequest) (*CreatePersistTaskResponse, error)
+	UpdatePersistTask(context.Context, *UpdatePersistTaskRequest) (*UpdatePersistTaskResponse, error)
+	DeletePersistTask(context.Context, *DeletePersistTaskRequest) (*DeletePersistTaskResponse, error)
+	ExecutePersistTask(context.Context, *ExecutePersistTaskRequest) (*ExecutePersistTaskResponse, error)
 	mustEmbedUnimplementedTaskServiceServer()
 }
 
@@ -98,6 +153,21 @@ func (UnimplementedTaskServiceServer) CancelTask(context.Context, *CancelTaskReq
 }
 func (UnimplementedTaskServiceServer) RemoveTask(context.Context, *RemoveTaskRequest) (*RemoveTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveTask not implemented")
+}
+func (UnimplementedTaskServiceServer) ListPersistTasks(context.Context, *ListPersistTasksRequest) (*ListPersistTasksResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPersistTasks not implemented")
+}
+func (UnimplementedTaskServiceServer) CreatePersistTask(context.Context, *CreatePersistTaskRequest) (*CreatePersistTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePersistTask not implemented")
+}
+func (UnimplementedTaskServiceServer) UpdatePersistTask(context.Context, *UpdatePersistTaskRequest) (*UpdatePersistTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePersistTask not implemented")
+}
+func (UnimplementedTaskServiceServer) DeletePersistTask(context.Context, *DeletePersistTaskRequest) (*DeletePersistTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePersistTask not implemented")
+}
+func (UnimplementedTaskServiceServer) ExecutePersistTask(context.Context, *ExecutePersistTaskRequest) (*ExecutePersistTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecutePersistTask not implemented")
 }
 func (UnimplementedTaskServiceServer) mustEmbedUnimplementedTaskServiceServer() {}
 
@@ -184,6 +254,96 @@ func _TaskService_RemoveTask_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskService_ListPersistTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPersistTasksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).ListPersistTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.task.TaskService/ListPersistTasks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).ListPersistTasks(ctx, req.(*ListPersistTasksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_CreatePersistTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePersistTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).CreatePersistTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.task.TaskService/CreatePersistTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).CreatePersistTask(ctx, req.(*CreatePersistTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_UpdatePersistTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePersistTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).UpdatePersistTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.task.TaskService/UpdatePersistTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).UpdatePersistTask(ctx, req.(*UpdatePersistTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_DeletePersistTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePersistTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).DeletePersistTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.task.TaskService/DeletePersistTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).DeletePersistTask(ctx, req.(*DeletePersistTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskService_ExecutePersistTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExecutePersistTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).ExecutePersistTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.task.TaskService/ExecutePersistTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).ExecutePersistTask(ctx, req.(*ExecutePersistTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskService_ServiceDesc is the grpc.ServiceDesc for TaskService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +366,26 @@ var TaskService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveTask",
 			Handler:    _TaskService_RemoveTask_Handler,
+		},
+		{
+			MethodName: "ListPersistTasks",
+			Handler:    _TaskService_ListPersistTasks_Handler,
+		},
+		{
+			MethodName: "CreatePersistTask",
+			Handler:    _TaskService_CreatePersistTask_Handler,
+		},
+		{
+			MethodName: "UpdatePersistTask",
+			Handler:    _TaskService_UpdatePersistTask_Handler,
+		},
+		{
+			MethodName: "DeletePersistTask",
+			Handler:    _TaskService_DeletePersistTask_Handler,
+		},
+		{
+			MethodName: "ExecutePersistTask",
+			Handler:    _TaskService_ExecutePersistTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

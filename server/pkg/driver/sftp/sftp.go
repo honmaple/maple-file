@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
@@ -52,23 +51,6 @@ func (d *SFTP) Open(path string) (driver.FileReader, error) {
 
 func (d *SFTP) Create(path string) (driver.FileWriter, error) {
 	return d.client.Create(path)
-}
-
-func (d *SFTP) WalkDir(ctx context.Context, root string, fn driver.WalkDirFunc) error {
-	walker := d.client.Walk(root)
-	for walker.Step() {
-		if walker.Err() != nil {
-			continue
-		}
-		err := fn(driver.NewFile(walker.Path(), walker.Stat()), walker.Err())
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (d *SFTP) List(ctx context.Context, path string) ([]driver.File, error) {

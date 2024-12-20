@@ -3,37 +3,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
-import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
+import 'package:maple_file/common/widgets/custom.dart';
 
-import '../widgets/repo/form.dart';
+import 'package:maple_file/api/task/providers/persist.dart';
+import 'package:maple_file/api/task/providers/service.dart';
+import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
 
-import '../providers/file.dart';
-import '../providers/repo.dart';
-import '../providers/service.dart';
+import '../widgets/task/form.dart';
 
-class RepoEdit extends ConsumerStatefulWidget {
-  const RepoEdit({super.key, this.repo});
+class TaskEdit extends ConsumerStatefulWidget {
+  const TaskEdit({super.key, this.task});
 
-  final Repo? repo;
+  final PersistTask? task;
 
-  factory RepoEdit.fromRoute(ModalRoute? route) {
+  factory TaskEdit.fromRoute(ModalRoute? route) {
     final args = route?.settings.arguments;
 
-    return RepoEdit(repo: args == null ? null : args as Repo);
+    return TaskEdit(task: args == null ? null : args as PersistTask);
   }
 
   @override
-  ConsumerState<RepoEdit> createState() => _RepoEditState();
+  ConsumerState<TaskEdit> createState() => _TaskEditState();
 }
 
-class _RepoEditState extends ConsumerState<RepoEdit> {
-  late Repo _form;
+class _TaskEditState extends ConsumerState<TaskEdit> {
+  late PersistTask _form;
 
   @override
   void initState() {
     super.initState();
 
-    _form = widget.repo ?? Repo(path: "/", status: true);
+    _form = widget.task ?? PersistTask(status: true);
   }
 
   bool get _isEditing {
@@ -44,18 +44,17 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isEditing ? Text('修改存储'.tr(context)) : Text('添加存储'.tr(context)),
+        title: _isEditing ? Text('修改任务'.tr(context)) : Text('添加任务'.tr(context)),
         actions: [
           if (_isEditing)
             TextButton(
               child: Text("删除".tr(context)),
               onPressed: () async {
                 final result = await showAlertDialog<bool>(context,
-                    content: Text(("确认删除存储?".tr(context))));
+                    content: Text(("确认删除任务?".tr(context))));
                 if (result != null && result) {
-                  await FileService().deleteRepo(_form.id).then((_) {
-                    ref.invalidate(repoProvider);
-                    ref.invalidate(fileProvider(_form.path));
+                  await TaskService().deletePersistTask(_form.id).then((_) {
+                    ref.invalidate(persistTaskProvider);
                     if (context.mounted) Navigator.of(context).pop();
                   });
                 }
@@ -70,32 +69,26 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
             Card(
               child: Column(
                 children: [
-                  ListTile(
-                    enabled: !_isEditing,
-                    title: Text('存储类型'.tr(context)),
-                    trailing: Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(_form.driver == ""
-                            ? "未选择".tr(context)
-                            : _form.driver),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () async {
-                      final result = await showListDialog(context, items: [
-                        for (final value in DriverType.values)
-                          ListDialogItem(label: value.label(), value: value),
-                      ]);
-                      if (result != null) {
+                  if (!_isEditing)
+                    CustomFormField(
+                      label: "任务类型".tr(context),
+                      value: _form.type,
+                      type: CustomFormFieldType.option,
+                      options: TaskType.values.map((v) {
+                        return CustomFormFieldOption(
+                          label: v.label(),
+                          value: v.name,
+                        );
+                      }).toList(),
+                      isRequired: true,
+                      onTap: (result) {
                         setState(() {
-                          _form.driver = result.name;
+                          _form.type = result;
                         });
-                      }
-                    },
-                  ),
-                  DriverFormField(
-                    label: "存储名称".tr(context),
+                      },
+                    ),
+                  CustomFormField(
+                    label: "任务名称".tr(context),
                     value: _form.name,
                     isRequired: true,
                     onTap: (result) {
@@ -104,17 +97,8 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       });
                     },
                   ),
-                  DriverFormField(
-                    label: "挂载目录".tr(context),
-                    value: _form.path,
-                    onTap: (result) {
-                      setState(() {
-                        _form.path = result;
-                      });
-                    },
-                  ),
                   ListTile(
-                    title: Text('存储状态'.tr(context)),
+                    title: Text('任务状态'.tr(context)),
                     trailing: Switch(
                       value: _form.status,
                       onChanged: (result) {
@@ -127,20 +111,11 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 ],
               ),
             ),
-            if (_form.driver != "")
+            if (_form.type != "")
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DriverForm(form: _form),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      child: Text('测试连接'.tr(context)),
-                      onPressed: () async {
-                        await FileService().testRepo(_form);
-                      },
-                    ),
-                  ),
+                  TaskForm(form: _form),
                   const SizedBox(height: 4),
                   SizedBox(
                     width: double.infinity,
@@ -149,12 +124,11 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                             child: Text('确认修改'.tr(context)),
                             onPressed: () async {
                               final nav = Navigator.of(context);
-                              await FileService()
-                                  .updateRepo(_form)
+                              await TaskService()
+                                  .updatePersistTask(_form)
                                   .then((resp) {
                                 if (!resp.hasErr) {
-                                  ref.invalidate(repoProvider);
-                                  ref.invalidate(fileProvider(_form.path));
+                                  ref.invalidate(persistTaskProvider);
                                   nav.pop();
                                 }
                               });
@@ -164,12 +138,11 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                             child: Text('确认添加'.tr(context)),
                             onPressed: () async {
                               final nav = Navigator.of(context);
-                              await FileService()
-                                  .createRepo(_form)
+                              await TaskService()
+                                  .createPersistTask(_form)
                                   .then((resp) {
                                 if (!resp.hasErr) {
-                                  ref.invalidate(repoProvider);
-                                  ref.invalidate(fileProvider(_form.path));
+                                  ref.invalidate(persistTaskProvider);
                                   nav.pop();
                                 }
                               });
@@ -192,7 +165,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                             ),
                             const TextSpan(text: " "),
                             TextSpan(
-                              text: "删除或者修改存储可能会导致正在进行中的任务中断，请确认任务完成后再操作",
+                              text: "删除或者修改任务可能会导致正在进行中的任务中断，请确认任务完成后再操作",
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],

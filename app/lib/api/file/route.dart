@@ -9,6 +9,9 @@ import "pages/file_preview.dart";
 import "pages/repo_list.dart";
 import "pages/repo_edit.dart";
 
+import "pages/task_list.dart";
+import "pages/task_edit.dart";
+
 import "pages/setting_theme.dart";
 import "pages/setting_upload.dart";
 import "pages/setting_download.dart";
@@ -29,6 +32,12 @@ Future<void> init(CustomRouter router) async {
     },
     '/file/setting/repo/edit': (context) {
       return RepoEdit.fromRoute(ModalRoute.of(context));
+    },
+    '/file/setting/task': (context) {
+      return const TaskList();
+    },
+    '/file/setting/task/edit': (context) {
+      return TaskEdit.fromRoute(ModalRoute.of(context));
     },
     '/file/setting/theme': (context) {
       return const FileSettingTheme();

@@ -10,24 +10,32 @@ import (
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
-type CopyTask struct {
-	FS       FS     `json:"fs"`
+type CopyTaskOption struct {
 	SrcPath  string `json:"src_path"`
 	DstPath  string `json:"dst_path"`
 	Override bool   `json:"override"`
 }
 
-func (opt *CopyTask) String() string {
-	return fmt.Sprintf("复制 [%s] to [%s]", opt.SrcPath, opt.DstPath)
+func (opt *CopyTaskOption) NewTask(fs FS) (Task, error) {
+	return NewCopyTask(fs, opt)
 }
 
-func (opt *CopyTask) Execute(task runner.Task) error {
-	srcFS, srcPath, err := opt.FS.GetFS(opt.SrcPath)
+type CopyTask struct {
+	fs  FS
+	opt *CopyTaskOption
+}
+
+func (t *CopyTask) String() string {
+	return fmt.Sprintf("复制 [%s] to [%s]", t.opt.SrcPath, t.opt.DstPath)
+}
+
+func (t *CopyTask) Execute(task runner.Task) error {
+	srcFS, srcPath, err := t.fs.GetFS(t.opt.SrcPath)
 	if err != nil {
 		return err
 	}
 
-	dstFS, dstPath, err := opt.FS.GetFS(opt.DstPath)
+	dstFS, dstPath, err := t.fs.GetFS(t.opt.DstPath)
 	if err != nil {
 		return err
 	}
@@ -103,4 +111,11 @@ func _copy(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, d
 		}
 	}
 	return nil
+}
+
+func NewCopyTask(fs FS, opt *CopyTaskOption) (Task, error) {
+	return &CopyTask{
+		fs:  fs,
+		opt: opt,
+	}, nil
 }

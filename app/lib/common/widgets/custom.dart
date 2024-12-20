@@ -390,11 +390,19 @@ class _CustomListTileState extends State<CustomListTile> {
   }
 }
 
+class CustomFormFieldOption<T> {
+  final String label;
+  final T value;
+
+  const CustomFormFieldOption({required this.label, required this.value});
+}
+
 enum CustomFormFieldType {
   string,
   number,
   password,
   directory,
+  option,
 }
 
 class CustomFormField extends StatelessWidget {
@@ -403,6 +411,7 @@ class CustomFormField extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.value,
+    this.options,
     this.type = CustomFormFieldType.string,
     this.subtitle,
     this.isRequired = false,
@@ -412,6 +421,7 @@ class CustomFormField extends StatelessWidget {
   final String label;
   final String? value;
   final Widget? subtitle;
+  final List<CustomFormFieldOption>? options;
   final CustomFormFieldType type;
   final Function(String) onTap;
 
@@ -448,6 +458,12 @@ class CustomFormField extends StatelessWidget {
           case CustomFormFieldType.directory:
             result = await FilePicker.platform.getDirectoryPath();
             break;
+          case CustomFormFieldType.option:
+            result = await showListDialog(context, items: [
+              for (final opt in options!)
+                ListDialogItem(label: opt.label, value: opt.value),
+            ]);
+            break;
         }
         if (result != null) {
           onTap(result);
@@ -462,16 +478,21 @@ class CustomFormField extends StatelessWidget {
   ) {
     bool isEmpty = value == null || value == "";
     if (type == CustomFormFieldType.password) {
-      if (isEmpty) {
-        return Text("未设置".tr(context));
+      if (!isEmpty) {
+        return const Icon(Icons.more_horiz);
       }
-      return const Icon(Icons.more_horiz);
     }
+    final option = options?.where((o) => o.value == value);
     return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(isEmpty ? "未设置".tr(context) : value),
+        Text(
+          isEmpty ? "未设置".tr(context) : option?.firstOrNull?.label ?? value,
+          overflow: TextOverflow.ellipsis,
+        ),
         if (isRequired && isEmpty)
           const Text(' *', style: TextStyle(color: Colors.red)),
+        if (options != null) const Icon(Icons.chevron_right),
       ],
     );
   }

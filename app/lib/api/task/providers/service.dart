@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/generated/proto/api/task/service.pbgrpc.dart';
 import 'package:maple_file/generated/proto/api/task/task.pb.dart';
+import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
 
 class TaskService {
   static final TaskService _instance = TaskService._internal();
@@ -52,6 +53,52 @@ class TaskService {
         tasks: tasks,
       );
       return _client.retryTask(request);
+    });
+  }
+
+  Future<List<PersistTask>> listPersistTasks(
+      {Map<String, String>? filterMap}) async {
+    final result = await doFuture(() async {
+      ListPersistTasksRequest request = ListPersistTasksRequest();
+      ListPersistTasksResponse response =
+          await _client.listPersistTasks(request);
+      return response.results;
+    });
+    return result.data ?? <PersistTask>[];
+  }
+
+  Future<Response<PersistTask>> createPersistTask(PersistTask payload) {
+    return doFuture(() async {
+      CreatePersistTaskRequest request =
+          CreatePersistTaskRequest(payload: payload);
+      CreatePersistTaskResponse response =
+          await _client.createPersistTask(request);
+      return response.result;
+    });
+  }
+
+  Future<Response<PersistTask>> updatePersistTask(PersistTask payload) {
+    return doFuture(() async {
+      UpdatePersistTaskRequest request =
+          UpdatePersistTaskRequest(payload: payload);
+      UpdatePersistTaskResponse response =
+          await _client.updatePersistTask(request);
+      return response.result;
+    });
+  }
+
+  Future<void> deletePersistTask(int id) {
+    return doFuture(() {
+      DeletePersistTaskRequest request = DeletePersistTaskRequest(id: id);
+      return _client.deletePersistTask(request);
+    });
+  }
+
+  Future<void> executePersistTask(int id) {
+    return doFuture(() {
+      ExecutePersistTaskRequest request = ExecutePersistTaskRequest(id: id);
+
+      return _client.executePersistTask(request);
     });
   }
 }

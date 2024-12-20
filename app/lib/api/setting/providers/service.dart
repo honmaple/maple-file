@@ -29,7 +29,7 @@ class SystemService {
       InfoResponse response = await _client.info(request);
       return response.result;
     });
-    return result ??
+    return result.data ??
         Info(
           os: "unknown",
           arch: "unknown",

@@ -2,7 +2,7 @@
 
 * 红枫云盘
   #+BEGIN_QUOTE
-  使用 *Flutter* + *Go* 实现的文件上传服务，以及云盘文件管理，无需服务器部署
+  使用 *Flutter* + *Go* 实现的无服务端云盘文件上传和管理APP
   #+END_QUOTE
 
 ** 支持的存储

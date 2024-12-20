@@ -13,21 +13,6 @@ type rootFS struct {
 	fileFn func(string, File) File
 }
 
-func (d *rootFS) WalkDir(ctx context.Context, path string, fn WalkDirFunc) error {
-	dstFS, dstPath, err := d.fn(path)
-	if err != nil {
-		return err
-	}
-
-	root := strings.TrimSuffix(path, dstPath)
-	return dstFS.WalkDir(ctx, dstPath, func(file File, err error) error {
-		if err != nil {
-			return err
-		}
-		return fn(d.fileFn(root, file), nil)
-	})
-}
-
 func (d *rootFS) List(ctx context.Context, path string) ([]File, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {

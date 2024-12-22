@@ -523,6 +523,9 @@
       ],
       "default": "TASK_STATE_UNSPECIFIED"
     },
+    "taskTestPersistTaskResponse": {
+      "type": "object"
+    },
     "taskUpdatePersistTaskResponse": {
       "type": "object",
       "properties": {

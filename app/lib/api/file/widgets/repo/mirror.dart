@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
-
-import 'form.dart';
 
 class Mirror extends StatefulWidget {
   const Mirror({super.key, required this.form});
@@ -32,7 +31,7 @@ class _MirrorState extends State<Mirror> {
     return Card(
       child: Column(
         children: [
-          DriverFormField(
+          CustomFormField(
             label: "源站".tr(context),
             value: _option["endpoint"],
             isRequired: true,
@@ -67,7 +66,7 @@ class _MirrorState extends State<Mirror> {
               }
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "根目录".tr(context),
             value: _option["root_path"],
             onTap: (result) {

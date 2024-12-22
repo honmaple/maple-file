@@ -30,6 +30,7 @@ type TaskServiceClient interface {
 	CreatePersistTask(ctx context.Context, in *CreatePersistTaskRequest, opts ...grpc.CallOption) (*CreatePersistTaskResponse, error)
 	UpdatePersistTask(ctx context.Context, in *UpdatePersistTaskRequest, opts ...grpc.CallOption) (*UpdatePersistTaskResponse, error)
 	DeletePersistTask(ctx context.Context, in *DeletePersistTaskRequest, opts ...grpc.CallOption) (*DeletePersistTaskResponse, error)
+	TestPersistTask(ctx context.Context, in *TestPersistTaskRequest, opts ...grpc.CallOption) (*TestPersistTaskResponse, error)
 	ExecutePersistTask(ctx context.Context, in *ExecutePersistTaskRequest, opts ...grpc.CallOption) (*ExecutePersistTaskResponse, error)
 }
 
@@ -113,6 +114,15 @@ func (c *taskServiceClient) DeletePersistTask(ctx context.Context, in *DeletePer
 	return out, nil
 }
 
+func (c *taskServiceClient) TestPersistTask(ctx context.Context, in *TestPersistTaskRequest, opts ...grpc.CallOption) (*TestPersistTaskResponse, error) {
+	out := new(TestPersistTaskResponse)
+	err := c.cc.Invoke(ctx, "/api.task.TaskService/TestPersistTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *taskServiceClient) ExecutePersistTask(ctx context.Context, in *ExecutePersistTaskRequest, opts ...grpc.CallOption) (*ExecutePersistTaskResponse, error) {
 	out := new(ExecutePersistTaskResponse)
 	err := c.cc.Invoke(ctx, "/api.task.TaskService/ExecutePersistTask", in, out, opts...)
@@ -134,6 +144,7 @@ type TaskServiceServer interface {
 	CreatePersistTask(context.Context, *CreatePersistTaskRequest) (*CreatePersistTaskResponse, error)
 	UpdatePersistTask(context.Context, *UpdatePersistTaskRequest) (*UpdatePersistTaskResponse, error)
 	DeletePersistTask(context.Context, *DeletePersistTaskRequest) (*DeletePersistTaskResponse, error)
+	TestPersistTask(context.Context, *TestPersistTaskRequest) (*TestPersistTaskResponse, error)
 	ExecutePersistTask(context.Context, *ExecutePersistTaskRequest) (*ExecutePersistTaskResponse, error)
 	mustEmbedUnimplementedTaskServiceServer()
 }
@@ -165,6 +176,9 @@ func (UnimplementedTaskServiceServer) UpdatePersistTask(context.Context, *Update
 }
 func (UnimplementedTaskServiceServer) DeletePersistTask(context.Context, *DeletePersistTaskRequest) (*DeletePersistTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePersistTask not implemented")
+}
+func (UnimplementedTaskServiceServer) TestPersistTask(context.Context, *TestPersistTaskRequest) (*TestPersistTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestPersistTask not implemented")
 }
 func (UnimplementedTaskServiceServer) ExecutePersistTask(context.Context, *ExecutePersistTaskRequest) (*ExecutePersistTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecutePersistTask not implemented")
@@ -326,6 +340,24 @@ func _TaskService_DeletePersistTask_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskService_TestPersistTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestPersistTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskServiceServer).TestPersistTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.task.TaskService/TestPersistTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskServiceServer).TestPersistTask(ctx, req.(*TestPersistTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TaskService_ExecutePersistTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ExecutePersistTaskRequest)
 	if err := dec(in); err != nil {
@@ -382,6 +414,10 @@ var TaskService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePersistTask",
 			Handler:    _TaskService_DeletePersistTask_Handler,
+		},
+		{
+			MethodName: "TestPersistTask",
+			Handler:    _TaskService_TestPersistTask_Handler,
 		},
 		{
 			MethodName: "ExecutePersistTask",

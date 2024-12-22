@@ -8,7 +8,6 @@ import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/custom.dart';
-import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/common/providers/selection.dart';
 
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';

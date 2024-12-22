@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
-import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
 import '../providers/file_setting.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
@@ -70,31 +71,25 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
             Card(
               child: Column(
                 children: [
-                  ListTile(
-                    enabled: !_isEditing,
-                    title: Text('存储类型'.tr(context)),
-                    trailing: Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(_form.driver == ""
-                            ? "未选择".tr(context)
-                            : _form.driver),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () async {
-                      final result = await showListDialog(context, items: [
-                        for (final value in DriverType.values)
-                          ListDialogItem(label: value.label(), value: value),
-                      ]);
-                      if (result != null) {
+                  if (!_isEditing)
+                    CustomFormField(
+                      label: "存储类型".tr(context),
+                      value: _form.driver,
+                      type: CustomFormFieldType.option,
+                      options: DriverType.values.map((v) {
+                        return CustomFormFieldOption(
+                          label: v.label(),
+                          value: v.name,
+                        );
+                      }).toList(),
+                      isRequired: true,
+                      onTap: (result) {
                         setState(() {
-                          _form.driver = result.name;
+                          _form.driver = result;
                         });
-                      }
-                    },
-                  ),
-                  DriverFormField(
+                      },
+                    ),
+                  CustomFormField(
                     label: "存储名称".tr(context),
                     value: _form.name,
                     isRequired: true,
@@ -104,7 +99,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       });
                     },
                   ),
-                  DriverFormField(
+                  CustomFormField(
                     label: "挂载目录".tr(context),
                     value: _form.path,
                     onTap: (result) {

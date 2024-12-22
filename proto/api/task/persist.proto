@@ -52,8 +52,15 @@ message DeletePersistTaskRequest {
 
 message DeletePersistTaskResponse {}
 
+message TestPersistTaskRequest {
+	PersistTask payload = 1;
+}
+
+message TestPersistTaskResponse {}
+
 message ExecutePersistTaskRequest {
 	int32 id = 1;
+	bool dry_run = 2;
 }
 
 message ExecutePersistTaskResponse {}

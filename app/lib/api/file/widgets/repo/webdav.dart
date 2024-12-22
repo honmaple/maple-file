@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
-
-import 'form.dart';
 
 part 'webdav.g.dart';
 part 'webdav.freezed.dart';
@@ -49,8 +49,8 @@ class _WebdavState extends ConsumerState<Webdav> {
     return Card(
       child: Column(
         children: [
-          DriverFormField(
-            label: "域名/IP",
+          CustomFormField(
+            label: "域名/IP".tr(context),
             value: _option.endpoint,
             isRequired: true,
             onTap: (result) {
@@ -61,8 +61,8 @@ class _WebdavState extends ConsumerState<Webdav> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            label: "用户名",
+          CustomFormField(
+            label: "用户名".tr(context),
             value: _option.username,
             isRequired: true,
             onTap: (result) {
@@ -73,9 +73,9 @@ class _WebdavState extends ConsumerState<Webdav> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            type: DriverFormFieldType.password,
-            label: "密码",
+          CustomFormField(
+            type: CustomFormFieldType.password,
+            label: "密码".tr(context),
             value: _option.password,
             isRequired: true,
             onTap: (result) {

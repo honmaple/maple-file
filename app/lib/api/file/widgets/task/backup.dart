@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/custom.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
-
-import 'form.dart';
 
 part 'backup.g.dart';
 part 'backup.freezed.dart';
@@ -133,6 +131,8 @@ class _BackupState extends State<Backup> {
                 setState(() {
                   _option.fileTypes = result;
                 });
+
+                widget.form.option = jsonEncode(_option);
               }
             },
           ),
@@ -148,6 +148,8 @@ class _BackupState extends State<Backup> {
               setState(() {
                 _option.conflict = result;
               });
+
+              widget.form.option = jsonEncode(_option);
             },
           ),
           ListTile(
@@ -190,6 +192,8 @@ class _BackupState extends State<Backup> {
                 setState(() {
                   _option.deleteSrc = result;
                 });
+
+                widget.form.option = jsonEncode(_option);
               },
             ),
           ),

@@ -2,28 +2,34 @@ package fs
 
 import (
 	"fmt"
+
+	"github.com/honmaple/maple-file/server/pkg/runner"
 )
 
 type BackupTaskOption struct {
-	SrcPath    string   `json:"src_path"`
-	DstPath    string   `json:"dst_path"`
-	Conflict   string   `json:"conflict"`
+	SrcPath    string   `json:"src_path"    validate:"required,nefield=DstPath"`
+	DstPath    string   `json:"dst_path"    validate:"required,nefield=SrcPath"`
+	Conflict   string   `json:"conflict"    validate:"required"`
 	DeleteSrc  bool     `json:"delete_src"`
 	DeleteDst  bool     `json:"delete_dst"`
-	CustomPath string   `json:"custom_path"` // 保持原有路径，或者按照时间格式重新整理
 	FileTypes  []string `json:"file_types"`
+	CustomPath string   `json:"custom_path" validate:"omitempty,startsnotwith=/"`
 }
 
-type BackupTask struct {
-	*SyncTask
+func (opt *BackupTaskOption) String() string {
+	return fmt.Sprintf("Backup [%s] to [%s]", opt.SrcPath, opt.DstPath)
 }
 
-func (t *BackupTask) String() string {
-	return fmt.Sprintf("Backup [%s] to [%s]", t.opt.SrcPath, t.opt.DstPath)
+func (opt *BackupTaskOption) Execute(task runner.Task, fs FS) error {
+	t, err := NewBackupTask(task, fs, opt)
+	if err != nil {
+		return err
+	}
+	return t.Run()
 }
 
-func NewBackupTask(fs FS, opt *BackupTaskOption) (Task, error) {
-	task, err := NewSyncTask(fs, &SyncTaskOption{
+func NewBackupTask(task runner.Task, fs FS, opt *BackupTaskOption) (Task, error) {
+	return NewSyncTask(task, fs, &SyncTaskOption{
 		Method:     METHOD_A2B,
 		SrcPath:    opt.SrcPath,
 		DstPath:    opt.SrcPath,
@@ -33,9 +39,4 @@ func NewBackupTask(fs FS, opt *BackupTaskOption) (Task, error) {
 		CustomPath: opt.CustomPath,
 		FileTypes:  opt.FileTypes,
 	})
-	if err != nil {
-		return nil, err
-	}
-	return &BackupTask{task}, nil
-
 }

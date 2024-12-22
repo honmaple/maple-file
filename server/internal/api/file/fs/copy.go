@@ -16,26 +16,17 @@ type CopyTaskOption struct {
 	Override bool   `json:"override"`
 }
 
-func (opt *CopyTaskOption) NewTask(fs FS) (Task, error) {
-	return NewCopyTask(fs, opt)
+func (opt *CopyTaskOption) String() string {
+	return fmt.Sprintf("复制 [%s] to [%s]", opt.SrcPath, opt.DstPath)
 }
 
-type CopyTask struct {
-	fs  FS
-	opt *CopyTaskOption
-}
-
-func (t *CopyTask) String() string {
-	return fmt.Sprintf("复制 [%s] to [%s]", t.opt.SrcPath, t.opt.DstPath)
-}
-
-func (t *CopyTask) Execute(task runner.Task) error {
-	srcFS, srcPath, err := t.fs.GetFS(t.opt.SrcPath)
+func (opt *CopyTaskOption) Execute(task runner.Task, fs FS) error {
+	srcFS, srcPath, err := fs.GetFS(opt.SrcPath)
 	if err != nil {
 		return err
 	}
 
-	dstFS, dstPath, err := t.fs.GetFS(t.opt.DstPath)
+	dstFS, dstPath, err := fs.GetFS(opt.DstPath)
 	if err != nil {
 		return err
 	}
@@ -111,11 +102,4 @@ func _copy(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, d
 		}
 	}
 	return nil
-}
-
-func NewCopyTask(fs FS, opt *CopyTaskOption) (Task, error) {
-	return &CopyTask{
-		fs:  fs,
-		opt: opt,
-	}, nil
 }

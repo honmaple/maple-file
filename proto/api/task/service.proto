@@ -56,5 +56,6 @@ service TaskService {
 			delete: "/api/task/persist/{id}"
 		};
 	}
+	rpc TestPersistTask (TestPersistTaskRequest) returns (TestPersistTaskResponse) {}
 	rpc ExecutePersistTask (ExecutePersistTaskRequest) returns (ExecutePersistTaskResponse) {}
 }

@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
-
-import 'form.dart';
 
 class SMB extends StatefulWidget {
   const SMB({super.key, required this.form});
@@ -34,7 +32,7 @@ class _SMBState extends State<SMB> {
     return Card(
       child: Column(
         children: [
-          DriverFormField(
+          CustomFormField(
             label: "主机/IP".tr(context),
             value: _option["host"],
             isRequired: true,
@@ -46,8 +44,8 @@ class _SMBState extends State<SMB> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            type: DriverFormFieldType.number,
+          CustomFormField(
+            type: CustomFormFieldType.number,
             label: "端口".tr(context),
             value: "${_option['port'] ?? 445}",
             isRequired: true,
@@ -59,7 +57,7 @@ class _SMBState extends State<SMB> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "用户".tr(context),
             value: _option["username"],
             isRequired: true,
@@ -71,8 +69,8 @@ class _SMBState extends State<SMB> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            type: DriverFormFieldType.password,
+          CustomFormField(
+            type: CustomFormFieldType.password,
             label: "密码".tr(context),
             value: _option["password"],
             onTap: (result) {
@@ -83,7 +81,7 @@ class _SMBState extends State<SMB> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "共享名称".tr(context),
             value: _option["share_name"],
             isRequired: true,
@@ -95,7 +93,7 @@ class _SMBState extends State<SMB> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "根目录".tr(context),
             value: _option["root_path"],
             onTap: (result) {

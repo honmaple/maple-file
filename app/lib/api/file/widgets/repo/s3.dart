@@ -3,9 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
-
-import 'form.dart';
 
 class S3 extends StatefulWidget {
   const S3({super.key, required this.form});
@@ -31,7 +30,7 @@ class _S3State extends State<S3> {
     return Card(
       child: Column(
         children: [
-          DriverFormField(
+          CustomFormField(
             label: "接入点".tr(context),
             value: _option["endpoint"],
             isRequired: true,
@@ -43,7 +42,7 @@ class _S3State extends State<S3> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "存储桶".tr(context),
             value: _option["bucket"],
             isRequired: true,
@@ -55,7 +54,7 @@ class _S3State extends State<S3> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "访问区域".tr(context),
             value: _option["region"],
             isRequired: true,
@@ -67,7 +66,7 @@ class _S3State extends State<S3> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "访问key".tr(context),
             value: _option["access_key"],
             isRequired: true,
@@ -79,8 +78,8 @@ class _S3State extends State<S3> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            type: DriverFormFieldType.password,
+          CustomFormField(
+            type: CustomFormFieldType.password,
             label: "访问密钥".tr(context),
             value: _option["secret_key"],
             onTap: (result) {
@@ -91,7 +90,7 @@ class _S3State extends State<S3> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "根目录".tr(context),
             value: _option["root_path"],
             onTap: (result) {

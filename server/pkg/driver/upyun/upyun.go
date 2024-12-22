@@ -31,6 +31,7 @@ var _ driver.FS = (*Upyun)(nil)
 
 func (d *Upyun) List(ctx context.Context, path string) ([]driver.File, error) {
 	errs := make(chan error, 1)
+	defer close(errs)
 
 	infos := make(chan *upyun.FileInfo)
 	go func() {

@@ -80,12 +80,11 @@ class _TaskListState extends ConsumerState<TaskList> {
                                         color: Theme.of(context).primaryColor,
                                       )),
                               onTap: () async {
-                                await TaskService()
-                                    .updatePersistTask(item.copyWith((r) {
-                                  r.status = !r.status;
-                                })).then((_) {
-                                  ref.invalidate(persistTaskProvider);
-                                });
+                                // await TaskService()
+                                //     .executePersistTask(item.id)
+                                //     .then((_) {
+                                //   ref.invalidate(persistTaskProvider);
+                                // });
                               },
                             ),
                             onTap: () {

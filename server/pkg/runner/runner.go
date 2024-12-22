@@ -11,6 +11,7 @@ type (
 		Context() context.Context
 		Execute(Task)
 		Submit(string, func(Task) error, ...taskOption) Task
+		SubmitByOption(FuncOption, ...taskOption) Task
 		SubmitByTask(Task) Task
 		Get(string) (Task, bool)
 		GetAll(...func(Task) bool) []Task
@@ -48,6 +49,10 @@ func (m *runner) Execute(task Task) {
 
 func (m *runner) Submit(name string, fn func(Task) error, taskOpts ...taskOption) Task {
 	return m.SubmitByTask(NewTask(m.ctx, name, fn, taskOpts...))
+}
+
+func (m *runner) SubmitByOption(opt FuncOption, taskOpts ...taskOption) Task {
+	return m.SubmitByTask(NewTask(m.ctx, opt.String(), opt.Execute, taskOpts...))
 }
 
 func (m *runner) SubmitByTask(task Task) Task {

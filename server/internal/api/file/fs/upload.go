@@ -10,7 +10,6 @@ import (
 )
 
 type UploadTask struct {
-	FS       FS        `json:"fs"`
 	Path     string    `json:"path"`
 	Size     int64     `json:"size"`
 	Filename string    `json:"filename"`
@@ -21,8 +20,8 @@ func (opt *UploadTask) String() string {
 	return fmt.Sprintf("上传 [%s] 到 [%s]", opt.Filename, opt.Path)
 }
 
-func (opt *UploadTask) Execute(task runner.Task) error {
-	dst, err := opt.FS.Create(filepath.Join(opt.Path, opt.Filename))
+func (opt *UploadTask) Execute(task runner.Task, fs FS) error {
+	dst, err := fs.Create(filepath.Join(opt.Path, opt.Filename))
 	if err != nil {
 		return err
 	}

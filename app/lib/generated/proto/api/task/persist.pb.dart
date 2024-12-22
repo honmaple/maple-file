@@ -549,13 +549,101 @@ class DeletePersistTaskResponse extends $pb.GeneratedMessage {
   static DeletePersistTaskResponse? _defaultInstance;
 }
 
+class TestPersistTaskRequest extends $pb.GeneratedMessage {
+  factory TestPersistTaskRequest({
+    PersistTask? payload,
+  }) {
+    final $result = create();
+    if (payload != null) {
+      $result.payload = payload;
+    }
+    return $result;
+  }
+  TestPersistTaskRequest._() : super();
+  factory TestPersistTaskRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TestPersistTaskRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TestPersistTaskRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.task'), createEmptyInstance: create)
+    ..aOM<PersistTask>(1, _omitFieldNames ? '' : 'payload', subBuilder: PersistTask.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TestPersistTaskRequest clone() => TestPersistTaskRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TestPersistTaskRequest copyWith(void Function(TestPersistTaskRequest) updates) => super.copyWith((message) => updates(message as TestPersistTaskRequest)) as TestPersistTaskRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TestPersistTaskRequest create() => TestPersistTaskRequest._();
+  TestPersistTaskRequest createEmptyInstance() => create();
+  static $pb.PbList<TestPersistTaskRequest> createRepeated() => $pb.PbList<TestPersistTaskRequest>();
+  @$core.pragma('dart2js:noInline')
+  static TestPersistTaskRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TestPersistTaskRequest>(create);
+  static TestPersistTaskRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  PersistTask get payload => $_getN(0);
+  @$pb.TagNumber(1)
+  set payload(PersistTask v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPayload() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayload() => clearField(1);
+  @$pb.TagNumber(1)
+  PersistTask ensurePayload() => $_ensure(0);
+}
+
+class TestPersistTaskResponse extends $pb.GeneratedMessage {
+  factory TestPersistTaskResponse() => create();
+  TestPersistTaskResponse._() : super();
+  factory TestPersistTaskResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TestPersistTaskResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TestPersistTaskResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.task'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TestPersistTaskResponse clone() => TestPersistTaskResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TestPersistTaskResponse copyWith(void Function(TestPersistTaskResponse) updates) => super.copyWith((message) => updates(message as TestPersistTaskResponse)) as TestPersistTaskResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TestPersistTaskResponse create() => TestPersistTaskResponse._();
+  TestPersistTaskResponse createEmptyInstance() => create();
+  static $pb.PbList<TestPersistTaskResponse> createRepeated() => $pb.PbList<TestPersistTaskResponse>();
+  @$core.pragma('dart2js:noInline')
+  static TestPersistTaskResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TestPersistTaskResponse>(create);
+  static TestPersistTaskResponse? _defaultInstance;
+}
+
 class ExecutePersistTaskRequest extends $pb.GeneratedMessage {
   factory ExecutePersistTaskRequest({
     $core.int? id,
+    $core.bool? dryRun,
   }) {
     final $result = create();
     if (id != null) {
       $result.id = id;
+    }
+    if (dryRun != null) {
+      $result.dryRun = dryRun;
     }
     return $result;
   }
@@ -565,6 +653,7 @@ class ExecutePersistTaskRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExecutePersistTaskRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.task'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.O3)
+    ..aOB(2, _omitFieldNames ? '' : 'dryRun')
     ..hasRequiredFields = false
   ;
 
@@ -597,6 +686,15 @@ class ExecutePersistTaskRequest extends $pb.GeneratedMessage {
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
   void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get dryRun => $_getBF(1);
+  @$pb.TagNumber(2)
+  set dryRun($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDryRun() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDryRun() => clearField(2);
 }
 
 class ExecutePersistTaskResponse extends $pb.GeneratedMessage {

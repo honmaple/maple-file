@@ -3,9 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
-
-import 'form.dart';
 
 class Alist extends StatefulWidget {
   const Alist({super.key, required this.form});
@@ -31,7 +30,7 @@ class _AlistState extends State<Alist> {
     return Card(
       child: Column(
         children: [
-          DriverFormField(
+          CustomFormField(
             label: "接入点".tr(context),
             value: _option["endpoint"],
             isRequired: true,
@@ -43,7 +42,7 @@ class _AlistState extends State<Alist> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "用户".tr(context),
             value: _option["username"],
             isRequired: true,
@@ -55,8 +54,8 @@ class _AlistState extends State<Alist> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            type: DriverFormFieldType.password,
+          CustomFormField(
+            type: CustomFormFieldType.password,
             label: "密码".tr(context),
             value: _option["password"],
             isRequired: true,
@@ -68,7 +67,7 @@ class _AlistState extends State<Alist> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "根目录".tr(context),
             value: _option["root_path"],
             onTap: (result) {

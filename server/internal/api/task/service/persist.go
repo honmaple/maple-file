@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/task"
+	"github.com/honmaple/maple-file/server/pkg/runner"
 )
 
 var (
@@ -21,7 +22,7 @@ func (srv *Service) verifyPersistTask(task *pb.PersistTask) error {
 	if task.GetOption() == "" {
 		return errors.New("任务选项不能为空")
 	}
-	return nil
+	return runner.Verify(task.GetType(), task.GetOption())
 }
 
 func (srv *Service) ListPersistTasks(ctx context.Context, req *pb.ListPersistTasksRequest) (*pb.ListPersistTasksResponse, error) {
@@ -104,11 +105,35 @@ func (srv *Service) DeletePersistTask(ctx context.Context, req *pb.DeletePersist
 	return &pb.DeletePersistTaskResponse{}, nil
 }
 
+func (srv *Service) TestPersistTask(ctx context.Context, req *pb.TestPersistTaskRequest) (*pb.TestPersistTaskResponse, error) {
+	payload := req.GetPayload()
+	if payload == nil {
+		return nil, errBadRequest
+	}
+
+	if err := srv.verifyPersistTask(payload); err != nil {
+		return nil, err
+	}
+
+	opt, err := runner.NewFuncOption(payload.GetType(), payload.GetOption())
+	if err != nil {
+		return nil, err
+	}
+	srv.app.Runner.Submit(opt.String(), opt.Execute, runner.WithDryRun(true))
+	return &pb.TestPersistTaskResponse{}, nil
+}
+
 func (srv *Service) ExecutePersistTask(ctx context.Context, req *pb.ExecutePersistTaskRequest) (*pb.ExecutePersistTaskResponse, error) {
 	ins := new(pb.PersistTask)
 	err := srv.app.DB.WithContext(ctx).First(ins, "id = ?", req.GetId()).Error
 	if err != nil {
 		return nil, err
 	}
+
+	opt, err := runner.NewFuncOption(ins.GetType(), ins.GetOption())
+	if err != nil {
+		return nil, err
+	}
+	srv.app.Runner.Submit(opt.String(), opt.Execute, runner.WithDryRun(req.GetDryRun()))
 	return &pb.ExecutePersistTaskResponse{}, nil
 }

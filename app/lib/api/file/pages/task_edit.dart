@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
-import 'package:maple_file/common/widgets/custom.dart';
 
 import 'package:maple_file/api/task/providers/persist.dart';
 import 'package:maple_file/api/task/providers/service.dart';
@@ -49,15 +49,8 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
           if (_isEditing)
             TextButton(
               child: Text("删除".tr(context)),
-              onPressed: () async {
-                final result = await showAlertDialog<bool>(context,
-                    content: Text(("确认删除任务?".tr(context))));
-                if (result != null && result) {
-                  await TaskService().deletePersistTask(_form.id).then((_) {
-                    ref.invalidate(persistTaskProvider);
-                    if (context.mounted) Navigator.of(context).pop();
-                  });
-                }
+              onPressed: () {
+                _handleDelete(context);
               },
             ),
         ],
@@ -122,30 +115,14 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                     child: _isEditing
                         ? ElevatedButton(
                             child: Text('确认修改'.tr(context)),
-                            onPressed: () async {
-                              final nav = Navigator.of(context);
-                              await TaskService()
-                                  .updatePersistTask(_form)
-                                  .then((resp) {
-                                if (!resp.hasErr) {
-                                  ref.invalidate(persistTaskProvider);
-                                  nav.pop();
-                                }
-                              });
+                            onPressed: () {
+                              _handleUpdate(context);
                             },
                           )
                         : ElevatedButton(
                             child: Text('确认添加'.tr(context)),
-                            onPressed: () async {
-                              final nav = Navigator.of(context);
-                              await TaskService()
-                                  .createPersistTask(_form)
-                                  .then((resp) {
-                                if (!resp.hasErr) {
-                                  ref.invalidate(persistTaskProvider);
-                                  nav.pop();
-                                }
-                              });
+                            onPressed: () {
+                              _handleCreate(context);
                             },
                           ),
                   ),
@@ -179,5 +156,37 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
         ),
       ),
     );
+  }
+
+  _handleCreate(BuildContext context) async {
+    await TaskService().createPersistTask(_form).then((resp) {
+      if (!resp.hasErr) {
+        ref.invalidate(persistTaskProvider);
+        if (context.mounted) Navigator.of(context).pop();
+      }
+    });
+  }
+
+  _handleUpdate(BuildContext context) async {
+    print(_form.option);
+    await TaskService().updatePersistTask(_form).then((resp) {
+      if (!resp.hasErr) {
+        ref.invalidate(persistTaskProvider);
+        if (context.mounted) Navigator.of(context).pop();
+      }
+    });
+  }
+
+  _handleDelete(BuildContext context) async {
+    final result = await showAlertDialog<bool>(
+      context,
+      content: Text("确认删除任务?".tr(context)),
+    );
+    if (result != null && result) {
+      await TaskService().deletePersistTask(_form.id).then((_) {
+        ref.invalidate(persistTaskProvider);
+        if (context.mounted) Navigator.of(context).pop();
+      });
+    }
   }
 }

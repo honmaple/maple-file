@@ -17,31 +17,22 @@ type MoveTaskOption struct {
 	Override bool   `json:"override"`
 }
 
-func (opt *MoveTaskOption) NewTask(fs FS) (Task, error) {
-	return NewMoveTask(fs, opt)
+func (opt *MoveTaskOption) String() string {
+	return fmt.Sprintf("移动 [%s] to [%s]", opt.SrcPath, opt.DstPath)
 }
 
-type MoveTask struct {
-	fs  FS
-	opt *MoveTaskOption
-}
-
-func (t *MoveTask) String() string {
-	return fmt.Sprintf("移动 [%s] to [%s]", t.opt.SrcPath, t.opt.DstPath)
-}
-
-func (t *MoveTask) Execute(task runner.Task) error {
-	srcFS, srcPath, err := t.fs.GetFS(t.opt.SrcPath)
+func (opt *MoveTaskOption) Execute(task runner.Task, fs FS) error {
+	srcFS, srcPath, err := fs.GetFS(opt.SrcPath)
 	if err != nil {
 		return err
 	}
 
-	dstFS, dstPath, err := t.fs.GetFS(t.opt.DstPath)
+	dstFS, dstPath, err := fs.GetFS(opt.DstPath)
 	if err != nil {
 		return err
 	}
 
-	if strings.TrimSuffix(t.opt.SrcPath, srcPath) == strings.TrimSuffix(t.opt.DstPath, dstPath) {
+	if strings.TrimSuffix(opt.SrcPath, srcPath) == strings.TrimSuffix(opt.DstPath, dstPath) {
 		return srcFS.Move(task.Context(), srcPath, dstPath)
 	}
 	return move(task, srcFS, srcPath, dstFS, dstPath)
@@ -115,14 +106,4 @@ func move(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, ds
 		}
 	}
 	return nil
-}
-
-func NewMoveTask(fs FS, opt *MoveTaskOption) (Task, error) {
-	if err := driver.VerifyOption(opt); err != nil {
-		return nil, err
-	}
-	return &MoveTask{
-		fs:  fs,
-		opt: opt,
-	}, nil
 }

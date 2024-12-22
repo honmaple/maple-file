@@ -13,16 +13,25 @@ import (
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 )
 
-type FS interface {
-	driver.FS
-	GetFS(string) (driver.FS, string, error)
-	GetRepo(string) (*pb.Repo, error)
-	CreateRepo(*pb.Repo)
-	UpdateRepo(*pb.Repo, *pb.Repo)
-	DeleteRepo(*pb.Repo)
-	SubmitTask(Task) runner.Task
-	SubmitTaskByOption(TaskOption) (runner.Task, error)
-}
+type (
+	Task interface {
+		Run() error
+	}
+	TaskOption interface {
+		String() string
+		Execute(runner.Task, FS) error
+	}
+
+	FS interface {
+		driver.FS
+		GetFS(string) (driver.FS, string, error)
+		GetRepo(string) (*pb.Repo, error)
+		CreateRepo(*pb.Repo)
+		UpdateRepo(*pb.Repo, *pb.Repo)
+		DeleteRepo(*pb.Repo)
+		SubmitTask(TaskOption) runner.Task
+	}
+)
 
 type repoFS struct {
 	driver.FS
@@ -117,16 +126,8 @@ func (d *defaultFS) DeleteRepo(repo *pb.Repo) {
 	d.cache.Delete(rootPath)
 }
 
-func (d *defaultFS) SubmitTask(task Task) runner.Task {
-	return d.app.Runner.Submit(task.String(), task.Execute)
-}
-
-func (d *defaultFS) SubmitTaskByOption(opt TaskOption) (runner.Task, error) {
-	t, err := opt.NewTask(d)
-	if err != nil {
-		return nil, err
-	}
-	return d.app.Runner.Submit(t.String(), t.Execute), nil
+func (d *defaultFS) SubmitTask(opt TaskOption) runner.Task {
+	return d.app.Runner.SubmitByOption(runner.NewFuncOptionWithArg[FS](opt, d))
 }
 
 func (d *defaultFS) loadRepos() error {

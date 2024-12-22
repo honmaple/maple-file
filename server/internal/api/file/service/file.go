@@ -104,12 +104,10 @@ func (srv *Service) Move(ctx context.Context, req *pb.MoveFileRequest) (*pb.Move
 
 		fmt.Println("move", oldPath, newPath)
 
-		if _, err := srv.fs.SubmitTaskByOption(&fs.CopyTaskOption{
+		srv.fs.SubmitTask(&fs.CopyTaskOption{
 			SrcPath: oldPath,
 			DstPath: newPath,
-		}); err != nil {
-			return nil, err
-		}
+		})
 	}
 	return &pb.MoveFileResponse{}, nil
 }
@@ -121,12 +119,10 @@ func (srv *Service) Copy(ctx context.Context, req *pb.CopyFileRequest) (*pb.Copy
 
 		fmt.Println("copy", oldPath, newPath)
 
-		if _, err := srv.fs.SubmitTaskByOption(&fs.CopyTaskOption{
+		srv.fs.SubmitTask(&fs.MoveTaskOption{
 			SrcPath: oldPath,
 			DstPath: newPath,
-		}); err != nil {
-			return nil, err
-		}
+		})
 	}
 	return &pb.CopyFileResponse{}, nil
 }
@@ -135,11 +131,9 @@ func (srv *Service) Remove(ctx context.Context, req *pb.RemoveFileRequest) (*pb.
 	for _, name := range req.GetNames() {
 		fmt.Println("remove", filepath.Join(req.GetPath(), name))
 
-		if _, err := srv.fs.SubmitTaskByOption(&fs.RemoveTaskOption{
+		srv.fs.SubmitTask(&fs.RemoveTaskOption{
 			Path: filepath.Join(req.GetPath(), name),
-		}); err != nil {
-			return nil, err
-		}
+		})
 	}
 	return &pb.RemoveFileResponse{}, nil
 }
@@ -177,7 +171,6 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 	}
 
 	task := srv.fs.SubmitTask(&fs.UploadTask{
-		FS:       srv.fs,
 		Path:     req.GetPath(),
 		Size:     int64(req.GetSize()),
 		Filename: filename,
@@ -245,7 +238,6 @@ func (srv *Service) Download(req *pb.DownloadFileRequest, stream pb.FileService_
 		})
 	})
 	task := srv.fs.SubmitTask(&fs.DownloadTask{
-		FS:     srv.fs,
 		Path:   req.GetPath(),
 		Writer: dst,
 	})

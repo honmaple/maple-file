@@ -51,7 +51,6 @@ type Task interface {
 	Children() []Task
 	StartTime() time.Time
 	EndTime() time.Time
-
 	DryRun() bool
 
 	Done() <-chan struct{}
@@ -67,6 +66,7 @@ type Task interface {
 }
 
 type memoryTask struct {
+	dryRun        bool
 	id            string
 	name          string
 	log           string
@@ -90,7 +90,9 @@ type memoryTask struct {
 }
 
 func (t *memoryTask) DryRun() bool {
-	return true
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	return t.dryRun
 }
 
 func (t *memoryTask) Id() string {
@@ -266,6 +268,12 @@ func WithID(id string) taskOption {
 func WithName(name string) taskOption {
 	return func(task *memoryTask) {
 		task.name = name
+	}
+}
+
+func WithDryRun(dryRun bool) taskOption {
+	return func(task *memoryTask) {
+		task.dryRun = dryRun
 	}
 }
 

@@ -5,9 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
-
-import 'form.dart';
 
 part 'upyun.g.dart';
 part 'upyun.freezed.dart';
@@ -52,7 +51,7 @@ class _UpyunState extends ConsumerState<Upyun> {
     return Card(
       child: Column(
         children: [
-          DriverFormField(
+          CustomFormField(
             label: "存储桶".tr(context),
             value: _option.bucket,
             isRequired: true,
@@ -64,7 +63,7 @@ class _UpyunState extends ConsumerState<Upyun> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "操作员".tr(context),
             value: _option.operator,
             isRequired: true,
@@ -76,8 +75,8 @@ class _UpyunState extends ConsumerState<Upyun> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
-            type: DriverFormFieldType.password,
+          CustomFormField(
+            type: CustomFormFieldType.password,
             label: "操作密码".tr(context),
             value: _option.password,
             isRequired: true,
@@ -89,7 +88,7 @@ class _UpyunState extends ConsumerState<Upyun> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          DriverFormField(
+          CustomFormField(
             label: "根目录".tr(context),
             value: _option.rootPath,
             onTap: (result) {

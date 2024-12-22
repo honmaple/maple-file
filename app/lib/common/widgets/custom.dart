@@ -1,8 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:grpc/grpc.dart';
 
@@ -386,114 +386,6 @@ class _CustomListTileState extends State<CustomListTile> {
       label,
       controller: _textController,
       obscureText: widget.obscureText,
-    );
-  }
-}
-
-class CustomFormFieldOption<T> {
-  final String label;
-  final T value;
-
-  const CustomFormFieldOption({required this.label, required this.value});
-}
-
-enum CustomFormFieldType {
-  string,
-  number,
-  password,
-  directory,
-  option,
-}
-
-class CustomFormField extends StatelessWidget {
-  const CustomFormField({
-    super.key,
-    required this.label,
-    required this.onTap,
-    this.value,
-    this.options,
-    this.type = CustomFormFieldType.string,
-    this.subtitle,
-    this.isRequired = false,
-  });
-
-  final bool isRequired;
-  final String label;
-  final String? value;
-  final Widget? subtitle;
-  final List<CustomFormFieldOption>? options;
-  final CustomFormFieldType type;
-  final Function(String) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(label),
-      subtitle: subtitle,
-      trailing: _emptyText(context, value),
-      onTap: () async {
-        String? result;
-        switch (type) {
-          case CustomFormFieldType.string:
-            result = await showEditingDialog(
-              context,
-              label,
-              value: value ?? "",
-            );
-            break;
-          case CustomFormFieldType.number:
-            result = await showNumberEditingDialog(
-              context,
-              label,
-              value: value ?? "",
-            );
-            break;
-          case CustomFormFieldType.password:
-            result = await showPasswordEditingDialog(
-              context,
-              label,
-              value: value ?? "",
-            );
-            break;
-          case CustomFormFieldType.directory:
-            result = await FilePicker.platform.getDirectoryPath();
-            break;
-          case CustomFormFieldType.option:
-            result = await showListDialog(context, items: [
-              for (final opt in options!)
-                ListDialogItem(label: opt.label, value: opt.value),
-            ]);
-            break;
-        }
-        if (result != null) {
-          onTap(result);
-        }
-      },
-    );
-  }
-
-  Widget _emptyText(
-    BuildContext context,
-    String? value,
-  ) {
-    bool isEmpty = value == null || value == "";
-    if (type == CustomFormFieldType.password) {
-      if (!isEmpty) {
-        return const Icon(Icons.more_horiz);
-      }
-    }
-    final option = options?.where((o) => o.value == value);
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        Text(
-          isEmpty ? "未设置".tr(context) : option?.firstOrNull?.label ?? value,
-          overflow: TextOverflow.ellipsis,
-        ),
-        if (isRequired && isEmpty)
-          const Text(' *', style: TextStyle(color: Colors.red)),
-        if (options != null) const Icon(Icons.chevron_right),
-      ],
     );
   }
 }

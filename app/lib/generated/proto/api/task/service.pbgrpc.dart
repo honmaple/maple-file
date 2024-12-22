@@ -54,6 +54,10 @@ class TaskServiceClient extends $grpc.Client {
       '/api.task.TaskService/DeletePersistTask',
       ($1.DeletePersistTaskRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $1.DeletePersistTaskResponse.fromBuffer(value));
+  static final _$testPersistTask = $grpc.ClientMethod<$1.TestPersistTaskRequest, $1.TestPersistTaskResponse>(
+      '/api.task.TaskService/TestPersistTask',
+      ($1.TestPersistTaskRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $1.TestPersistTaskResponse.fromBuffer(value));
   static final _$executePersistTask = $grpc.ClientMethod<$1.ExecutePersistTaskRequest, $1.ExecutePersistTaskResponse>(
       '/api.task.TaskService/ExecutePersistTask',
       ($1.ExecutePersistTaskRequest value) => value.writeToBuffer(),
@@ -95,6 +99,10 @@ class TaskServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$1.DeletePersistTaskResponse> deletePersistTask($1.DeletePersistTaskRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deletePersistTask, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.TestPersistTaskResponse> testPersistTask($1.TestPersistTaskRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$testPersistTask, request, options: options);
   }
 
   $grpc.ResponseFuture<$1.ExecutePersistTaskResponse> executePersistTask($1.ExecutePersistTaskRequest request, {$grpc.CallOptions? options}) {
@@ -163,6 +171,13 @@ abstract class TaskServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $1.DeletePersistTaskRequest.fromBuffer(value),
         ($1.DeletePersistTaskResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.TestPersistTaskRequest, $1.TestPersistTaskResponse>(
+        'TestPersistTask',
+        testPersistTask_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $1.TestPersistTaskRequest.fromBuffer(value),
+        ($1.TestPersistTaskResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$1.ExecutePersistTaskRequest, $1.ExecutePersistTaskResponse>(
         'ExecutePersistTask',
         executePersistTask_Pre,
@@ -204,6 +219,10 @@ abstract class TaskServiceBase extends $grpc.Service {
     return deletePersistTask(call, await request);
   }
 
+  $async.Future<$1.TestPersistTaskResponse> testPersistTask_Pre($grpc.ServiceCall call, $async.Future<$1.TestPersistTaskRequest> request) async {
+    return testPersistTask(call, await request);
+  }
+
   $async.Future<$1.ExecutePersistTaskResponse> executePersistTask_Pre($grpc.ServiceCall call, $async.Future<$1.ExecutePersistTaskRequest> request) async {
     return executePersistTask(call, await request);
   }
@@ -216,5 +235,6 @@ abstract class TaskServiceBase extends $grpc.Service {
   $async.Future<$1.CreatePersistTaskResponse> createPersistTask($grpc.ServiceCall call, $1.CreatePersistTaskRequest request);
   $async.Future<$1.UpdatePersistTaskResponse> updatePersistTask($grpc.ServiceCall call, $1.UpdatePersistTaskRequest request);
   $async.Future<$1.DeletePersistTaskResponse> deletePersistTask($grpc.ServiceCall call, $1.DeletePersistTaskRequest request);
+  $async.Future<$1.TestPersistTaskResponse> testPersistTask($grpc.ServiceCall call, $1.TestPersistTaskRequest request);
   $async.Future<$1.ExecutePersistTaskResponse> executePersistTask($grpc.ServiceCall call, $1.ExecutePersistTaskRequest request);
 }

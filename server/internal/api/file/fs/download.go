@@ -10,7 +10,6 @@ import (
 )
 
 type DownloadTask struct {
-	FS     FS        `json:"fs"`
 	Path   string    `json:"path"`
 	Writer io.Writer `json:"file"`
 }
@@ -19,8 +18,8 @@ func (opt *DownloadTask) String() string {
 	return fmt.Sprintf("下载 [%s]", opt.Path)
 }
 
-func (opt *DownloadTask) Execute(task runner.Task) error {
-	info, err := opt.FS.Get(opt.Path)
+func (opt *DownloadTask) Execute(task runner.Task, fs FS) error {
+	info, err := fs.Get(opt.Path)
 	if err != nil {
 		return err
 	}
@@ -29,7 +28,7 @@ func (opt *DownloadTask) Execute(task runner.Task) error {
 		return errors.New("can't download dir")
 	}
 
-	src, err := opt.FS.Open(opt.Path)
+	src, err := fs.Open(opt.Path)
 	if err != nil {
 		return err
 	}

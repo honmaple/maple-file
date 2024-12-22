@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/custom.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
-
-import 'form.dart';
 
 part 'sync.g.dart';
 part 'sync.freezed.dart';
@@ -129,6 +127,8 @@ class _SyncState extends State<Sync> {
               setState(() {
                 _option.method = result;
               });
+
+              widget.form.option = jsonEncode(_option);
             },
           ),
           ListTile(
@@ -166,6 +166,8 @@ class _SyncState extends State<Sync> {
                 setState(() {
                   _option.fileTypes = result;
                 });
+
+                widget.form.option = jsonEncode(_option);
               }
             },
           ),
@@ -181,34 +183,10 @@ class _SyncState extends State<Sync> {
               setState(() {
                 _option.conflict = result;
               });
+
+              widget.form.option = jsonEncode(_option);
             },
           ),
-          if (_option.method != SyncMethod.b2a.name)
-            ListTile(
-              title: Text('源文件删除'.tr(context)),
-              subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr(context)),
-              trailing: Switch(
-                value: _option.deleteSrc,
-                onChanged: (result) {
-                  setState(() {
-                    _option.deleteSrc = result;
-                  });
-                },
-              ),
-            ),
-          if (_option.method != SyncMethod.a2b.name)
-            ListTile(
-              title: Text('目标文件删除'.tr(context)),
-              subtitle: Text('目标路径的文件被删除或不存在时，是否同步删除源路径的文件'.tr(context)),
-              trailing: Switch(
-                value: _option.deleteSrc,
-                onChanged: (result) {
-                  setState(() {
-                    _option.deleteSrc = result;
-                  });
-                },
-              ),
-            ),
           ListTile(
             title: Row(
               mainAxisSize: MainAxisSize.min,
@@ -218,7 +196,9 @@ class _SyncState extends State<Sync> {
                 const SizedBox(width: 16),
                 Flexible(
                   child: Text(
-                    _option.customPath == "" ? "默认" : _option.customPath,
+                    _option.customPath == ""
+                        ? "默认".tr(context)
+                        : _option.customPath,
                     maxLines: 1,
                     textAlign: TextAlign.end,
                     overflow: TextOverflow.ellipsis,
@@ -236,6 +216,36 @@ class _SyncState extends State<Sync> {
               if (result != null) {}
             },
           ),
+          if (_option.method != SyncMethod.b2a.name)
+            ListTile(
+              title: Text('源文件删除'.tr(context)),
+              subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr(context)),
+              trailing: Switch(
+                value: _option.deleteSrc,
+                onChanged: (result) {
+                  setState(() {
+                    _option.deleteSrc = result;
+                  });
+
+                  widget.form.option = jsonEncode(_option);
+                },
+              ),
+            ),
+          if (_option.method != SyncMethod.a2b.name)
+            ListTile(
+              title: Text('目标文件删除'.tr(context)),
+              subtitle: Text('目标路径的文件被删除或不存在时，是否同步删除源路径的文件'.tr(context)),
+              trailing: Switch(
+                value: _option.deleteSrc,
+                onChanged: (result) {
+                  setState(() {
+                    _option.deleteSrc = result;
+                  });
+
+                  widget.form.option = jsonEncode(_option);
+                },
+              ),
+            ),
         ],
       ),
     );

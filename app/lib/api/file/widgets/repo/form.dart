@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 
-import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
-import "s3.dart";
-import "smb.dart";
-import "ftp.dart";
-import "sftp.dart";
 import "alist.dart";
+import "ftp.dart";
 import "local.dart";
+import "mirror.dart";
+import "s3.dart";
+import "sftp.dart";
+import "smb.dart";
 import "upyun.dart";
 import "webdav.dart";
-import "mirror.dart";
 
 enum DriverType {
   s3,
@@ -41,89 +38,6 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.mirror: "Mirror",
     };
     return labels[this] ?? "unknown";
-  }
-}
-
-enum DriverFormFieldType {
-  string,
-  number,
-  password,
-  directory,
-}
-
-class DriverFormField extends StatelessWidget {
-  const DriverFormField({
-    super.key,
-    required this.label,
-    required this.onTap,
-    this.value,
-    this.type = DriverFormFieldType.string,
-    this.isRequired = false,
-  });
-
-  final bool isRequired;
-  final String label;
-  final String? value;
-  final DriverFormFieldType type;
-  final Function(String) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(label),
-      trailing: _emptyText(context, value),
-      onTap: () async {
-        String? result;
-        switch (type) {
-          case DriverFormFieldType.string:
-            result = await showEditingDialog(
-              context,
-              label,
-              value: value ?? "",
-            );
-            break;
-          case DriverFormFieldType.number:
-            result = await showNumberEditingDialog(
-              context,
-              label,
-              value: value ?? "",
-            );
-            break;
-          case DriverFormFieldType.password:
-            result = await showPasswordEditingDialog(
-              context,
-              label,
-              value: value ?? "",
-            );
-            break;
-          case DriverFormFieldType.directory:
-            result = await FilePicker.platform.getDirectoryPath();
-            break;
-        }
-        if (result != null) {
-          onTap(result);
-        }
-      },
-    );
-  }
-
-  Widget _emptyText(
-    BuildContext context,
-    String? value,
-  ) {
-    bool isEmpty = value == null || value == "";
-    if (type == DriverFormFieldType.password) {
-      if (!isEmpty) {
-        return const Icon(Icons.more_horiz);
-      }
-    }
-    return Wrap(
-      children: [
-        Text(isEmpty ? "未设置".tr(context) : value),
-        if (isRequired && isEmpty)
-          const Text(' *', style: TextStyle(color: Colors.red)),
-      ],
-    );
   }
 }
 

@@ -25,6 +25,7 @@ func (srv *Service) ListTasks(ctx context.Context, in *pb.ListTasksRequest) (*pb
 	for _, m := range srv.app.Runner.GetAll() {
 		result := &pb.Task{
 			Id:            m.Id(),
+			Log:           m.Log(),
 			Name:          m.Name(),
 			State:         taskStates[m.State()],
 			Progress:      m.Progress(),

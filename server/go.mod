@@ -1,12 +1,13 @@
 module github.com/honmaple/maple-file/server
 
-go 1.23
+go 1.23.0
 
 toolchain go1.23.4
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/aws/aws-sdk-go v1.51.21
+	github.com/elliotchance/orderedmap/v3 v3.0.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.23.0
@@ -18,6 +19,7 @@ require (
 	github.com/pkg/sftp v1.13.6
 	github.com/sirupsen/logrus v1.8.0
 	github.com/spf13/viper v1.18.2
+	github.com/stretchr/testify v1.8.4
 	github.com/studio-b12/gowebdav v0.9.0
 	github.com/tidwall/gjson v1.18.0
 	github.com/upyun/go-sdk/v3 v3.0.4
@@ -38,6 +40,7 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
@@ -62,6 +65,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect

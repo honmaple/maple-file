@@ -199,7 +199,7 @@ class _FileImagePreviewState extends State<FileImagePreview> {
           final file = _currentFiles[index];
           return ImagePreview.remote(
             filepath.join(file.path, file.name),
-            fit: BoxFit.fitHeight,
+            fit: BoxFit.fitWidth,
           );
         },
         controller: _pageController,

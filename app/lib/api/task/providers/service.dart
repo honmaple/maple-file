@@ -94,6 +94,14 @@ class TaskService {
     });
   }
 
+  Future<void> testPersistTask(PersistTask payload) {
+    return doFuture(() {
+      TestPersistTaskRequest request = TestPersistTaskRequest(payload: payload);
+
+      return _client.testPersistTask(request);
+    });
+  }
+
   Future<void> executePersistTask(int id) {
     return doFuture(() {
       ExecutePersistTaskRequest request = ExecutePersistTaskRequest(id: id);

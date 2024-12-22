@@ -147,17 +147,41 @@ const DeletePersistTaskResponse$json = {
 final $typed_data.Uint8List deletePersistTaskResponseDescriptor = $convert.base64Decode(
     'ChlEZWxldGVQZXJzaXN0VGFza1Jlc3BvbnNl');
 
+@$core.Deprecated('Use testPersistTaskRequestDescriptor instead')
+const TestPersistTaskRequest$json = {
+  '1': 'TestPersistTaskRequest',
+  '2': [
+    {'1': 'payload', '3': 1, '4': 1, '5': 11, '6': '.api.task.PersistTask', '10': 'payload'},
+  ],
+};
+
+/// Descriptor for `TestPersistTaskRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List testPersistTaskRequestDescriptor = $convert.base64Decode(
+    'ChZUZXN0UGVyc2lzdFRhc2tSZXF1ZXN0Ei8KB3BheWxvYWQYASABKAsyFS5hcGkudGFzay5QZX'
+    'JzaXN0VGFza1IHcGF5bG9hZA==');
+
+@$core.Deprecated('Use testPersistTaskResponseDescriptor instead')
+const TestPersistTaskResponse$json = {
+  '1': 'TestPersistTaskResponse',
+};
+
+/// Descriptor for `TestPersistTaskResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List testPersistTaskResponseDescriptor = $convert.base64Decode(
+    'ChdUZXN0UGVyc2lzdFRhc2tSZXNwb25zZQ==');
+
 @$core.Deprecated('Use executePersistTaskRequestDescriptor instead')
 const ExecutePersistTaskRequest$json = {
   '1': 'ExecutePersistTaskRequest',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 5, '10': 'id'},
+    {'1': 'dry_run', '3': 2, '4': 1, '5': 8, '10': 'dryRun'},
   ],
 };
 
 /// Descriptor for `ExecutePersistTaskRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List executePersistTaskRequestDescriptor = $convert.base64Decode(
-    'ChlFeGVjdXRlUGVyc2lzdFRhc2tSZXF1ZXN0Eg4KAmlkGAEgASgFUgJpZA==');
+    'ChlFeGVjdXRlUGVyc2lzdFRhc2tSZXF1ZXN0Eg4KAmlkGAEgASgFUgJpZBIXCgdkcnlfcnVuGA'
+    'IgASgIUgZkcnlSdW4=');
 
 @$core.Deprecated('Use executePersistTaskResponseDescriptor instead')
 const ExecutePersistTaskResponse$json = {

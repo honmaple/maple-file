@@ -20,7 +20,7 @@ class _TaskListState extends ConsumerState<TaskList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('同步备份'.tr(context)),
+        title: Text('同步备份'.tr()),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -30,7 +30,7 @@ class _TaskListState extends ConsumerState<TaskList> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text("同步备份".tr(context)),
+                    title: Text("同步备份".tr()),
                     dense: true,
                   ),
                   CustomAsyncValue(
@@ -43,12 +43,9 @@ class _TaskListState extends ConsumerState<TaskList> {
                             subtitle: Row(
                               children: [
                                 Text(
-                                  "任务类型：{type}".tr(
-                                    context,
-                                    args: {
-                                      "type": _typeLabel(context, item.type)
-                                    },
-                                  ),
+                                  "任务类型：{type}".tr(args: {
+                                    "type": _typeLabel(context, item.type),
+                                  }),
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                                 const SizedBox(width: 8),
@@ -72,7 +69,7 @@ class _TaskListState extends ConsumerState<TaskList> {
                               ],
                             ),
                             trailing: InkWell(
-                              child: Text("立即执行".tr(context),
+                              child: Text("立即执行".tr(),
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelMedium
@@ -100,7 +97,7 @@ class _TaskListState extends ConsumerState<TaskList> {
                   ),
                   ListTile(
                     trailing: const Icon(Icons.add),
-                    title: Text("添加新任务".tr(context)),
+                    title: Text("添加新任务".tr()),
                     onTap: () {
                       Navigator.pushNamed(
                         context,

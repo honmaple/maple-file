@@ -345,7 +345,7 @@ class _AudioPreviewPlaylistState extends State<AudioPreviewPlaylist> {
         children: [
           ListTile(
             title: Text(
-              "当前播放列表({length})".tr(context, args: {
+              "当前播放列表({length})".tr(args: {
                 "length": widget.controller.playlist.length,
               }),
               style: Theme.of(context).textTheme.titleLarge,

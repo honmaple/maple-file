@@ -99,10 +99,9 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
               ),
               const SizedBox(height: 8),
               Text(
-                "文件大小: {size}".tr(
-                  context,
-                  args: {"size": Util.formatSize(file.size)},
-                ),
+                "文件大小: {size}".tr(args: {
+                  "size": Util.formatSize(file.size),
+                }),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall,
@@ -114,7 +113,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  child: Text('下载'.tr(context)),
+                  child: Text('下载'.tr()),
                   onPressed: () async {
                     await FileActionType.download.action(context, file, ref);
                   },
@@ -122,7 +121,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
               ),
               const SizedBox(height: 8),
               Text(
-                "未知的文件类型，无法查看文件，请下载到本地查看".tr(context),
+                "未知的文件类型，无法查看文件，请下载到本地查看".tr(),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -371,18 +370,22 @@ class _FileVideoPreviewState extends State<FileVideoPreview>
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: Column(
-        children: [
-          VideoPreview(controller: _controller),
-          TabBar(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            controller: _tabController,
-            tabs: <Tab>[
-              Tab(text: "简介".tr(context)),
-              Tab(text: "播放列表".tr(context)),
-            ],
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: VideoPreview(controller: _controller),
           ),
-          Expanded(
+          SliverToBoxAdapter(
+            child: TabBar(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              controller: _tabController,
+              tabs: <Tab>[
+                Tab(text: "简介".tr()),
+                Tab(text: "播放列表".tr()),
+              ],
+            ),
+          ),
+          SliverFillRemaining(
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               child: TabBarView(
@@ -392,7 +395,7 @@ class _FileVideoPreviewState extends State<FileVideoPreview>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ListTile(
-                        title: Text("文件名称".tr(context)),
+                        title: Text("文件名称".tr()),
                         trailing: Text(_controller.currentSource.name),
                       ),
                     ],

@@ -124,7 +124,7 @@ class CustomFormField extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
-          isEmpty ? "未设置".tr(context) : option?.firstOrNull?.label ?? value,
+          isEmpty ? "未设置".tr() : option?.firstOrNull?.label ?? value,
           maxLines: 1,
           textAlign: TextAlign.end,
           overflow: TextOverflow.ellipsis,
@@ -192,7 +192,7 @@ class FolderFormField extends StatelessWidget {
     return Wrap(
       children: [
         Text(
-          isEmpty ? "未设置".tr(context) : value,
+          isEmpty ? "未设置".tr() : value,
           maxLines: 1,
           textAlign: TextAlign.end,
           overflow: TextOverflow.ellipsis,
@@ -243,7 +243,7 @@ class _CustomFileTypeState extends State<CustomFileType>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("文件类型".tr(context)),
+        title: Text("文件类型".tr()),
         leading: Breakpoint.isMobile(context)
             ? null
             : IconButton(
@@ -254,7 +254,7 @@ class _CustomFileTypeState extends State<CustomFileType>
               ),
         actions: [
           TextButton(
-            child: Text("确定".tr(context)),
+            child: Text("确定".tr()),
             onPressed: () {
               Navigator.of(context).pop(_types);
             },
@@ -303,7 +303,7 @@ class _CustomFileTypeState extends State<CustomFileType>
                   decoration: InputDecoration(
                     border:
                         const OutlineInputBorder(borderSide: BorderSide.none),
-                    hintText: '输入文件类型'.tr(context),
+                    hintText: '输入文件类型'.tr(),
                     hintStyle: const TextStyle(
                       fontSize: 12,
                     ),
@@ -325,7 +325,7 @@ class _CustomFileTypeState extends State<CustomFileType>
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    child: Text('添加'.tr(context)),
+                    child: Text('添加'.tr()),
                     onPressed: () {
                       final text = _controller.text;
                       if (text != "") {
@@ -355,7 +355,7 @@ class _CustomFileTypeState extends State<CustomFileType>
                             ),
                           ),
                           const TextSpan(text: " "),
-                          TextSpan(text: "语法规则".tr(context)),
+                          TextSpan(text: "语法规则".tr()),
                         ],
                       ),
                     ),
@@ -363,13 +363,13 @@ class _CustomFileTypeState extends State<CustomFileType>
                       direction: Axis.vertical,
                       spacing: 2,
                       children: [
-                        Text("1. 包括文件: {file}".tr(context, args: {
+                        Text("1. 包括文件: {file}".tr(args: {
                           "file": "abc.png、.png、*.png、abc*.png",
                         })),
-                        Text("2. 包括目录: {file}".tr(context, args: {
+                        Text("2. 包括目录: {file}".tr(args: {
                           "file": "abc/*.png、abc/**/*.png、*/**/abc*.png",
                         })),
-                        Text("3. 排除文件或目录: {file}".tr(context, args: {
+                        Text("3. 排除文件或目录: {file}".tr(args: {
                           "file": "-abc.png、-*abc.png、-abc/**/*.png",
                         })),
                       ],
@@ -386,9 +386,9 @@ class _CustomFileTypeState extends State<CustomFileType>
                     TabBar(
                       controller: _tabController,
                       tabs: <Tab>[
-                        Tab(text: "图片".tr(context)),
-                        Tab(text: "视频".tr(context)),
-                        Tab(text: "音频".tr(context)),
+                        Tab(text: "图片".tr()),
+                        Tab(text: "视频".tr()),
+                        Tab(text: "音频".tr()),
                       ],
                     ),
                     Expanded(
@@ -432,7 +432,7 @@ class _CustomFileTypeState extends State<CustomFileType>
           return ListTile(
             dense: true,
             title: Text(
-              length == types.length ? "取消全选".tr(context) : "全选".tr(context),
+              length == types.length ? "取消全选".tr() : "全选".tr(),
             ),
             trailing: length == types.length
                 ? Icon(
@@ -526,7 +526,7 @@ class FileTypeFormField extends StatelessWidget {
       children: [
         Flexible(
           child: Text(
-            value.isEmpty ? "空".tr(context) : value.join(","),
+            value.isEmpty ? "空".tr() : value.join(","),
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,
           ),

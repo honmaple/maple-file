@@ -51,7 +51,7 @@ class _UpyunState extends State<Upyun> {
       child: Column(
         children: [
           CustomFormField(
-            label: "存储桶".tr(context),
+            label: "存储桶".tr(),
             value: _option.bucket,
             isRequired: true,
             onTap: (result) {
@@ -63,7 +63,7 @@ class _UpyunState extends State<Upyun> {
             },
           ),
           CustomFormField(
-            label: "操作员".tr(context),
+            label: "操作员".tr(),
             value: _option.operator,
             isRequired: true,
             onTap: (result) {
@@ -76,7 +76,7 @@ class _UpyunState extends State<Upyun> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "操作密码".tr(context),
+            label: "操作密码".tr(),
             value: _option.password,
             isRequired: true,
             onTap: (result) {
@@ -88,7 +88,7 @@ class _UpyunState extends State<Upyun> {
             },
           ),
           CustomFormField(
-            label: "根目录".tr(context),
+            label: "根目录".tr(),
             value: _option.rootPath,
             onTap: (result) {
               setState(() {

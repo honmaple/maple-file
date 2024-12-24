@@ -16,7 +16,7 @@ class FileBreadcrumb extends StatelessWidget {
         for (int index = 0; index < list.length; index++)
           index == 0
               ? BreadcrumbItem(
-                  child: Text("全部文件".tr(context)),
+                  child: Text("全部文件".tr()),
                   onTap: () {
                     int length = list.length - index;
                     Navigator.popUntil(context, (route) {

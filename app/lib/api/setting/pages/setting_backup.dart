@@ -23,7 +23,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('备份与恢复'.tr(context)),
+        title: Text('备份与恢复'.tr()),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -43,7 +43,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
           child: Column(
             children: [
               ListTile(
-                title: Text('备份文件'.tr(context)),
+                title: Text('备份文件'.tr()),
                 subtitle: FutureBuilder(
                   future: PathUtil.getDatabasePath(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -64,10 +64,10 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            child: Text('备份'.tr(context)),
+            child: Text('备份'.tr()),
             onPressed: () async {
               String? result = await FilePicker.platform.getDirectoryPath(
-                dialogTitle: "请选择备份路径".tr(context),
+                dialogTitle: "请选择备份路径".tr(),
               );
               if (result != null) {
                 final name =
@@ -78,8 +78,8 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                   await io.File(src).copy(dst);
                 }).then((resp) {
                   if (!resp.hasErr) {
-                    Messenger.showSnackBar(Text(
-                      "备份成功，文件名称: {name}".tr(context, args: {
+                    App.showSnackBar(Text(
+                      "备份成功，文件名称: {name}".tr(args: {
                         "name": name,
                       }),
                     ));
@@ -93,10 +93,10 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            child: Text('恢复'.tr(context)),
+            child: Text('恢复'.tr()),
             onPressed: () async {
               FilePickerResult? result = await FilePicker.platform.pickFiles(
-                dialogTitle: "请选择备份文件".tr(context),
+                dialogTitle: "请选择备份文件".tr(),
                 // type: FileType.custom,
                 // allowedExtensions: ["db"],
               );
@@ -107,7 +107,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                   await io.File(src).copy(dst);
                 }).then((resp) {
                   if (!resp.hasErr) {
-                    Messenger.showSnackBar(Text("恢复成功，请重启应用".tr(context)));
+                    App.showSnackBar(Text("恢复成功，请重启应用".tr()));
                   }
                 });
               }
@@ -128,7 +128,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                 ),
                 const TextSpan(text: " "),
                 TextSpan(
-                  text: "恢复备份将会覆盖红枫云盘的所有数据".tr(context),
+                  text: "恢复备份将会覆盖红枫云盘的所有数据".tr(),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],

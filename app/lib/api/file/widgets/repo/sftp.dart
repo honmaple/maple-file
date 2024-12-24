@@ -33,7 +33,7 @@ class _SFTPState extends State<SFTP> {
       child: Column(
         children: [
           CustomFormField(
-            label: "主机/IP".tr(context),
+            label: "主机/IP".tr(),
             value: _option["host"],
             isRequired: true,
             onTap: (result) {
@@ -46,7 +46,7 @@ class _SFTPState extends State<SFTP> {
           ),
           CustomFormField(
             type: CustomFormFieldType.number,
-            label: "端口".tr(context),
+            label: "端口".tr(),
             value: "${_option['port'] ?? 22}",
             isRequired: true,
             onTap: (result) {
@@ -58,7 +58,7 @@ class _SFTPState extends State<SFTP> {
             },
           ),
           CustomFormField(
-            label: "用户".tr(context),
+            label: "用户".tr(),
             value: _option["username"],
             isRequired: true,
             onTap: (result) {
@@ -71,7 +71,7 @@ class _SFTPState extends State<SFTP> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "密码".tr(context),
+            label: "密码".tr(),
             value: _option["password"],
             onTap: (result) {
               setState(() {
@@ -83,7 +83,7 @@ class _SFTPState extends State<SFTP> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "私钥".tr(context),
+            label: "私钥".tr(),
             value: _option["private_key"],
             onTap: (result) {
               setState(() {
@@ -94,7 +94,7 @@ class _SFTPState extends State<SFTP> {
             },
           ),
           CustomFormField(
-            label: "根目录".tr(context),
+            label: "根目录".tr(),
             value: _option["root_path"],
             onTap: (result) {
               setState(() {

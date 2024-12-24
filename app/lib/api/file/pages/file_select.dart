@@ -81,7 +81,7 @@ class _FileSelectState extends ConsumerState<FileSelect> {
             onPressed: () async {
               final result = await showEditingDialog(
                 context,
-                "新建文件夹".tr(context),
+                "新建文件夹".tr(),
               );
               if (result != null) {
                 FileService().mkdir(widget.path, result).then((_) {

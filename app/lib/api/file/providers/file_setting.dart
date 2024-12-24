@@ -16,10 +16,10 @@ enum FileListView {
 extension FileListViewExtension on FileListView {
   String label(BuildContext context) {
     Map<FileListView, String> labels = {
-      FileListView.list: "列表模式".tr(context),
-      FileListView.grid: "宫格模式".tr(context),
+      FileListView.list: "列表模式".tr(),
+      FileListView.grid: "宫格模式".tr(),
     };
-    return labels[this] ?? "未知".tr(context);
+    return labels[this] ?? "未知".tr();
   }
 }
 
@@ -33,13 +33,13 @@ enum FileListSort {
 extension FileListSortExtension on FileListSort {
   String label(BuildContext context) {
     Map<FileListSort, String> labels = {
-      FileListSort.name: "名称".tr(context),
-      FileListSort.type: "类型".tr(context),
-      FileListSort.size: "大小".tr(context),
-      FileListSort.time: "修改时间".tr(context),
+      FileListSort.name: "名称".tr(),
+      FileListSort.type: "类型".tr(),
+      FileListSort.size: "大小".tr(),
+      FileListSort.time: "修改时间".tr(),
     };
 
-    return labels[this] ?? "未知".tr(context);
+    return labels[this] ?? "未知".tr();
   }
 }
 
@@ -51,10 +51,10 @@ enum FileListIcon {
 extension FileListIconExtension on FileListIcon {
   String label(BuildContext context) {
     Map<FileListIcon, String> labels = {
-      FileListIcon.rectangle: "默认".tr(context),
-      FileListIcon.circle: "圆形".tr(context),
+      FileListIcon.rectangle: "默认".tr(),
+      FileListIcon.circle: "圆形".tr(),
     };
-    return labels[this] ?? "未知".tr(context);
+    return labels[this] ?? "未知".tr();
   }
 }
 

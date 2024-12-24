@@ -48,8 +48,5 @@ Future<void> init(CustomRouter router) async {
     '/file/setting/download': (context) {
       return const FileSettingDownload();
     },
-    '/file/setting/hidefiles': (context) {
-      return const FileSettingHideFiles();
-    },
   });
 }

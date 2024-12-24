@@ -32,7 +32,7 @@ class _MirrorState extends State<Mirror> {
       child: Column(
         children: [
           CustomFormField(
-            label: "源站".tr(context),
+            label: "源站".tr(),
             value: _option["endpoint"],
             isRequired: true,
             onTap: (result) {
@@ -44,11 +44,11 @@ class _MirrorState extends State<Mirror> {
             },
           ),
           ListTile(
-            title: Text('源站格式'.tr(context)),
+            title: Text('源站格式'.tr()),
             trailing: Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text(_option["format"] ?? "未选择".tr(context)),
+                Text(_option["format"] ?? "未选择".tr()),
                 const Icon(Icons.chevron_right),
               ],
             ),
@@ -67,7 +67,7 @@ class _MirrorState extends State<Mirror> {
             },
           ),
           CustomFormField(
-            label: "根目录".tr(context),
+            label: "根目录".tr(),
             value: _option["root_path"],
             onTap: (result) {
               setState(() {

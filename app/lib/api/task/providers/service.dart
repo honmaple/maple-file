@@ -111,7 +111,7 @@ class TaskService {
 
       return _client.executePersistTask(request);
     }).then((_) {
-      Messenger.showSnackBar(const Text("执行成功，请转至任务列表查看"));
+      App.showSnackBar(const Text("执行成功，请转至任务列表查看"));
     });
   }
 }

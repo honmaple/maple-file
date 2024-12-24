@@ -21,7 +21,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
     final setting = ref.watch(fileSettingProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text('显示设置'.tr(context)),
+        title: Text('显示设置'.tr()),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -31,7 +31,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text('布局'.tr(context)),
+                    title: Text('布局'.tr()),
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
@@ -60,7 +60,6 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text('按{sort}排序'.tr(
-                          context,
                           args: {"sort": setting.sort.label(context)},
                         )),
                         const Icon(Icons.chevron_right),
@@ -75,8 +74,8 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                             value: item,
                             trailing: setting.sort == item
                                 ? Text(setting.sortReversed
-                                    ? "倒序".tr(context)
-                                    : "正序".tr(context))
+                                    ? "倒序".tr()
+                                    : "正序".tr())
                                 : null,
                           );
                         }).toList(),
@@ -93,7 +92,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                     },
                   ),
                   FileTypeFormField(
-                    label: '隐藏文件'.tr(context),
+                    label: '隐藏文件'.tr(),
                     value: setting.hideFiles,
                     onTap: (result) {
                       ref.read(fileSettingProvider.notifier).update((state) {
@@ -108,7 +107,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text('图标'.tr(context)),
+                    title: Text('图标'.tr()),
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
@@ -134,11 +133,11 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                     },
                   ),
                   ListTile(
-                    title: Text('图标颜色'.tr(context)),
+                    title: Text('图标颜色'.tr()),
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Text(setting.iconColor ?? "默认".tr(context)),
+                        Text(setting.iconColor ?? "默认".tr()),
                         const Icon(Icons.chevron_right),
                       ],
                     ),
@@ -183,14 +182,14 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text("分页设置".tr(context)),
+                    title: Text("分页设置".tr()),
                     dense: true,
                   ),
                   CustomFormField(
                     type: CustomFormFieldType.number,
-                    label: '分页大小'.tr(context),
+                    label: '分页大小'.tr(),
                     value: "${setting.paginationSize}",
-                    subtitle: Text("为0时表示不分页".tr(context)),
+                    subtitle: Text("为0时表示不分页".tr()),
                     onTap: (result) {
                       ref.read(fileSettingProvider.notifier).update((state) {
                         return state.copyWith(
@@ -202,105 +201,6 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FileSettingHideFiles extends ConsumerStatefulWidget {
-  const FileSettingHideFiles({super.key});
-
-  @override
-  ConsumerState<FileSettingHideFiles> createState() =>
-      _FileSettingHideFilesState();
-}
-
-class _FileSettingHideFilesState extends ConsumerState<FileSettingHideFiles> {
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final hideFiles = ref.watch(fileSettingProvider.select((state) {
-      return state.hideFiles;
-    }));
-    return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: _controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(borderSide: BorderSide.none),
-            hintText: '输入文件名称',
-            hintStyle: TextStyle(
-              fontSize: 12,
-            ),
-            prefixIcon: Icon(Icons.tag),
-            prefixIconConstraints: BoxConstraints(
-              minWidth: 42,
-              minHeight: 42,
-            ),
-            filled: true,
-            isDense: true,
-            contentPadding: EdgeInsets.all(0),
-          ),
-        ),
-        actions: [
-          GestureDetector(
-            child: Padding(
-              padding: const EdgeInsets.only(right: kDefaultFontSize),
-              child: Text(
-                "添加",
-                style: TextStyle(color: Theme.of(context).primaryColor),
-              ),
-            ),
-            onTap: () {
-              ref.read(fileSettingProvider.notifier).update((state) {
-                return state
-                    .copyWith(hideFiles: [...hideFiles, _controller.text]);
-              });
-              _controller.text = "";
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: [
-            for (final file in hideFiles)
-              InputChip(
-                label: Text(file),
-                labelStyle: TextStyle(
-                  fontSize: kDefaultFontSize * 0.875,
-                  color: Theme.of(context).primaryColor,
-                ),
-                selected: true,
-                showCheckmark: false,
-                onDeleted: () {
-                  ref.read(fileSettingProvider.notifier).update((state) {
-                    return state.copyWith(
-                      hideFiles: hideFiles.where((r) => r != file).toList(),
-                    );
-                  });
-                },
-              )
           ],
         ),
       ),

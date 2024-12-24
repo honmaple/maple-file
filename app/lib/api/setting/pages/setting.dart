@@ -18,7 +18,7 @@ class Setting extends StatelessWidget {
     final themeData = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("设置".tr(context)),
+        title: Text("设置".tr()),
         centerTitle: true,
         automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),
@@ -30,7 +30,7 @@ class Setting extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text("基础设置".tr(context)),
+                    title: Text("基础设置".tr()),
                     dense: true,
                   ),
                   ListTile(
@@ -38,7 +38,7 @@ class Setting extends StatelessWidget {
                       Icons.brightness_medium,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text("主题".tr(context)),
+                    title: Text("主题".tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/setting/theme');
@@ -49,7 +49,7 @@ class Setting extends StatelessWidget {
                       Icons.language,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text("语言".tr(context)),
+                    title: Text("语言".tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/setting/locale');
@@ -60,7 +60,7 @@ class Setting extends StatelessWidget {
                       Icons.backup,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text("备份与恢复".tr(context)),
+                    title: Text("备份与恢复".tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/setting/backup');
@@ -81,7 +81,7 @@ class Setting extends StatelessWidget {
                       Icons.storage,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text("存储库".tr(context)),
+                    title: Text("存储库".tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/file/setting/repo');
@@ -92,7 +92,7 @@ class Setting extends StatelessWidget {
                       Icons.sync,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text('同步备份'.tr(context)),
+                    title: Text('同步备份'.tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/file/setting/task');
@@ -103,7 +103,7 @@ class Setting extends StatelessWidget {
                       Icons.upload,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text('文件上传'.tr(context)),
+                    title: Text('文件上传'.tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/file/setting/upload');
@@ -114,7 +114,7 @@ class Setting extends StatelessWidget {
                       Icons.download,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text('文件下载'.tr(context)),
+                    title: Text('文件下载'.tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context)
@@ -126,7 +126,7 @@ class Setting extends StatelessWidget {
                       Icons.palette,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text('文件展示'.tr(context)),
+                    title: Text('文件展示'.tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/file/setting/theme');
@@ -143,7 +143,7 @@ class Setting extends StatelessWidget {
                       Icons.help,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text("帮助".tr(context)),
+                    title: Text("帮助".tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/help');
@@ -154,7 +154,7 @@ class Setting extends StatelessWidget {
                       Icons.person,
                       color: themeData.colorScheme.primary,
                     ),
-                    title: Text("关于".tr(context)),
+                    title: Text("关于".tr()),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       navigatorState(context).pushNamed('/about');

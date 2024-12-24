@@ -9,10 +9,10 @@ class Help extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("帮助".tr(context)),
+        title: Text("帮助".tr()),
       ),
       body: Center(
-        child: Text("帮助".tr(context)),
+        child: Text("帮助".tr()),
       ),
     );
   }

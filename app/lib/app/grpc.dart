@@ -33,7 +33,7 @@ Future<Response<T>> doFuture<T>(
     err = e.toString();
   }
   if (showError) {
-    Messenger.showSnackBar(Text(err));
+    App.showSnackBar(Text(err));
   }
   return Response(error: err);
 }

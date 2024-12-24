@@ -8,6 +8,8 @@ import 'package:intl/intl.dart' as intl;
 import 'i18n/en_us.dart';
 import 'i18n/zh_cn.dart';
 
+import 'app.dart';
+
 const translations = {
   "en": enUS,
   "zh": zhCN,
@@ -29,7 +31,12 @@ extension I18nContext on BuildContext {
 }
 
 extension I18nString on String {
-  String tr(BuildContext context, {Object? args}) {
+  String tr({BuildContext? context, Object? args}) {
+    context ??= App.navigatorKey.currentContext;
+    if (context == null) {
+      return this;
+    }
+
     final t = I18n.of(context);
     if (t == null) {
       return this;
@@ -39,7 +46,12 @@ extension I18nString on String {
 }
 
 extension I18nText on Text {
-  Text tr(BuildContext context, {Object? args}) {
+  Text tr({BuildContext? context, Object? args}) {
+    context ??= App.navigatorKey.currentContext;
+    if (context == null) {
+      return this;
+    }
+
     final t = I18n.of(context);
     if (t == null || data == null) {
       return this;

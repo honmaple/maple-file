@@ -33,12 +33,12 @@ class _IndexState extends ConsumerState<Index> {
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.business),
-                  label: '文件'.tr(context),
+                  label: '文件'.tr(),
                   backgroundColor: Colors.white,
                 ),
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.settings),
-                  label: '设置'.tr(context),
+                  label: '设置'.tr(),
                   backgroundColor: Colors.white,
                 ),
               ],
@@ -100,15 +100,15 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                     destinations: <NavigationRailDestination>[
                       NavigationRailDestination(
                         icon: const Icon(Icons.school),
-                        label: Text('文件'.tr(context)),
+                        label: Text('文件'.tr()),
                       ),
                       NavigationRailDestination(
                         icon: const Icon(Icons.swap_vert_circle),
-                        label: Text('任务'.tr(context)),
+                        label: Text('任务'.tr()),
                       ),
                       NavigationRailDestination(
                         icon: const Icon(Icons.settings),
-                        label: Text('设置'.tr(context)),
+                        label: Text('设置'.tr()),
                       ),
                     ],
                   ),

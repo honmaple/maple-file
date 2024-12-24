@@ -33,7 +33,7 @@ class _SMBState extends State<SMB> {
       child: Column(
         children: [
           CustomFormField(
-            label: "主机/IP".tr(context),
+            label: "主机/IP".tr(),
             value: _option["host"],
             isRequired: true,
             onTap: (result) {
@@ -46,7 +46,7 @@ class _SMBState extends State<SMB> {
           ),
           CustomFormField(
             type: CustomFormFieldType.number,
-            label: "端口".tr(context),
+            label: "端口".tr(),
             value: "${_option['port'] ?? 445}",
             isRequired: true,
             onTap: (result) {
@@ -58,7 +58,7 @@ class _SMBState extends State<SMB> {
             },
           ),
           CustomFormField(
-            label: "用户".tr(context),
+            label: "用户".tr(),
             value: _option["username"],
             isRequired: true,
             onTap: (result) {
@@ -71,7 +71,7 @@ class _SMBState extends State<SMB> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "密码".tr(context),
+            label: "密码".tr(),
             value: _option["password"],
             onTap: (result) {
               setState(() {
@@ -82,7 +82,7 @@ class _SMBState extends State<SMB> {
             },
           ),
           CustomFormField(
-            label: "共享名称".tr(context),
+            label: "共享名称".tr(),
             value: _option["share_name"],
             isRequired: true,
             onTap: (result) {
@@ -94,7 +94,7 @@ class _SMBState extends State<SMB> {
             },
           ),
           CustomFormField(
-            label: "根目录".tr(context),
+            label: "根目录".tr(),
             value: _option["root_path"],
             onTap: (result) {
               setState(() {

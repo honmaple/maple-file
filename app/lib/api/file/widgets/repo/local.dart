@@ -41,7 +41,7 @@ class _LocalState extends State<Local> {
             children: [
               CustomFormField(
                 type: CustomFormFieldType.directory,
-                label: '目录'.tr(context),
+                label: '目录'.tr(),
                 value: _option["root_path"],
                 isRequired: true,
                 onTap: (result) {
@@ -54,7 +54,7 @@ class _LocalState extends State<Local> {
               ),
               CustomFormField(
                 type: CustomFormFieldType.number,
-                label: "目录权限".tr(context),
+                label: "目录权限".tr(),
                 value: "${_option['dir_perm'] ?? 0755}",
                 isRequired: true,
                 onTap: (result) {
@@ -78,16 +78,16 @@ class _LocalState extends State<Local> {
                   children: [
                     const SizedBox(height: 4),
                     Text(
-                      "本地文件的访问需要授权设备的读写权限".tr(context),
+                      "本地文件的访问需要授权设备的读写权限".tr(),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     TextButton(
-                      child: Text("去设置 >>".tr(context)),
+                      child: Text("去设置 >>".tr()),
                       onPressed: () async {
                         await Permission.manageExternalStorage
                             .onDeniedCallback(() {
-                          Messenger.showSnackBar(
-                            Text("拒绝权限可能会导致本地存储无法获取到文件信息".tr(context)),
+                          App.showSnackBar(
+                            Text("拒绝权限可能会导致本地存储无法获取到文件信息".tr()),
                           );
                         }).request();
                       },
@@ -102,11 +102,11 @@ class _LocalState extends State<Local> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            child: Text('自定义目录'.tr(context)),
+            child: Text('自定义目录'.tr()),
             onPressed: () async {
               final result = await showEditingDialog(
                 context,
-                "自定义目录".tr(context),
+                "自定义目录".tr(),
                 value: _option["root_path"] ?? "",
               );
               if (result != null) {

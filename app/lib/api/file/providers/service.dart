@@ -195,7 +195,7 @@ class FileService {
   Future<void> download(String path, io.File file) {
     return doFuture(() async {
       if (file.existsSync()) {
-        Messenger.showSnackBar(const Text("文件已存在"));
+        App.showSnackBar(const Text("文件已存在"));
         return;
       }
 
@@ -227,7 +227,7 @@ class FileService {
       request.payload = payload;
 
       return _client.testRepo(request).then((response) {
-        Messenger.showSnackBar(const Text("连接成功"));
+        App.showSnackBar(const Text("连接成功"));
       });
     });
   }

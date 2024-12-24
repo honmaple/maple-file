@@ -12,7 +12,7 @@ class NotFound extends StatelessWidget {
         title: const Text("404", style: TextStyle(fontSize: 16)),
       ),
       body: Center(
-        child: Text("未找到页面".tr(context)),
+        child: Text("未找到页面".tr()),
       ),
     );
   }

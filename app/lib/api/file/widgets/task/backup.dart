@@ -73,7 +73,7 @@ class _BackupState extends State<Backup> {
       child: Column(
         children: [
           FolderFormField(
-            label: "源路径".tr(context),
+            label: "源路径".tr(),
             value: _option.srcPath,
             isRequired: true,
             onTap: (result) {
@@ -85,7 +85,7 @@ class _BackupState extends State<Backup> {
             },
           ),
           FolderFormField(
-            label: "目标路径".tr(context),
+            label: "目标路径".tr(),
             value: _option.dstPath,
             isRequired: true,
             onTap: (result) {
@@ -97,7 +97,7 @@ class _BackupState extends State<Backup> {
             },
           ),
           FileTypeFormField(
-            label: '文件类型'.tr(context),
+            label: '文件类型'.tr(),
             value: _option.fileTypes,
             onTap: (result) {
               setState(() {
@@ -108,7 +108,7 @@ class _BackupState extends State<Backup> {
             },
           ),
           CustomFormField(
-            label: "文件冲突".tr(context),
+            label: "文件冲突".tr(),
             value: _option.conflict,
             type: CustomFormFieldType.option,
             options: BackupConflict.values.map((v) {
@@ -128,7 +128,7 @@ class _BackupState extends State<Backup> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('文件整理'.tr(context)),
+                Text('文件整理'.tr()),
                 const SizedBox(width: 16),
                 Flexible(
                   child: Text(
@@ -142,21 +142,21 @@ class _BackupState extends State<Backup> {
               ],
             ),
             subtitle: Text(
-              "将需要备份的文件按照时间格式重新进行分类".tr(context),
+              "将需要备份的文件按照时间格式重新进行分类".tr(),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             onTap: () async {
               final result = await showEditingDialog(
                 context,
-                "文件整理".tr(context),
+                "文件整理".tr(),
                 helper: _buildFormat(),
               );
               if (result != null) {}
             },
           ),
           ListTile(
-            title: Text('源文件删除'.tr(context)),
-            subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr(context)),
+            title: Text('源文件删除'.tr()),
+            subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr()),
             trailing: Switch(
               value: _option.deleteSrc,
               onChanged: (result) {

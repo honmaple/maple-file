@@ -73,7 +73,7 @@ class _FileViewState extends ConsumerState<FileView> {
           child: Center(
             child: TextButton.icon(
               icon: const Icon(Icons.add),
-              label: Text("创建存储".tr(context)),
+              label: Text("创建存储".tr()),
               onPressed: () {
                 Navigator.pushNamed(context, '/file/setting/repo/edit');
               },
@@ -93,7 +93,7 @@ class _FileViewState extends ConsumerState<FileView> {
             ),
             const SizedBox(height: 8),
             Text(
-              "暂无文件".tr(context),
+              "暂无文件".tr(),
               style: const TextStyle(color: Colors.black54),
             ),
           ],

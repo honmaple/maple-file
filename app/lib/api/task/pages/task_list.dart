@@ -4,14 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/color.dart';
-import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/generated/proto/api/task/task.pb.dart';
 
 import '../widgets/task_action.dart';
 
-import '../providers/service.dart';
 import '../providers/task.dart';
+import '../providers/service.dart';
 
 class TaskList extends ConsumerStatefulWidget {
   const TaskList({super.key});
@@ -56,7 +55,7 @@ class _TaskListState extends ConsumerState<TaskList>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("任务列表".tr(context)),
+        title: Text("任务列表".tr()),
       ),
       body: CustomScrollView(
         slivers: [
@@ -111,7 +110,7 @@ class _TaskListState extends ConsumerState<TaskList>
                             size: 36,
                             color: Theme.of(context).colorScheme.primary,
                           ),
-                          Text("暂无任务".tr(context)),
+                          Text("暂无任务".tr()),
                         ],
                       ),
                     ),
@@ -141,15 +140,21 @@ class _TaskListState extends ConsumerState<TaskList>
   ) {
     return ListTile(
       leading: status == TaskType.running
-          ? Text("剩余任务(${items.length})")
+          ? Text("剩余任务({size}})".tr(args: {
+              "length": items.length,
+            }))
           : status == TaskType.finished
-              ? Text("已完成(${items.length})")
-              : Text("已失败(${items.length})"),
+              ? Text("已完成({size})".tr(args: {
+                  "length": items.length,
+                }))
+              : Text("已失败({size})".tr(args: {
+                  "length": items.length,
+                })),
       trailing: Wrap(
         children: [
           TextButton.icon(
             icon: const Icon(Icons.clear, size: 16),
-            label: Text("清除任务".tr(context)),
+            label: Text("清除任务".tr()),
             onPressed: () async {
               await TaskService()
                   .removeTask(items.map((item) => item.id).toList());
@@ -158,7 +163,7 @@ class _TaskListState extends ConsumerState<TaskList>
           if (status == TaskType.running)
             TextButton.icon(
               icon: const Icon(Icons.play_circle, size: 16),
-              label: Text("全部暂停".tr(context)),
+              label: Text("全部暂停".tr()),
               onPressed: () {},
             ),
         ],
@@ -180,48 +185,7 @@ class _TaskListState extends ConsumerState<TaskList>
       subtitle: _buildProgress(context, item),
       trailing: _buildAction(context, item),
       onTap: () async {
-        final result = await showListDialog(context, items: [
-          ListDialogItem(
-            child: ListTile(
-              title: Text(item.name),
-              subtitle: Text(item.progressState),
-              trailing: TextButton.icon(
-                label: Text("查看详情".tr(context)),
-                icon: const Icon(Icons.info_outlined),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  showTaskDetail(context, item);
-                },
-              ),
-            ),
-          ),
-          if (isFinished(item))
-            ListDialogItem(
-              icon: Icons.refresh,
-              label: "重试任务",
-              value: "retry",
-            ),
-          if (isRunning(item))
-            ListDialogItem(
-              icon: Icons.cancel,
-              label: "取消任务",
-              value: "cancel",
-            ),
-          if (isFinished(item))
-            ListDialogItem(
-              icon: Icons.delete,
-              label: "删除任务",
-              value: "remove",
-            ),
-        ]);
-        switch (result) {
-          case "retry":
-            TaskService().retryTask([item.id]);
-          case "cancel":
-            TaskService().cancelTask([item.id]);
-          case "remove":
-            TaskService().removeTask([item.id]);
-        }
+        showTaskAction(context, item, ref: ref);
       },
     );
   }

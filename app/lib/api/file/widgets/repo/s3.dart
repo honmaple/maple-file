@@ -31,7 +31,7 @@ class _S3State extends State<S3> {
       child: Column(
         children: [
           CustomFormField(
-            label: "接入点".tr(context),
+            label: "接入点".tr(),
             value: _option["endpoint"],
             isRequired: true,
             onTap: (result) {
@@ -43,7 +43,7 @@ class _S3State extends State<S3> {
             },
           ),
           CustomFormField(
-            label: "存储桶".tr(context),
+            label: "存储桶".tr(),
             value: _option["bucket"],
             isRequired: true,
             onTap: (result) {
@@ -55,7 +55,7 @@ class _S3State extends State<S3> {
             },
           ),
           CustomFormField(
-            label: "访问区域".tr(context),
+            label: "访问区域".tr(),
             value: _option["region"],
             isRequired: true,
             onTap: (result) {
@@ -67,7 +67,7 @@ class _S3State extends State<S3> {
             },
           ),
           CustomFormField(
-            label: "访问key".tr(context),
+            label: "访问key".tr(),
             value: _option["access_key"],
             isRequired: true,
             onTap: (result) {
@@ -80,7 +80,7 @@ class _S3State extends State<S3> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "访问密钥".tr(context),
+            label: "访问密钥".tr(),
             value: _option["secret_key"],
             onTap: (result) {
               setState(() {
@@ -91,7 +91,7 @@ class _S3State extends State<S3> {
             },
           ),
           CustomFormField(
-            label: "根目录".tr(context),
+            label: "根目录".tr(),
             value: _option["root_path"],
             onTap: (result) {
               setState(() {

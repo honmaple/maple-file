@@ -31,7 +31,7 @@ class _AlistState extends State<Alist> {
       child: Column(
         children: [
           CustomFormField(
-            label: "接入点".tr(context),
+            label: "接入点".tr(),
             value: _option["endpoint"],
             isRequired: true,
             onTap: (result) {
@@ -43,7 +43,7 @@ class _AlistState extends State<Alist> {
             },
           ),
           CustomFormField(
-            label: "用户".tr(context),
+            label: "用户".tr(),
             value: _option["username"],
             isRequired: true,
             onTap: (result) {
@@ -56,7 +56,7 @@ class _AlistState extends State<Alist> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "密码".tr(context),
+            label: "密码".tr(),
             value: _option["password"],
             isRequired: true,
             onTap: (result) {
@@ -68,7 +68,7 @@ class _AlistState extends State<Alist> {
             },
           ),
           CustomFormField(
-            label: "根目录".tr(context),
+            label: "根目录".tr(),
             value: _option["root_path"],
             onTap: (result) {
               setState(() {

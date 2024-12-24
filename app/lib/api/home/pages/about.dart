@@ -12,7 +12,7 @@ class About extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("关于".tr(context)),
+        title: Text("关于".tr()),
       ),
       body: CustomAsyncValue(
         value: ref.watch(infoProvider),
@@ -24,7 +24,6 @@ class About extends ConsumerWidget {
                   children: [
                     Image.asset("assets/icon/icon-transparent.png", width: 80),
                     Text("红枫云盘 {version}".tr(
-                      context,
                       args: {"version": resp.version},
                     )),
                     if (resp.description != "") Text(resp.description),
@@ -32,15 +31,15 @@ class About extends ConsumerWidget {
                 ),
               ),
               ListTile(
-                title: Text("OS".tr(context)),
+                title: Text("OS".tr()),
                 trailing: Text(resp.os),
               ),
               ListTile(
-                title: Text("Arch".tr(context)),
+                title: Text("Arch".tr()),
                 trailing: Text(resp.os),
               ),
               ListTile(
-                title: Text("Runtime".tr(context)),
+                title: Text("Runtime".tr()),
                 trailing: Text(resp.runtime),
               ),
             ],

@@ -20,7 +20,7 @@ class _RepoListState extends ConsumerState<RepoList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('存储库'.tr(context)),
+        title: Text('存储库'.tr()),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -30,7 +30,7 @@ class _RepoListState extends ConsumerState<RepoList> {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text("存储库".tr(context)),
+                    title: Text("存储库".tr()),
                     dense: true,
                   ),
                   CustomAsyncValue(
@@ -42,7 +42,6 @@ class _RepoListState extends ConsumerState<RepoList> {
                             title: Text(item.name),
                             subtitle: Text(
                               "存储类型：{driver}".tr(
-                                context,
                                 args: {"driver": item.driver},
                               ),
                               style: Theme.of(context).textTheme.bodySmall,
@@ -72,7 +71,7 @@ class _RepoListState extends ConsumerState<RepoList> {
                   ),
                   ListTile(
                     trailing: const Icon(Icons.add),
-                    title: Text("添加新存储".tr(context)),
+                    title: Text("添加新存储".tr()),
                     onTap: () {
                       Navigator.pushNamed(
                         context,

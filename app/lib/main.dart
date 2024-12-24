@@ -39,7 +39,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       navigatorKey: App.navigatorKey,
-      title: '红枫云盘'.tr(context),
+      title: '红枫云盘'.tr(),
       locale: I18n.delegate.isSupported(locale) ? locale : null,
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         dragDevices: {
@@ -49,7 +49,7 @@ class MyApp extends ConsumerWidget {
           PointerDeviceKind.unknown
         },
       ),
-      scaffoldMessengerKey: Messenger.scaffoldMessengerKey,
+      scaffoldMessengerKey: App.scaffoldMessengerKey,
       themeMode: appearance.themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

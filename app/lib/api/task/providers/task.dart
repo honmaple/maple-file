@@ -16,26 +16,26 @@ enum TaskType {
 extension TaskTypeExtension on TaskType {
   String label(BuildContext context) {
     Map<TaskType, String> labels = {
-      TaskType.running: "正在进行".tr(context),
-      TaskType.finished: "已完成".tr(context),
-      TaskType.failed: "已失败".tr(context),
+      TaskType.running: "正在进行".tr(),
+      TaskType.finished: "已完成".tr(),
+      TaskType.failed: "已失败".tr(),
     };
-    return labels[this] ?? "未知状态".tr(context);
+    return labels[this] ?? "未知状态".tr();
   }
 }
 
 extension TaskStateExtension on TaskState {
   String label(BuildContext context) {
     Map<TaskState, String> labels = {
-      TaskState.TASK_STATE_PENDING: "等待执行".tr(context),
-      TaskState.TASK_STATE_RUNNING: "正在执行".tr(context),
-      TaskState.TASK_STATE_SUCCEEDED: "执行成功".tr(context),
-      TaskState.TASK_STATE_CANCELING: "正在取消".tr(context),
-      TaskState.TASK_STATE_CANCELED: "已取消".tr(context),
-      TaskState.TASK_STATE_FAILED: "执行失败".tr(context),
+      TaskState.TASK_STATE_PENDING: "等待执行".tr(),
+      TaskState.TASK_STATE_RUNNING: "正在执行".tr(),
+      TaskState.TASK_STATE_SUCCEEDED: "执行成功".tr(),
+      TaskState.TASK_STATE_CANCELING: "正在取消".tr(),
+      TaskState.TASK_STATE_CANCELED: "已取消".tr(),
+      TaskState.TASK_STATE_FAILED: "执行失败".tr(),
     };
 
-    return labels[this] ?? "未知状态".tr(context);
+    return labels[this] ?? "未知状态".tr();
   }
 }
 

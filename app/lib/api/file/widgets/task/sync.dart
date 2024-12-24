@@ -92,7 +92,7 @@ class _SyncState extends State<Sync> {
       child: Column(
         children: [
           FolderFormField(
-            label: "源路径".tr(context),
+            label: "源路径".tr(),
             value: _option.srcPath,
             isRequired: true,
             onTap: (result) {
@@ -104,7 +104,7 @@ class _SyncState extends State<Sync> {
             },
           ),
           FolderFormField(
-            label: "目标路径".tr(context),
+            label: "目标路径".tr(),
             value: _option.dstPath,
             isRequired: true,
             onTap: (result) {
@@ -116,7 +116,7 @@ class _SyncState extends State<Sync> {
             },
           ),
           CustomFormField(
-            label: "同步策略".tr(context),
+            label: "同步策略".tr(),
             value: _option.method,
             type: CustomFormFieldType.option,
             options: SyncMethod.values.map((v) {
@@ -132,7 +132,7 @@ class _SyncState extends State<Sync> {
             },
           ),
           FileTypeFormField(
-            label: '文件类型'.tr(context),
+            label: '文件类型'.tr(),
             value: _option.fileTypes,
             onTap: (result) {
               setState(() {
@@ -143,7 +143,7 @@ class _SyncState extends State<Sync> {
             },
           ),
           CustomFormField(
-            label: "文件冲突".tr(context),
+            label: "文件冲突".tr(),
             value: _option.conflict,
             type: CustomFormFieldType.option,
             options: SyncConflict.values.map((v) {
@@ -163,12 +163,12 @@ class _SyncState extends State<Sync> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('文件整理'.tr(context)),
+                Text('文件整理'.tr()),
                 const SizedBox(width: 16),
                 Flexible(
                   child: Text(
                     _option.customPath == ""
-                        ? "默认".tr(context)
+                        ? "默认".tr()
                         : _option.customPath,
                     maxLines: 1,
                     textAlign: TextAlign.end,
@@ -181,7 +181,7 @@ class _SyncState extends State<Sync> {
             onTap: () async {
               final result = await showEditingDialog(
                 context,
-                "Backup Format".tr(context),
+                "Backup Format".tr(),
                 helper: _buildFormat(),
               );
               if (result != null) {}
@@ -189,8 +189,8 @@ class _SyncState extends State<Sync> {
           ),
           if (_option.method != SyncMethod.b2a.name)
             ListTile(
-              title: Text('源文件删除'.tr(context)),
-              subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr(context)),
+              title: Text('源文件删除'.tr()),
+              subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr()),
               trailing: Switch(
                 value: _option.deleteSrc,
                 onChanged: (result) {
@@ -204,8 +204,8 @@ class _SyncState extends State<Sync> {
             ),
           if (_option.method != SyncMethod.a2b.name)
             ListTile(
-              title: Text('目标文件删除'.tr(context)),
-              subtitle: Text('目标路径的文件被删除或不存在时，是否同步删除源路径的文件'.tr(context)),
+              title: Text('目标文件删除'.tr()),
+              subtitle: Text('目标路径的文件被删除或不存在时，是否同步删除源路径的文件'.tr()),
               trailing: Switch(
                 value: _option.deleteSrc,
                 onChanged: (result) {

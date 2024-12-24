@@ -45,14 +45,14 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isEditing ? Text('修改存储'.tr(context)) : Text('添加存储'.tr(context)),
+        title: _isEditing ? Text('修改存储'.tr()) : Text('添加存储'.tr()),
         actions: [
           if (_isEditing)
             TextButton(
-              child: Text("删除".tr(context)),
+              child: Text("删除".tr()),
               onPressed: () async {
                 final result = await showAlertDialog<bool>(context,
-                    content: Text(("确认删除存储?".tr(context))));
+                    content: Text(("确认删除存储?".tr())));
                 if (result != null && result) {
                   await FileService().deleteRepo(_form.id).then((_) {
                     ref.invalidate(repoProvider);
@@ -73,7 +73,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 children: [
                   if (!_isEditing)
                     CustomFormField(
-                      label: "存储类型".tr(context),
+                      label: "存储类型".tr(),
                       value: _form.driver,
                       type: CustomFormFieldType.option,
                       options: DriverType.values.map((v) {
@@ -90,7 +90,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       },
                     ),
                   CustomFormField(
-                    label: "存储名称".tr(context),
+                    label: "存储名称".tr(),
                     value: _form.name,
                     isRequired: true,
                     onTap: (result) {
@@ -100,7 +100,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     },
                   ),
                   CustomFormField(
-                    label: "挂载目录".tr(context),
+                    label: "挂载目录".tr(),
                     value: _form.path,
                     onTap: (result) {
                       setState(() {
@@ -109,7 +109,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     },
                   ),
                   ListTile(
-                    title: Text('存储状态'.tr(context)),
+                    title: Text('存储状态'.tr()),
                     trailing: Switch(
                       value: _form.status,
                       onChanged: (result) {
@@ -130,7 +130,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      child: Text('测试连接'.tr(context)),
+                      child: Text('测试连接'.tr()),
                       onPressed: () async {
                         await FileService().testRepo(_form);
                       },
@@ -141,7 +141,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     width: double.infinity,
                     child: _isEditing
                         ? ElevatedButton(
-                            child: Text('确认修改'.tr(context)),
+                            child: Text('确认修改'.tr()),
                             onPressed: () async {
                               final nav = Navigator.of(context);
                               await FileService()
@@ -156,7 +156,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                             },
                           )
                         : ElevatedButton(
-                            child: Text('确认添加'.tr(context)),
+                            child: Text('确认添加'.tr()),
                             onPressed: () async {
                               final nav = Navigator.of(context);
                               await FileService()

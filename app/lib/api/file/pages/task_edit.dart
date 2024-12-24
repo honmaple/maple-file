@@ -44,11 +44,11 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isEditing ? Text('修改任务'.tr(context)) : Text('添加任务'.tr(context)),
+        title: _isEditing ? Text('修改任务'.tr()) : Text('添加任务'.tr()),
         actions: [
           if (_isEditing)
             TextButton(
-              child: Text("删除".tr(context)),
+              child: Text("删除".tr()),
               onPressed: () {
                 _handleDelete(context);
               },
@@ -64,7 +64,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                 children: [
                   if (!_isEditing)
                     CustomFormField(
-                      label: "任务类型".tr(context),
+                      label: "任务类型".tr(),
                       value: _form.type,
                       type: CustomFormFieldType.option,
                       options: TaskType.values.map((v) {
@@ -81,7 +81,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                       },
                     ),
                   CustomFormField(
-                    label: "任务名称".tr(context),
+                    label: "任务名称".tr(),
                     value: _form.name,
                     isRequired: true,
                     onTap: (result) {
@@ -91,7 +91,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                     },
                   ),
                   ListTile(
-                    title: Text('任务状态'.tr(context)),
+                    title: Text('任务状态'.tr()),
                     trailing: Switch(
                       value: _form.status,
                       onChanged: (result) {
@@ -114,13 +114,13 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                     width: double.infinity,
                     child: _isEditing
                         ? ElevatedButton(
-                            child: Text('确认修改'.tr(context)),
+                            child: Text('确认修改'.tr()),
                             onPressed: () {
                               _handleUpdate(context);
                             },
                           )
                         : ElevatedButton(
-                            child: Text('确认添加'.tr(context)),
+                            child: Text('确认添加'.tr()),
                             onPressed: () {
                               _handleCreate(context);
                             },
@@ -180,7 +180,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
   _handleDelete(BuildContext context) async {
     final result = await showAlertDialog<bool>(
       context,
-      content: Text("确认删除任务?".tr(context)),
+      content: Text("确认删除任务?".tr()),
     );
     if (result != null && result) {
       await TaskService().deletePersistTask(_form.id).then((_) {

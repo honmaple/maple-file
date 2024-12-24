@@ -167,7 +167,7 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
             ref.read(fileSelectionProvider.notifier).reset();
           },
         ),
-        title: Text("已选择{count}项".tr(context, args: {
+        title: Text("已选择{count}项".tr(args: {
           "count": widget.selection.selected.length,
         })),
         trailing: Checkbox(

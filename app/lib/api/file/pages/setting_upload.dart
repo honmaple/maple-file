@@ -28,7 +28,7 @@ class _FileSettingUploadState extends ConsumerState<FileSettingUpload> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('文件上传'.tr(context)),
+        title: Text('文件上传'.tr()),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -57,7 +57,7 @@ class _FileSettingUploadState extends ConsumerState<FileSettingUpload> {
           child: Column(
             children: [
               ListTile(
-                title: Text("文件上传".tr(context)),
+                title: Text("文件上传".tr()),
                 dense: true,
               ),
               ListTile(

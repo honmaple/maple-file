@@ -19,7 +19,7 @@ class _SettingThemeState extends ConsumerState<SettingTheme> {
     final appearance = ref.watch(appearanceProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Theme'.tr(context)),
+        title: Text('Theme'.tr()),
       ),
       body: Container(
         // margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -30,17 +30,17 @@ class _SettingThemeState extends ConsumerState<SettingTheme> {
                 segments: <ButtonSegment<ThemeMode>>[
                   ButtonSegment<ThemeMode>(
                       value: ThemeMode.system,
-                      label: Text("System".tr(context)),
+                      label: Text("System".tr()),
                       icon: Icon(Util.isMobile()
                           ? Icons.phone_android
                           : Icons.computer)),
                   ButtonSegment<ThemeMode>(
                       value: ThemeMode.light,
-                      label: Text('Light'.tr(context)),
+                      label: Text('Light'.tr()),
                       icon: const Icon(Icons.light_mode)),
                   ButtonSegment<ThemeMode>(
                       value: ThemeMode.dark,
-                      label: Text('Dark'.tr(context)),
+                      label: Text('Dark'.tr()),
                       icon: const Icon(Icons.dark_mode)),
                 ],
                 selected: <ThemeMode>{appearance.themeMode},

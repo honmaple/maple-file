@@ -22,7 +22,7 @@ class _FileSettingDownloadState extends ConsumerState<FileSettingDownload> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('文件下载'.tr(context)),
+        title: Text('文件下载'.tr()),
       ),
       body: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -51,11 +51,11 @@ class _FileSettingDownloadState extends ConsumerState<FileSettingDownload> {
           child: Column(
             children: [
               ListTile(
-                title: Text("文件下载".tr(context)),
+                title: Text("文件下载".tr()),
                 dense: true,
               ),
               ListTile(
-                title: Text('默认保存路径'.tr(context)),
+                title: Text('默认保存路径'.tr()),
                 subtitle: setting.downloadPath == null
                     ? FutureBuilder(
                         future: PathUtil.getDownloadsPath(),
@@ -66,7 +66,7 @@ class _FileSettingDownloadState extends ConsumerState<FileSettingDownload> {
                           if (snapshot.hasData) {
                             return Text("${snapshot.data}");
                           }
-                          return Text("加载中...".tr(context));
+                          return Text("加载中...".tr());
                         },
                       )
                     : Text(setting.downloadPath!),
@@ -81,7 +81,7 @@ class _FileSettingDownloadState extends ConsumerState<FileSettingDownload> {
                 },
               ),
               ListTile(
-                title: Text('同时下载任务数'.tr(context)),
+                title: Text('同时下载任务数'.tr()),
                 trailing: Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
@@ -91,7 +91,7 @@ class _FileSettingDownloadState extends ConsumerState<FileSettingDownload> {
                 onTap: () async {
                   final result = await showNumberEditingDialog(
                     context,
-                    "同时下载任务数".tr(context),
+                    "同时下载任务数".tr(),
                     value: setting.downloadQueueSize.toString(),
                   );
                   if (result != null) {

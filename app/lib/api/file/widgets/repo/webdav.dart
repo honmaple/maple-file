@@ -49,7 +49,7 @@ class _WebdavState extends State<Webdav> {
       child: Column(
         children: [
           CustomFormField(
-            label: "域名/IP".tr(context),
+            label: "域名/IP".tr(),
             value: _option.endpoint,
             isRequired: true,
             onTap: (result) {
@@ -61,7 +61,7 @@ class _WebdavState extends State<Webdav> {
             },
           ),
           CustomFormField(
-            label: "用户名".tr(context),
+            label: "用户名".tr(),
             value: _option.username,
             isRequired: true,
             onTap: (result) {
@@ -74,7 +74,7 @@ class _WebdavState extends State<Webdav> {
           ),
           CustomFormField(
             type: CustomFormFieldType.password,
-            label: "密码".tr(context),
+            label: "密码".tr(),
             value: _option.password,
             isRequired: true,
             onTap: (result) {

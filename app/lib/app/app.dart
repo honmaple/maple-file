@@ -9,7 +9,12 @@ import 'grpc.dart';
 import 'store.dart';
 import 'router.dart';
 
-class Messenger {
+class App {
+  static const initialRoute = "/";
+
+  static final router = CustomRouter();
+
+  static final navigatorKey = GlobalKey<NavigatorState>();
   static final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   static void showSnackBar(Widget content, {SnackBarAction? action}) {
@@ -21,14 +26,6 @@ class Messenger {
   static void hideCurrentSnackBar(Widget content) {
     scaffoldMessengerKey.currentState!.hideCurrentSnackBar();
   }
-}
-
-class App {
-  static const initialRoute = "/";
-
-  static final router = CustomRouter();
-
-  static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   App._internal() {
     print("init app");
@@ -58,7 +55,6 @@ class App {
       windowManager.waitUntilReadyToShow(windowOptions, () async {
         await windowManager.show();
         await windowManager.focus();
-        print(await windowManager.getTitleBarHeight());
       });
     }
   }

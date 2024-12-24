@@ -36,7 +36,7 @@ extension FileActionTypeExtension on FileActionType {
       case FileActionType.move:
         final Map<String, dynamic> args = {
           "path": "/",
-          "title": "移动文件到".tr(context),
+          "title": "移动文件到".tr(),
           "filter": (File file) => file.type == "DIR",
         };
         final result = await Navigator.pushNamed(
@@ -55,7 +55,7 @@ extension FileActionTypeExtension on FileActionType {
       case FileActionType.copy:
         final Map<String, dynamic> args = {
           "path": "/",
-          "title": "复制文件到".tr(context),
+          "title": "复制文件到".tr(),
           "filter": (File file) => file.type == "DIR",
         };
         final result = await Navigator.pushNamed(
@@ -74,7 +74,7 @@ extension FileActionTypeExtension on FileActionType {
         final ext = filepath.extension(file.name);
         final result = await showEditingDialog(
           context,
-          "重命名".tr(context),
+          "重命名".tr(),
           value: file.name,
           selection: TextSelection(
             baseOffset: 0,
@@ -107,7 +107,6 @@ extension FileActionTypeExtension on FileActionType {
         final result = await showAlertDialog<bool>(
           context,
           content: Text("确认删除文件{name}?".tr(
-            context,
             args: {"name": file.name},
           )),
         );
@@ -122,7 +121,7 @@ extension FileActionTypeExtension on FileActionType {
   }
 
   Future<void> selectionAction(BuildContext context, WidgetRef ref) async {
-    final selection = ref.read(fileSelectionProvider);
+    // final selection = ref.read(fileSelectionProvider);
     switch (this) {
       case FileActionType.selectionMove:
         return;
@@ -141,28 +140,28 @@ void showFileDetail(BuildContext context, File file) {
       mainAxisSize: MainAxisSize.min,
       children: [
         ListTile(
-          leading: Text("文件路径".tr(context)),
+          leading: Text("文件路径".tr()),
           title: Text(file.path),
           minLeadingWidth: 16 * 4,
         ),
         ListTile(
-          leading: Text("文件名称".tr(context)),
+          leading: Text("文件名称".tr()),
           title: Text(file.name),
           minLeadingWidth: 16 * 4,
         ),
         ListTile(
-          leading: Text("文件大小".tr(context)),
+          leading: Text("文件大小".tr()),
           title: Text(size),
           minLeadingWidth: 16 * 4,
         ),
         ListTile(
-          leading: Text("创建时间".tr(context)),
+          leading: Text("创建时间".tr()),
           title:
               Text(TimeUtil.pbToString(file.createdAt, "yyyy-MM-dd HH:mm:ss")),
           minLeadingWidth: 16 * 4,
         ),
         ListTile(
-          leading: Text("修改时间".tr(context)),
+          leading: Text("修改时间".tr()),
           title:
               Text(TimeUtil.pbToString(file.updatedAt, "yyyy-MM-dd HH:mm:ss")),
           minLeadingWidth: 16 * 4,
@@ -182,7 +181,7 @@ Future<void> showFileAction(
       child: ListTile(
         title: Text(file.name),
         trailing: TextButton.icon(
-          label: Text("查看详情".tr(context)),
+          label: Text("查看详情".tr()),
           icon: const Icon(Icons.info_outlined),
           onPressed: () {
             Navigator.of(context).pop();
@@ -192,22 +191,22 @@ Future<void> showFileAction(
       ),
     ),
     ListDialogItem(
-      label: "下载".tr(context),
+      label: "下载".tr(),
       value: FileActionType.download,
       icon: Icons.download,
     ),
     ListDialogItem(
-      label: "复制".tr(context),
+      label: "复制".tr(),
       value: FileActionType.copy,
       icon: Icons.folder_copy_outlined,
     ),
     ListDialogItem(
-      label: "移动".tr(context),
+      label: "移动".tr(),
       value: FileActionType.move,
       icon: Icons.move_up,
     ),
     ListDialogItem(
-      label: "重命名".tr(context),
+      label: "重命名".tr(),
       value: FileActionType.rename,
       icon: Icons.drive_file_rename_outline,
     ),
@@ -215,7 +214,7 @@ Future<void> showFileAction(
       child: const Divider(height: 4),
     ),
     ListDialogItem(
-      label: "删除".tr(context),
+      label: "删除".tr(),
       value: FileActionType.remove,
       icon: Icons.delete,
     ),
@@ -239,7 +238,7 @@ class FilePopupAction extends ConsumerWidget {
           PopupMenuItem(
             child: ListTile(
               dense: true,
-              title: Text("存储库".tr(context)),
+              title: Text("存储库".tr()),
               leading: const Icon(Icons.storage),
             ),
             onTap: () {
@@ -250,7 +249,7 @@ class FilePopupAction extends ConsumerWidget {
               ? PopupMenuItem(
                   child: ListTile(
                     dense: true,
-                    title: Text("宫格模式".tr(context)),
+                    title: Text("宫格模式".tr()),
                     leading: const Icon(Icons.grid_view),
                   ),
                   onTap: () {
@@ -262,7 +261,7 @@ class FilePopupAction extends ConsumerWidget {
               : PopupMenuItem(
                   child: ListTile(
                     dense: true,
-                    title: Text("列表模式".tr(context)),
+                    title: Text("列表模式".tr()),
                     leading: const Icon(Icons.list),
                   ),
                   onTap: () {
@@ -274,7 +273,7 @@ class FilePopupAction extends ConsumerWidget {
           PopupMenuItem(
             child: ListTile(
               dense: true,
-              title: Text("设置".tr(context)),
+              title: Text("设置".tr()),
               leading: const Icon(Icons.settings),
             ),
             onTap: () {
@@ -357,22 +356,22 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
           items: [
             if (Util.isMobile())
               ListDialogItem(
-                label: "拍照上传".tr(context),
+                label: "拍照上传".tr(),
                 value: "camera",
                 icon: Icons.camera_alt,
               ),
             ListDialogItem(
-              label: "相册上传".tr(context),
+              label: "相册上传".tr(),
               value: "photo",
               icon: Icons.photo,
             ),
             ListDialogItem(
-              label: "文件上传".tr(context),
+              label: "文件上传".tr(),
               value: "file",
               icon: Icons.file_upload_outlined,
             ),
             ListDialogItem(
-              label: "新建文件夹".tr(context),
+              label: "新建文件夹".tr(),
               value: "folder",
               icon: Icons.create_new_folder,
             ),
@@ -416,7 +415,7 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
             }
             break;
           case "folder":
-            final name = await showEditingDialog(context, "新建目录".tr(context));
+            final name = await showEditingDialog(context, "新建目录".tr());
             if (name != null) {
               future = FileService().mkdir(widget.path, name);
             }
@@ -473,13 +472,13 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Icon(Icons.folder_copy_outlined),
-                      Text('复制'.tr(context)),
+                      Text('复制'.tr()),
                     ],
                   ),
                   onPressed: () async {
                     final Map<String, dynamic> args = {
                       "path": "/",
-                      "title": "复制文件到".tr(context),
+                      "title": "复制文件到".tr(),
                       "filter": (File file) => file.type == "DIR",
                     };
                     final result = await Navigator.pushNamed(
@@ -506,13 +505,13 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Icon(Icons.move_up),
-                      Text('移动'.tr(context)),
+                      Text('移动'.tr()),
                     ],
                   ),
                   onPressed: () async {
                     final Map<String, dynamic> args = {
                       "path": "/",
-                      "title": "移动文件到".tr(context),
+                      "title": "移动文件到".tr(),
                       "filter": (File file) => file.type == "DIR",
                     };
                     final result = await Navigator.pushNamed(
@@ -541,7 +540,7 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Icon(Icons.drive_file_rename_outline),
-                        Text('重命名'.tr(context)),
+                        Text('重命名'.tr()),
                       ],
                     ),
                     onPressed: () {
@@ -558,7 +557,7 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Icon(Icons.download_outlined),
-                      Text('下载'.tr(context)),
+                      Text('下载'.tr()),
                     ],
                   ),
                   onPressed: () async {},
@@ -569,14 +568,13 @@ class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Icon(Icons.delete_outlined),
-                      Text('删除'.tr(context)),
+                      Text('删除'.tr()),
                     ],
                   ),
                   onPressed: () async {
                     final result = await showAlertDialog<bool>(
                       context,
                       content: Text("确认删除{n}个文件?".tr(
-                        context,
                         args: {"n": widget.selected.length},
                       )),
                     );

@@ -117,7 +117,7 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                 if (!_extended) const SizedBox(height: 8)
               ],
             ),
-            VerticalDivider(thickness: 1, width: 1, color: Colors.grey[300]),
+            const VerticalDivider(thickness: 1, width: 0.5),
             Expanded(
               child: [
                 Navigator(

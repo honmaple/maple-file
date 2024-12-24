@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
@@ -25,16 +24,16 @@ class UpyunOption with _$UpyunOption {
       _$UpyunOptionFromJson(json);
 }
 
-class Upyun extends ConsumerStatefulWidget {
+class Upyun extends StatefulWidget {
   const Upyun({super.key, required this.form});
 
   final Repo form;
 
   @override
-  ConsumerState<Upyun> createState() => _UpyunState();
+  State<Upyun> createState() => _UpyunState();
 }
 
-class _UpyunState extends ConsumerState<Upyun> {
+class _UpyunState extends State<Upyun> {
   late UpyunOption _option;
 
   @override

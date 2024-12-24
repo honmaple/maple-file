@@ -39,7 +39,7 @@ func (d *testFS) DeleteRepo(repo *pb.Repo) {
 }
 
 func (d *testFS) SubmitTask(opt TaskOption) runner.Task {
-	return d.runner.SubmitByOption(runner.NewFuncOptionWithArg[FS](opt, d))
+	return d.runner.SubmitByOption(runner.NewFuncOptionWithArg[FS](opt, d), runner.WithDryRun(true))
 }
 
 func TestSyncTask(t *testing.T) {

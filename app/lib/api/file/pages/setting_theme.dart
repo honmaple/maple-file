@@ -92,18 +92,13 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       }
                     },
                   ),
-                  ListTile(
-                    title: Text('隐藏文件'.tr(context)),
-                    trailing: Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(setting.hideFiles.join(", ")),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                    onTap: () async {
-                      Navigator.of(context)
-                          .pushNamed("/file/setting/hidefiles");
+                  FileTypeFormField(
+                    label: '隐藏文件'.tr(context),
+                    value: setting.hideFiles,
+                    onTap: (result) {
+                      ref.read(fileSettingProvider.notifier).update((state) {
+                        return state.copyWith(hideFiles: result);
+                      });
                     },
                   ),
                 ],

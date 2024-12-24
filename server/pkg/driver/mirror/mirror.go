@@ -17,9 +17,9 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	Endpoint string `json:"endpoint"  validate:"required"`
 	Format   string `json:"format"`
-	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -39,14 +39,6 @@ func (d *Mirror) getURL(path string) string {
 }
 
 func (d *Mirror) List(ctx context.Context, path string) ([]driver.File, error) {
-	file, err := d.Get(path)
-	if err != nil {
-		return nil, err
-	}
-	if !file.IsDir() {
-		return []driver.File{file}, nil
-	}
-
 	resp, err := d.client.Request(http.MethodGet, d.getURL(path), httputil.WithContext(ctx))
 	if err != nil {
 		return nil, err

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/generated/proto/api/task/service.pbgrpc.dart';
 import 'package:maple_file/generated/proto/api/task/task.pb.dart';
@@ -107,6 +110,8 @@ class TaskService {
       ExecutePersistTaskRequest request = ExecutePersistTaskRequest(id: id);
 
       return _client.executePersistTask(request);
+    }).then((_) {
+      Messenger.showSnackBar(const Text("执行成功，请转至任务列表查看"));
     });
   }
 }

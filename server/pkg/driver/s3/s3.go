@@ -18,12 +18,12 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	Endpoint  string `json:"endpoint"    validate:"required"`
 	Bucket    string `json:"bucket"      validate:"required"`
 	Region    string `json:"region"`
 	AccessKey string `json:"access_key"`
 	SecretKey string `json:"secret_key"  validate:"required_with=AccessKey"`
-	RootPath  string `json:"root_path"   validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {

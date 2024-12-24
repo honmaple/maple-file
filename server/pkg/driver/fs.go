@@ -29,7 +29,13 @@ type (
 	OptionCreator func() Option
 )
 
-type Base struct{}
+type (
+	Base       struct{}
+	BaseOption struct {
+		RootPath    string   `json:"root_path" validate:"omitempty,startswith=/"`
+		HiddenFiles []string `json:"hidden_files"`
+	}
+)
 
 func (Base) List(context.Context, string) ([]File, error) { return nil, ErrNotSupport }
 func (Base) Move(context.Context, string, string) error   { return ErrNotSupport }

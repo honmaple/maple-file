@@ -12,6 +12,7 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	DirPerm  uint32 `json:"-"`
 	RootPath string `json:"root_path" validate:"required,startswith=/"`
 }
@@ -119,27 +120,20 @@ func copyFile(src, dst string) (err error) {
 }
 
 func (d *Local) List(ctx context.Context, path string) ([]driver.File, error) {
-	fi, err := os.Stat(path)
+	entries, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
-	if fi.IsDir() {
-		entries, err := os.ReadDir(path)
+
+	files := make([]driver.File, len(entries))
+	for i, entry := range entries {
+		info, err := entry.Info()
 		if err != nil {
 			return nil, err
 		}
-
-		files := make([]driver.File, len(entries))
-		for i, entry := range entries {
-			info, err := entry.Info()
-			if err != nil {
-				return nil, err
-			}
-			files[i] = driver.NewFile(path, info)
-		}
-		return files, nil
+		files[i] = driver.NewFile(path, info)
 	}
-	return []driver.File{driver.NewFile(path, fi)}, nil
+	return files, nil
 }
 
 func (d *Local) Get(path string) (driver.File, error) {

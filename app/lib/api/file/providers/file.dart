@@ -26,6 +26,7 @@ class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
     final sort = ref.watch(fileSettingProvider.select((state) {
       return state.sort;
     }));
+
     switch (sort) {
       case FileListSort.name:
         results.sort((a, b) {

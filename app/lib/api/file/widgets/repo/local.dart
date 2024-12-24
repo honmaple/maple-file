@@ -34,6 +34,7 @@ class _LocalState extends State<Local> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Card(
           child: Column(
@@ -97,6 +98,7 @@ class _LocalState extends State<Local> {
               return const SizedBox.shrink();
             },
           ),
+        const SizedBox(height: 4),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -117,7 +119,7 @@ class _LocalState extends State<Local> {
             },
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
       ],
     );
   }

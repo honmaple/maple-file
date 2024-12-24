@@ -3,14 +3,20 @@ import 'package:file_picker/file_picker.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/path.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 
 import 'dialog.dart';
 
 class CustomFormFieldOption<T> {
   final String label;
   final T value;
+  final Widget? trailing;
 
-  const CustomFormFieldOption({required this.label, required this.value});
+  const CustomFormFieldOption({
+    required this.label,
+    required this.value,
+    this.trailing,
+  });
 }
 
 enum CustomFormFieldType {
@@ -30,6 +36,7 @@ class CustomFormField extends StatelessWidget {
     this.options,
     this.type = CustomFormFieldType.string,
     this.subtitle,
+    this.trailing,
     this.isRequired = false,
   });
 
@@ -37,6 +44,7 @@ class CustomFormField extends StatelessWidget {
   final String label;
   final String? value;
   final Widget? subtitle;
+  final Widget? trailing;
   final List<CustomFormFieldOption>? options;
   final CustomFormFieldType type;
   final Function(String) onTap;
@@ -44,9 +52,18 @@ class CustomFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(label),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          const SizedBox(width: 16),
+          Flexible(
+            child: trailing ?? _emptyText(context, value),
+          ),
+        ],
+      ),
       subtitle: subtitle,
-      trailing: _emptyText(context, value),
       onTap: () async {
         String? result;
         switch (type) {
@@ -77,7 +94,11 @@ class CustomFormField extends StatelessWidget {
           case CustomFormFieldType.option:
             result = await showListDialog(context, items: [
               for (final opt in options!)
-                ListDialogItem(label: opt.label, value: opt.value),
+                ListDialogItem(
+                  label: opt.label,
+                  value: opt.value,
+                  trailing: opt.trailing,
+                ),
             ]);
             break;
         }
@@ -104,7 +125,10 @@ class CustomFormField extends StatelessWidget {
       children: [
         Text(
           isEmpty ? "未设置".tr(context) : option?.firstOrNull?.label ?? value,
+          maxLines: 1,
+          textAlign: TextAlign.end,
           overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
         if (isRequired && isEmpty)
           const Text(' *', style: TextStyle(color: Colors.red)),
@@ -169,9 +193,10 @@ class FolderFormField extends StatelessWidget {
       children: [
         Text(
           isEmpty ? "未设置".tr(context) : value,
+          maxLines: 1,
           textAlign: TextAlign.end,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12),
+          style: Theme.of(context).textTheme.bodySmall,
         ),
         if (isRequired && isEmpty)
           const Text(' *', style: TextStyle(color: Colors.red)),
@@ -180,16 +205,16 @@ class FolderFormField extends StatelessWidget {
   }
 }
 
-class FileTypeFormField extends StatefulWidget {
-  const FileTypeFormField({super.key, required this.types});
+class CustomFileType extends StatefulWidget {
+  const CustomFileType({super.key, required this.types});
 
   final List<String> types;
 
   @override
-  State<FileTypeFormField> createState() => _FileTypeFormFieldState();
+  State<CustomFileType> createState() => _CustomFileTypeState();
 }
 
-class _FileTypeFormFieldState extends State<FileTypeFormField>
+class _CustomFileTypeState extends State<CustomFileType>
     with TickerProviderStateMixin {
   late TextEditingController _controller;
 
@@ -219,6 +244,14 @@ class _FileTypeFormFieldState extends State<FileTypeFormField>
     return Scaffold(
       appBar: AppBar(
         title: Text("文件类型".tr(context)),
+        leading: Breakpoint.isMobile(context)
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
         actions: [
           TextButton(
             child: Text("确定".tr(context)),
@@ -259,6 +292,10 @@ class _FileTypeFormFieldState extends State<FileTypeFormField>
                   ],
                 ),
               ),
+              if (_types.isNotEmpty)
+                const SliverPadding(
+                  padding: EdgeInsets.only(top: 8),
+                ),
               SliverToBoxAdapter(
                 child: TextField(
                   controller: _controller,
@@ -439,6 +476,63 @@ class _FileTypeFormFieldState extends State<FileTypeFormField>
           },
         );
       },
+    );
+  }
+}
+
+class FileTypeFormField extends StatelessWidget {
+  const FileTypeFormField({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.value = const [],
+    this.isRequired = false,
+  });
+
+  final bool isRequired;
+  final String label;
+  final List<String> value;
+  final Function(List<String>) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          const SizedBox(width: 16),
+          Flexible(
+            child: _emptyText(context),
+          ),
+        ],
+      ),
+      onTap: () async {
+        final result = await showListDialog2(
+          context,
+          child: CustomFileType(types: value),
+        );
+        if (result != null) {
+          onTap(result);
+        }
+      },
+    );
+  }
+
+  Widget _emptyText(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Flexible(
+          child: Text(
+            value.isEmpty ? "空".tr(context) : value.join(","),
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        const Icon(Icons.chevron_right),
+      ],
     );
   }
 }

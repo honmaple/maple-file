@@ -1,52 +1,43 @@
-import 'dart:io';
+import 'dart:io' as io;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:maple_file/app/grpc.dart';
-
 import 'source.dart';
 
 class TextPreview extends StatefulWidget {
-  final String source;
-  final SourceType sourceType;
+  final PreviewSource source;
 
   const TextPreview({
     super.key,
     required this.source,
-    required this.sourceType,
   });
 
   TextPreview.file(
-    File file, {
+    io.File file, {
     super.key,
-  })  : source = file.path,
-        sourceType = SourceType.file;
+  }) : source = PreviewSource.file(file);
 
-  const TextPreview.asset(
+  TextPreview.asset(
     String path, {
     super.key,
-  })  : source = path,
-        sourceType = SourceType.asset;
+  }) : source = PreviewSource.asset(path);
 
-  const TextPreview.network(
+  TextPreview.network(
     String url, {
     super.key,
-  })  : source = url,
-        sourceType = SourceType.network;
+  }) : source = PreviewSource.network(url);
 
-  const TextPreview.local(
+  TextPreview.local(
     String path, {
     super.key,
-  })  : source = path,
-        sourceType = SourceType.file;
+  }) : source = PreviewSource.local(path);
 
   TextPreview.remote(
     String path, {
     super.key,
-  })  : source = GRPC().previewURL(path),
-        sourceType = SourceType.network;
+  }) : source = PreviewSource.remote(path);
 
   @override
   State<TextPreview> createState() => _TextPreviewState();
@@ -70,6 +61,7 @@ class _TextPreviewState extends State<TextPreview> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: FutureBuilder(
           future: _getText(),
@@ -94,19 +86,19 @@ class _TextPreviewState extends State<TextPreview> {
   }
 
   Future<String> _getText() async {
-    switch (widget.sourceType) {
+    switch (widget.source.sourceType) {
       case SourceType.file:
-        return File(widget.source).readAsString();
+        return io.File(widget.source.source).readAsString();
       case SourceType.asset:
-        return rootBundle.loadString(widget.source);
+        return rootBundle.loadString(widget.source.source);
       case SourceType.network:
         try {
-          final response = await http.get(Uri.parse(widget.source));
+          final response = await http.get(Uri.parse(widget.source.source));
           if (response.statusCode == 200) {
             return utf8.decode(response.bodyBytes);
           }
         } catch (e) {
-          print(e.toString());
+          return e.toString();
         }
         return "Can't read this file";
     }

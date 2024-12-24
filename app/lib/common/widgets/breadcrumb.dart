@@ -15,12 +15,7 @@ class BreadcrumbItem extends StatelessWidget {
     if (onTap != null) {
       return GestureDetector(
         onTap: onTap,
-        child: DefaultTextStyle.merge(
-          style: TextStyle(
-            color: Theme.of(context).primaryColor,
-          ),
-          child: child,
-        ),
+        child: child,
       );
     }
     return child;
@@ -52,12 +47,7 @@ class Breadcrumb extends StatelessWidget {
     List<Widget> items = <Widget>[];
 
     for (final (index, child) in children.indexed) {
-      items.add(DefaultTextStyle.merge(
-        style: TextStyle(
-          color: Theme.of(context).primaryColor,
-        ),
-        child: child,
-      ));
+      items.add(child);
       if (index < children.length - 1) {
         items.add(divider);
       }

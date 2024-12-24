@@ -13,12 +13,12 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	Host       string `json:"host"        validate:"required"`
 	Port       int    `json:"port"`
 	Username   string `json:"username"    validate:"required"`
 	Password   string `json:"password"    validate:"required_without=PrivateKey"`
 	PrivateKey string `json:"private_key" validate:"required_without=Password"`
-	RootPath   string `json:"root_path"   validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -54,23 +54,16 @@ func (d *SFTP) Create(path string) (driver.FileWriter, error) {
 }
 
 func (d *SFTP) List(ctx context.Context, path string) ([]driver.File, error) {
-	fi, err := d.client.Stat(path)
+	infos, err := d.client.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
-	if fi.IsDir() {
-		infos, err := d.client.ReadDir(path)
-		if err != nil {
-			return nil, err
-		}
 
-		files := make([]driver.File, len(infos))
-		for i, info := range infos {
-			files[i] = driver.NewFile(path, info)
-		}
-		return files, nil
+	files := make([]driver.File, len(infos))
+	for i, info := range infos {
+		files[i] = driver.NewFile(path, info)
 	}
-	return []driver.File{driver.NewFile(path, fi)}, nil
+	return files, nil
 }
 
 func (d *SFTP) Move(ctx context.Context, src, dst string) error {

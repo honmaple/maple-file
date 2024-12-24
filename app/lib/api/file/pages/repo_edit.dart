@@ -136,7 +136,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
                     child: _isEditing

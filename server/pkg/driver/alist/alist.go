@@ -15,10 +15,10 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	Endpoint string `json:"endpoint"  validate:"required"`
 	Username string `json:"username"  validate:"required"`
 	Password string `json:"password"  validate:"required"`
-	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {

@@ -12,11 +12,11 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	Host     string `json:"host"      validate:"required"`
 	Port     int    `json:"port"`
 	Username string `json:"username"  validate:"required"`
 	Password string `json:"password"  validate:"required"`
-	RootPath string `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -65,24 +65,16 @@ func (d *FTP) Create(path string) (driver.FileWriter, error) {
 }
 
 func (d *FTP) List(ctx context.Context, path string) ([]driver.File, error) {
-	fi, err := d.client.GetEntry(path)
+	entries, err := d.client.List(path)
 	if err != nil {
 		return nil, err
 	}
 
-	if fi.Type == ftp.EntryTypeFolder {
-		entries, err := d.client.List(path)
-		if err != nil {
-			return nil, err
-		}
-
-		files := make([]driver.File, len(entries))
-		for i, info := range entries {
-			files[i] = driver.NewFile(path, &fileinfo{info})
-		}
-		return files, nil
+	files := make([]driver.File, len(entries))
+	for i, info := range entries {
+		files[i] = driver.NewFile(path, &fileinfo{info})
 	}
-	return []driver.File{driver.NewFile(path, &fileinfo{fi})}, nil
+	return files, nil
 }
 
 func (d *FTP) Move(ctx context.Context, src, dst string) error {

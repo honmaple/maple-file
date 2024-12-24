@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:maple_file/api/task/providers/task.dart';
 
 import 'dart:io' as io;
 import 'package:path/path.dart' as filepath;
@@ -13,6 +12,7 @@ import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
+import 'package:maple_file/api/task/providers/task.dart';
 
 import '../providers/file.dart';
 import '../providers/file_setting.dart';

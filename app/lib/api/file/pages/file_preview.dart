@@ -133,21 +133,23 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
   }
 }
 
-class FileImagePreview extends StatefulWidget {
+class FileImagePreview extends ConsumerStatefulWidget {
   final File file;
   final List<File>? files;
 
   const FileImagePreview({super.key, required this.file, this.files});
 
   @override
-  State<FileImagePreview> createState() => _FileImagePreviewState();
+  ConsumerState<FileImagePreview> createState() => _FileImagePreviewState();
 }
 
-class _FileImagePreviewState extends State<FileImagePreview> {
+class _FileImagePreviewState extends ConsumerState<FileImagePreview> {
   late final PageController _pageController;
 
   int _currentIndex = 0;
   List<File> _currentFiles = [];
+
+  bool _fullscreen = false;
 
   @override
   void initState() {
@@ -180,36 +182,60 @@ class _FileImagePreviewState extends State<FileImagePreview> {
 
   @override
   Widget build(BuildContext context) {
+    final currentFile = _currentFiles[_currentIndex];
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(widget.file.name),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Text("${_currentIndex + 1}/${_currentFiles.length}"),
+      appBar: _fullscreen
+          ? null
+          : AppBar(
+              title: Text(
+                currentFile.name,
+                overflow: TextOverflow.ellipsis,
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () {
+                    showFileAction(context, currentFile, ref);
+                  },
+                ),
+              ],
+            ),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          PageView.builder(
+            itemCount: _currentFiles.length,
+            itemBuilder: (BuildContext context, int index) {
+              final file = _currentFiles[index];
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _fullscreen = !_fullscreen;
+                  });
+                },
+                child: ImagePreview.remote(
+                  filepath.join(file.path, file.name),
+                  fit: BoxFit.contain,
+                ),
+              );
+            },
+            controller: _pageController,
+            onPageChanged: (int index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text("${_currentIndex + 1}/${_currentFiles.length}"),
+            ),
           ),
         ],
       ),
-      body: PageView.builder(
-        itemCount: _currentFiles.length,
-        itemBuilder: (BuildContext context, int index) {
-          final file = _currentFiles[index];
-          return ImagePreview.remote(
-            filepath.join(file.path, file.name),
-            fit: BoxFit.fitWidth,
-          );
-        },
-        controller: _pageController,
-        onPageChanged: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
-      // extendBodyBehindAppBar: true,
     );
   }
 }

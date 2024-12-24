@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
@@ -23,16 +22,16 @@ class WebdavOption with _$WebdavOption {
       _$WebdavOptionFromJson(json);
 }
 
-class Webdav extends ConsumerStatefulWidget {
+class Webdav extends StatefulWidget {
   const Webdav({super.key, required this.form});
 
   final Repo form;
 
   @override
-  ConsumerState<Webdav> createState() => _WebdavState();
+  State<Webdav> createState() => _WebdavState();
 }
 
-class _WebdavState extends ConsumerState<Webdav> {
+class _WebdavState extends State<Webdav> {
   late WebdavOption _option;
 
   @override

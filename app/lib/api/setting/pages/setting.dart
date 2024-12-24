@@ -203,16 +203,14 @@ class _DesktopSettingState extends State<DesktopSetting> {
             Expanded(
               child: Setting(navigatorKey: _navigatorKey),
             ),
-            VerticalDivider(thickness: 1, width: 1, color: Colors.grey[300]),
+            const VerticalDivider(thickness: 1, width: 0.5),
             Expanded(
-              child: Center(
-                child: widget.child ??
-                    Navigator(
-                      key: _navigatorKey,
-                      initialRoute: widget.initialRoute,
-                      onGenerateRoute: widget.onGenerateRoute,
-                    ),
-              ),
+              child: widget.child ??
+                  Navigator(
+                    key: _navigatorKey,
+                    initialRoute: widget.initialRoute,
+                    onGenerateRoute: widget.onGenerateRoute,
+                  ),
             ),
           ],
         ),

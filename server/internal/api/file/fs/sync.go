@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"io"
@@ -30,14 +31,16 @@ const (
 )
 
 type syncFile struct {
-	path    string
 	srcFile driver.File
 	dstFile driver.File
+	dstPath string
 	makeDir bool
 }
 
 type syncInfo struct {
-	files *orderedmap.OrderedMap[string, driver.File]
+	addFiles *orderedmap.OrderedMap[string, driver.File]
+	modFiles *orderedmap.OrderedMap[string, driver.File]
+	delFiles *orderedmap.OrderedMap[string, driver.File]
 }
 
 type SyncTaskOption struct {
@@ -109,12 +112,24 @@ func (t *SyncTask) lastinfo(root string) (*syncInfo, error) {
 	}
 	defer r.Close()
 
-	return nil, nil
+	var result []driver.File
+
+	if err := json.NewDecoder(r).Decode(&result); err != nil {
+		return nil, err
+	}
+	info := &syncInfo{
+		addFiles: orderedmap.NewOrderedMap[string, driver.File](),
+	}
+	for _, file := range result {
+		path := strings.TrimPrefix(filepath.Join(file.Path(), file.Name()), root)
+		info.addFiles.Set(path, file)
+	}
+	return info, nil
 }
 
 func (t *SyncTask) info(root string) (*syncInfo, error) {
 	info := &syncInfo{
-		files: orderedmap.NewOrderedMap[string, driver.File](),
+		addFiles: orderedmap.NewOrderedMap[string, driver.File](),
 	}
 	if err := driver.WalkDir(t.task.Context(), t.fs, root, func(_ string, file driver.File, err error) error {
 		if err != nil {
@@ -122,11 +137,11 @@ func (t *SyncTask) info(root string) (*syncInfo, error) {
 		}
 		path := strings.TrimPrefix(filepath.Join(file.Path(), file.Name()), root)
 		if file.IsDir() {
-			info.files.Set(path, file)
+			info.addFiles.Set(path, file)
 			return nil
 		}
 		if isIncluded(file, t.opt.FileTypes) {
-			info.files.Set(path, file)
+			info.addFiles.Set(path, file)
 		}
 		return nil
 	}); err != nil {
@@ -137,21 +152,17 @@ func (t *SyncTask) info(root string) (*syncInfo, error) {
 
 func (t *SyncTask) addFile(s *syncFile) error {
 	srcPath := filepath.Join(s.srcFile.Path(), s.srcFile.Name())
-	dstPath := filepath.Join(t.opt.DstPath, s.path)
+	dstPath := s.dstPath
+
+	if t.task.DryRun() {
+		return nil
+	}
 
 	if s.makeDir {
 		dstDir := filepath.Dir(dstPath)
-		t.task.SetProgressState(fmt.Sprintf("[创建目录] [%s]", dstDir))
-
-		if !t.task.DryRun() {
-			if err := t.fs.MakeDir(t.task.Context(), dstDir); err != nil {
-				return err
-			}
+		if err := t.fs.MakeDir(t.task.Context(), dstDir); err != nil {
+			return err
 		}
-	}
-	t.task.SetProgressState(fmt.Sprintf("[新增文件] [%s] 到 [%s]", srcPath, dstPath))
-	if t.task.DryRun() {
-		return nil
 	}
 
 	srcFile, err := t.fs.Open(srcPath)
@@ -171,10 +182,6 @@ func (t *SyncTask) addFile(s *syncFile) error {
 }
 
 func (t *SyncTask) modFile(s *syncFile) error {
-	srcPath := filepath.Join(s.srcFile.Path(), s.srcFile.Name())
-
-	t.task.SetProgressState(fmt.Sprintf("[修改文件] [%s]", srcPath))
-
 	switch t.opt.Conflict {
 	case CONFLICT_OVERRIDE:
 		return t.addFile(s)
@@ -190,7 +197,6 @@ func (t *SyncTask) modFile(s *syncFile) error {
 func (t *SyncTask) delFile(s *syncFile) error {
 	dstPath := filepath.Join(s.dstFile.Path(), s.dstFile.Name())
 
-	t.task.SetProgressState(fmt.Sprintf("[删除文件] [%s]", dstPath))
 	if t.task.DryRun() || true {
 		return nil
 	}
@@ -209,10 +215,25 @@ func (t *SyncTask) delFile(s *syncFile) error {
 	return nil
 }
 
-func (t *SyncTask) a2b(src, dst *syncInfo) {
-	dirs := make(map[string]bool)
+func (t *SyncTask) equal(src, dst driver.File) bool {
+	return src.Size() == dst.Size() && src.ModTime().Equal(dst.ModTime())
+}
 
-	for path, srcFile := range src.files.AllFromFront() {
+func (t *SyncTask) a2b(srcPath, dstPath string) error {
+	t.task.SetProgressState(fmt.Sprintf("SrcPath: %s", srcPath))
+	src, err := t.info(srcPath)
+	if err != nil {
+		return err
+	}
+
+	t.task.SetProgressState(fmt.Sprintf("DstPath: %s", dstPath))
+	dst, err := t.info(dstPath)
+	if err != nil {
+		return err
+	}
+
+	dirs := make(map[string]bool)
+	for path, srcFile := range src.addFiles.AllFromFront() {
 		if srcFile.IsDir() {
 			continue
 		}
@@ -235,75 +256,246 @@ func (t *SyncTask) a2b(src, dst *syncInfo) {
 				"{time:minute}": now.Format("04"),
 			})
 			if newPath != path {
-				src.files.ReplaceKey(path, newPath)
+				src.addFiles.ReplaceKey(path, newPath)
 
 				path = newPath
 			}
 		}
 
-		dstFile, ok := dst.files.Get(path)
+		dstFile, ok := dst.addFiles.Get(path)
 		if !ok {
 			// 检查目录是否存在, 不存在则创建
 			dstDir := filepath.Dir(path)
 
-			_, dirok := dst.files.Get(dstDir)
+			_, dirok := dst.addFiles.Get(dstDir)
 			if !dirok {
 				dirok = dirs[dstDir]
 				dirs[dstDir] = true
 			}
+			if dstDir == "/" {
+				dirok = true
+			}
+
+			if !dirok {
+				t.task.SetProgressState(fmt.Sprintf("[创建目录] DstPath:%s", dstDir))
+			}
+			t.task.SetProgressState(fmt.Sprintf("[新增文件] DstPath:%s", path))
 
 			t.addFiles <- &syncFile{
-				path:    path,
 				srcFile: srcFile,
+				dstPath: filepath.Join(dstPath, path),
 				makeDir: !dirok,
 			}
 			continue
 		}
-		if srcFile.Size() != dstFile.Size() || !srcFile.ModTime().Equal(dstFile.ModTime()) {
-			t.modFiles <- &syncFile{path: path, srcFile: srcFile, dstFile: dstFile}
+		if !t.equal(srcFile, dstFile) {
+			t.task.SetProgressState(fmt.Sprintf("[修改文件] DstPath:%s", path))
+
+			t.modFiles <- &syncFile{
+				srcFile: srcFile,
+				dstFile: dstFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
 		}
 	}
 
-	for path, dstFile := range dst.files.AllFromFront() {
+	for path, dstFile := range dst.addFiles.AllFromFront() {
 		if dstFile.IsDir() {
 			continue
 		}
-		_, ok := src.files.Get(path)
+		_, ok := src.addFiles.Get(path)
 		if !ok {
-			t.delFiles <- &syncFile{path: path, dstFile: dstFile}
+			t.task.SetProgressState(fmt.Sprintf("[删除文件] DstPath:%s", path))
+
+			t.delFiles <- &syncFile{
+				dstFile: dstFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
 		}
 	}
+	return nil
+}
+
+func (t *SyncTask) diff(src, dst *syncInfo) *syncInfo {
+	info := &syncInfo{
+		addFiles: orderedmap.NewOrderedMap[string, driver.File](),
+		modFiles: orderedmap.NewOrderedMap[string, driver.File](),
+		delFiles: orderedmap.NewOrderedMap[string, driver.File](),
+	}
+	if dst.addFiles.Len() == 0 {
+		info.addFiles = src.addFiles
+		return info
+	}
+	for path, srcFile := range src.addFiles.AllFromFront() {
+		if srcFile.IsDir() {
+			continue
+		}
+		dstFile, ok := dst.addFiles.Get(path)
+		if !ok {
+			info.addFiles.Set(path, srcFile)
+			continue
+		}
+		if !t.equal(srcFile, dstFile) {
+			info.modFiles.Set(path, srcFile)
+		}
+	}
+
+	for path, dstFile := range dst.addFiles.AllFromFront() {
+		if dstFile.IsDir() {
+			continue
+		}
+		_, ok := src.addFiles.Get(path)
+		if !ok {
+			info.delFiles.Set(path, dstFile)
+			continue
+		}
+	}
+	return info
+}
+
+func (t *SyncTask) check(root string) (*syncInfo, error) {
+	t.task.SetProgressState(fmt.Sprintf("Checking and diff %s", root))
+
+	info, err := t.info(root)
+	if err != nil {
+		return nil, err
+	}
+	lastinfo, err := t.lastinfo(root)
+	if err != nil {
+		t.task.SetProgressState(fmt.Sprintf("Get last info of %s err: %s", root, err.Error()))
+
+		lastinfo = &syncInfo{
+			addFiles: orderedmap.NewOrderedMap[string, driver.File](),
+		}
+	}
+	diff := t.diff(info, lastinfo)
+
+	t.task.SetProgressState(fmt.Sprintf("Checking result: %d added, %d modified, %d deleted", diff.addFiles.Len(), diff.modFiles.Len(), diff.delFiles.Len()))
+	return diff, nil
 }
 
 // TODO
-func (t *SyncTask) b2b(src, dst *syncInfo) {
+func (t *SyncTask) b2b(srcPath, dstPath string) error {
+	srcDiff, err := t.check(srcPath)
+	if err != nil {
+		return err
+	}
+
+	dstDiff, err := t.check(dstPath)
+	if err != nil {
+		return err
+	}
+
+	t.task.SetProgressState("Applying changes")
+
+	for path, srcFile := range srcDiff.addFiles.AllFromFront() {
+		dstFile, ok := dstDiff.addFiles.Get(path)
+		if !ok {
+			t.task.SetProgressState(fmt.Sprintf("[新增文件] SrcPath:%s", path))
+
+			t.addFiles <- &syncFile{
+				srcFile: srcFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
+		}
+
+		if !t.equal(srcFile, dstFile) {
+			t.task.SetProgressState(fmt.Sprintf("[修改文件] SrcPath:%s", path))
+
+			t.modFiles <- &syncFile{
+				srcFile: srcFile,
+				dstFile: dstFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
+		}
+	}
+
+	for path, srcFile := range srcDiff.modFiles.AllFromFront() {
+		dstFile, ok := dstDiff.modFiles.Get(path)
+		if !ok {
+			t.task.SetProgressState(fmt.Sprintf("[新增文件] DstPath:%s", path))
+
+			t.addFiles <- &syncFile{
+				srcFile: srcFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
+		}
+
+		if !t.equal(srcFile, dstFile) {
+			t.task.SetProgressState(fmt.Sprintf("[修改文件] DstPath:%s", path))
+
+			t.modFiles <- &syncFile{
+				srcFile: srcFile,
+				dstFile: dstFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
+		}
+	}
+
+	for path, srcFile := range srcDiff.delFiles.AllFromFront() {
+		if _, ok := dstDiff.delFiles.Get(path); !ok {
+			t.task.SetProgressState(fmt.Sprintf("[删除文件] DstPath:%s", path))
+
+			t.delFiles <- &syncFile{
+				srcFile: srcFile,
+				dstPath: filepath.Join(dstPath, path),
+			}
+		}
+	}
+
+	for path, dstFile := range dstDiff.addFiles.AllFromFront() {
+		if _, ok := srcDiff.addFiles.Get(path); !ok {
+			t.task.SetProgressState(fmt.Sprintf("[新增文件] SrcPath:%s", path))
+
+			t.addFiles <- &syncFile{
+				srcFile: dstFile,
+				dstPath: filepath.Join(srcPath, path),
+			}
+		}
+	}
+
+	for path, dstFile := range dstDiff.modFiles.AllFromFront() {
+		if _, ok := srcDiff.modFiles.Get(path); !ok {
+			t.task.SetProgressState(fmt.Sprintf("[新增文件] SrcPath:%s", path))
+
+			t.addFiles <- &syncFile{
+				srcFile: dstFile,
+				dstPath: filepath.Join(srcPath, path),
+			}
+		}
+	}
+
+	for path, dstFile := range dstDiff.delFiles.AllFromFront() {
+		if _, ok := srcDiff.delFiles.Get(path); !ok {
+			t.task.SetProgressState(fmt.Sprintf("[删除文件] SrcPath:%s", path))
+
+			t.delFiles <- &syncFile{
+				srcFile: dstFile,
+				dstPath: filepath.Join(srcPath, path),
+			}
+		}
+	}
+	return nil
 }
 
 func (t *SyncTask) Run() error {
-	srcInfo, err := t.info(t.opt.SrcPath)
-	if err != nil {
-		return err
-	}
-
-	dstInfo, err := t.info(t.opt.DstPath)
-	if err != nil {
-		return err
-	}
-
-	donec := make(chan struct{})
+	errs := make(chan error)
 	go func() {
+		defer close(errs)
 		switch t.opt.Method {
 		case METHOD_A2B:
-			t.a2b(srcInfo, dstInfo)
+			errs <- t.a2b(t.opt.SrcPath, t.opt.DstPath)
 		case METHOD_B2A:
-			t.a2b(dstInfo, srcInfo)
+			errs <- t.a2b(t.opt.DstPath, t.opt.SrcPath)
 		case METHOD_B2B:
-			t.b2b(srcInfo, dstInfo)
+			errs <- t.b2b(t.opt.SrcPath, t.opt.DstPath)
 		}
-		close(donec)
 	}()
 
-	ctx := t.task.Context()
+	var (
+		err error
+		ctx = t.task.Context()
+	)
 	for {
 		select {
 		case file := <-t.addFiles:
@@ -314,8 +506,11 @@ func (t *SyncTask) Run() error {
 			err = t.delFile(file)
 		case <-ctx.Done():
 			err = ctx.Err()
-		case <-donec:
-			return nil
+		case e, ok := <-errs:
+			if ok {
+				return nil
+			}
+			err = e
 		}
 		if err != nil {
 			return err

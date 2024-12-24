@@ -94,7 +94,7 @@ func (app *App) Init() error {
 		return err
 	}
 	app.DB = db
-	app.Runner = runner.New(app.ctx, 10)
+	app.Runner = runner.New(app.ctx, 20)
 	return nil
 }
 

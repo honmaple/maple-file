@@ -131,44 +131,15 @@ class _SyncState extends State<Sync> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          ListTile(
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('文件类型'.tr(context)),
-                const SizedBox(width: 16),
-                Flexible(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          _option.fileTypes.isEmpty
-                              ? "全部文件".tr(context)
-                              : _option.fileTypes.join(","),
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            onTap: () async {
-              final result = await showListDialog2(
-                context,
-                child: FileTypeFormField(types: _option.fileTypes),
-              );
-              if (result != null) {
-                setState(() {
-                  _option.fileTypes = result;
-                });
+          FileTypeFormField(
+            label: '文件类型'.tr(context),
+            value: _option.fileTypes,
+            onTap: (result) {
+              setState(() {
+                _option.fileTypes = result;
+              });
 
-                widget.form.option = jsonEncode(_option);
-              }
+              widget.form.option = jsonEncode(_option);
             },
           ),
           CustomFormField(

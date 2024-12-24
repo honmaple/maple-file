@@ -8,6 +8,8 @@ import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/generated/proto/api/task/task.pb.dart';
 
+import '../widgets/task_action.dart';
+
 import '../providers/service.dart';
 import '../providers/task.dart';
 
@@ -183,6 +185,14 @@ class _TaskListState extends ConsumerState<TaskList>
             child: ListTile(
               title: Text(item.name),
               subtitle: Text(item.progressState),
+              trailing: TextButton.icon(
+                label: Text("查看详情".tr(context)),
+                icon: const Icon(Icons.info_outlined),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  showTaskDetail(context, item);
+                },
+              ),
             ),
           ),
           if (isFinished(item))

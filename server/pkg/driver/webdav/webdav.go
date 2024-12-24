@@ -12,11 +12,11 @@ import (
 )
 
 type Option struct {
+	driver.BaseOption
 	Endpoint string      `json:"endpoint"  validate:"required"`
 	Username string      `json:"username"  validate:"required"`
 	Password string      `json:"password"  validate:"required"`
 	DirPerm  os.FileMode `json:"dir_perm"`
-	RootPath string      `json:"root_path" validate:"omitempty,startswith=/"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -32,23 +32,16 @@ type Webdav struct {
 var _ driver.FS = (*Webdav)(nil)
 
 func (d *Webdav) List(ctx context.Context, path string) ([]driver.File, error) {
-	fi, err := d.client.Stat(path)
+	infos, err := d.client.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
-	if fi.IsDir() {
-		infos, err := d.client.ReadDir(path)
-		if err != nil {
-			return nil, err
-		}
 
-		files := make([]driver.File, len(infos))
-		for i, info := range infos {
-			files[i] = driver.NewFile(path, info)
-		}
-		return files, nil
+	files := make([]driver.File, len(infos))
+	for i, info := range infos {
+		files[i] = driver.NewFile(path, info)
 	}
-	return []driver.File{driver.NewFile(path, fi)}, nil
+	return files, nil
 }
 
 func (d *Webdav) Move(ctx context.Context, src, dst string) error {

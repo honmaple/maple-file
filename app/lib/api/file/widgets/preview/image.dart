@@ -1,57 +1,48 @@
-import 'dart:io';
+import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:extended_image/extended_image.dart';
-
-import 'package:maple_file/app/grpc.dart';
 
 import 'source.dart';
 
 class ImagePreview extends StatefulWidget {
   final BoxFit fit;
-  final String source;
-  final SourceType sourceType;
+  final PreviewSource source;
 
   const ImagePreview({
     super.key,
     required this.source,
-    required this.sourceType,
     this.fit = BoxFit.cover,
   });
 
   ImagePreview.file(
-    File file, {
+    io.File file, {
     super.key,
     this.fit = BoxFit.cover,
-  })  : source = file.path,
-        sourceType = SourceType.file;
+  }) : source = PreviewSource.file(file);
 
-  const ImagePreview.asset(
+  ImagePreview.asset(
     String path, {
     super.key,
     this.fit = BoxFit.cover,
-  })  : source = path,
-        sourceType = SourceType.asset;
+  }) : source = PreviewSource.asset(path);
 
-  const ImagePreview.network(
+  ImagePreview.network(
     String url, {
     super.key,
     this.fit = BoxFit.cover,
-  })  : source = url,
-        sourceType = SourceType.network;
+  }) : source = PreviewSource.network(url);
 
-  const ImagePreview.local(
+  ImagePreview.local(
     String path, {
     super.key,
     this.fit = BoxFit.cover,
-  })  : source = path,
-        sourceType = SourceType.file;
+  }) : source = PreviewSource.local(path);
 
   ImagePreview.remote(
     String path, {
     super.key,
     this.fit = BoxFit.cover,
-  })  : source = GRPC().previewURL(path),
-        sourceType = SourceType.network;
+  }) : source = PreviewSource.remote(path);
 
   @override
   State<ImagePreview> createState() => _ImagePreviewState();
@@ -60,23 +51,26 @@ class ImagePreview extends StatefulWidget {
 class _ImagePreviewState extends State<ImagePreview> {
   @override
   Widget build(BuildContext context) {
-    switch (widget.sourceType) {
+    switch (widget.source.sourceType) {
       case SourceType.file:
         return ExtendedImage.file(
-          File(widget.source),
+          io.File(widget.source.source),
           fit: widget.fit,
+          mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         );
       case SourceType.asset:
         return ExtendedImage.asset(
-          widget.source,
+          widget.source.source,
           fit: widget.fit,
+          mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         );
       case SourceType.network:
         return ExtendedImage.network(
-          widget.source,
+          widget.source.source,
           fit: widget.fit,
+          mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         );
     }

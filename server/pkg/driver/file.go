@@ -1,7 +1,6 @@
 package driver
 
 import (
-	"encoding/json"
 	"io"
 	"io/fs"
 	"mime"
@@ -25,43 +24,32 @@ type (
 	}
 )
 
-type fsFile struct {
-	file File
-	FileReader
-}
-
-func (f *fsFile) Stat() (fs.FileInfo, error) {
-	return f.file, nil
+type FileInfo struct {
+	Name    string      `json:"name"`
+	Size    int64       `json:"size"`
+	Path    string      `json:"path"`
+	Mode    fs.FileMode `json:"mode"`
+	IsDir   bool        `json:"is_dir"`
+	ModTime time.Time   `json:"mod_time"`
 }
 
 type emptyFile struct {
-	size    int64
-	name    string
-	path    string
-	mode    fs.FileMode
-	modTime time.Time
-	isDir   bool
+	FileInfo
 }
 
-func (f *emptyFile) Path() string       { return f.path }
-func (f *emptyFile) Type() string       { return mime.TypeByExtension(filepath.Ext(f.name)) }
-func (f *emptyFile) Name() string       { return f.name }
-func (f *emptyFile) Size() int64        { return f.size }
-func (f *emptyFile) Mode() fs.FileMode  { return f.mode }
-func (f *emptyFile) IsDir() bool        { return f.isDir }
-func (f *emptyFile) ModTime() time.Time { return f.modTime }
-func (f *emptyFile) Sys() any           { return nil }
-func (f *emptyFile) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
-		// "path":     f.path,
-		"name": f.name,
-		"size": f.size,
-		// "type":     f.Type(),
-		"mode":     f.mode,
-		"is_dir":   f.isDir,
-		"mod_time": f.modTime,
-	})
+func (f *emptyFile) Type() string {
+	if f.FileInfo.IsDir {
+		return "DIR"
+	}
+	return mime.TypeByExtension(filepath.Ext(f.FileInfo.Name))
 }
+func (f *emptyFile) Path() string       { return f.FileInfo.Path }
+func (f *emptyFile) Name() string       { return f.FileInfo.Name }
+func (f *emptyFile) Size() int64        { return f.FileInfo.Size }
+func (f *emptyFile) Mode() fs.FileMode  { return f.FileInfo.Mode }
+func (f *emptyFile) IsDir() bool        { return f.FileInfo.IsDir }
+func (f *emptyFile) ModTime() time.Time { return f.FileInfo.ModTime }
+func (f *emptyFile) Sys() any           { return nil }
 
 type seeker struct {
 	r            io.ReadCloser
@@ -131,18 +119,19 @@ func (s *seeker) Close() error {
 	return nil
 }
 
-func Compare(src, dst File) bool {
-	return src.Size() == dst.Size() && src.ModTime().Equal(dst.ModTime())
-}
-
 func NewFile(path string, info fs.FileInfo) File {
+	if path == "" {
+		path = "/"
+	}
 	return &emptyFile{
-		path:    path,
-		name:    info.Name(),
-		size:    info.Size(),
-		mode:    info.Mode(),
-		modTime: info.ModTime(),
-		isDir:   info.IsDir(),
+		FileInfo: FileInfo{
+			Path:    path,
+			Name:    info.Name(),
+			Size:    info.Size(),
+			Mode:    info.Mode(),
+			ModTime: info.ModTime(),
+			IsDir:   info.IsDir(),
+		},
 	}
 }
 

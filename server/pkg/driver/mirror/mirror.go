@@ -13,11 +13,12 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 	httputil "github.com/honmaple/maple-file/server/pkg/util/http"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Endpoint string `json:"endpoint"  validate:"required"`
 	Format   string `json:"format"`
 }
@@ -38,7 +39,7 @@ func (d *Mirror) getURL(path string) string {
 	return strings.TrimSuffix(d.opt.Endpoint, "/") + filepath.Clean(path)
 }
 
-func (d *Mirror) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *Mirror) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	resp, err := d.client.Request(http.MethodGet, d.getURL(path), httputil.WithContext(ctx))
 	if err != nil {
 		return nil, err
@@ -67,8 +68,8 @@ func (d *Mirror) List(ctx context.Context, path string) ([]driver.File, error) {
 	return files, nil
 }
 
-func (d *Mirror) Get(path string) (driver.File, error) {
-	resp, err := d.client.Request(http.MethodHead, d.getURL(path))
+func (d *Mirror) Get(ctx context.Context, path string) (driver.File, error) {
+	resp, err := d.client.Request(http.MethodHead, d.getURL(path), httputil.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,7 @@ func (d *Mirror) Get(path string) (driver.File, error) {
 }
 
 func (d *Mirror) Open(path string) (driver.FileReader, error) {
-	info, err := d.Get(path)
+	info, err := d.Get(context.Background(), path)
 	if err != nil {
 		return nil, err
 	}
@@ -129,11 +130,7 @@ func New(opt *Option) (driver.FS, error) {
 		opt:    opt,
 		client: httputil.New(),
 	}
-
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

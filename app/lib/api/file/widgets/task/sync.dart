@@ -5,7 +5,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
-import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
 
 part 'sync.g.dart';
@@ -20,9 +19,9 @@ enum SyncMethod {
 extension SyncMethodExtension on SyncMethod {
   String label() {
     final Map<SyncMethod, String> labels = {
-      SyncMethod.a2b: "将源路径的变更同步至目标路径",
-      SyncMethod.b2a: "将目标路径的变更同步至源路径",
-      SyncMethod.b2b: "双向同步",
+      SyncMethod.a2b: "将源路径的变更同步至目标路径".tr(),
+      SyncMethod.b2a: "将目标路径的变更同步至源路径".tr(),
+      SyncMethod.b2b: "双向同步".tr(),
     };
     return labels[this] ?? "unknown";
   }
@@ -37,9 +36,9 @@ enum SyncConflict {
 extension SyncConflictExtension on SyncConflict {
   String label() {
     final Map<SyncConflict, String> labels = {
-      SyncConflict.skip: "跳过",
-      SyncConflict.override: "覆盖",
-      SyncConflict.newest: "使用新文件覆盖旧文件",
+      SyncConflict.skip: "跳过".tr(),
+      SyncConflict.override: "覆盖".tr(),
+      SyncConflict.newest: "使用新文件覆盖旧文件".tr(),
     };
     return labels[this] ?? "unknown";
   }
@@ -158,39 +157,29 @@ class _SyncState extends State<Sync> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          ListTile(
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('文件整理'.tr()),
-                const SizedBox(width: 16),
-                Flexible(
-                  child: Text(
-                    _option.customPath == ""
-                        ? "默认".tr()
-                        : _option.customPath,
-                    maxLines: 1,
-                    textAlign: TextAlign.end,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              ],
+          CustomFormField(
+            label: '文件整理'.tr(),
+            value: _option.customPath,
+            type: CustomFormFieldType.path,
+            subtitle: Text(
+              "将需要备份的文件按照时间格式重新进行分类".tr(),
+              style: Theme.of(context).textTheme.bodySmall,
             ),
-            onTap: () async {
-              final result = await showEditingDialog(
-                context,
-                "Backup Format".tr(),
-                helper: _buildFormat(),
-              );
-              if (result != null) {}
+            onTap: (result) {
+              setState(() {
+                _option.customPath = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
             },
           ),
           if (_option.method != SyncMethod.b2a.name)
             ListTile(
               title: Text('源文件删除'.tr()),
-              subtitle: Text('源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr()),
+              subtitle: Text(
+                '源路径的文件被删除或不存在时，是否同步删除目标路径的文件'.tr(),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               trailing: Switch(
                 value: _option.deleteSrc,
                 onChanged: (result) {
@@ -219,36 +208,6 @@ class _SyncState extends State<Sync> {
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFormat() {
-    Map<String, String> formats = {
-      "文件名": "{filename}",
-      "文件扩展": "{extension}",
-      "年": "{time:year}",
-      "月": "{time:month}",
-      "日": "{time:day}",
-      "时": "{time:hour}",
-      "分": "{time:minute}",
-      "秒": "{time:second}",
-    };
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      children: [
-        for (final key in formats.keys)
-          ActionChip(
-            label: Text(key),
-            labelStyle: TextStyle(
-              fontSize: kDefaultFontSize * 0.875,
-              color: Theme.of(context).primaryColor,
-            ),
-            onPressed: () {
-              // _controller.text = "${_controller.text}${formats[key]}";
-            },
-          ),
-      ],
     );
   }
 }

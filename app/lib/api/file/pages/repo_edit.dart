@@ -127,6 +127,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DriverForm(form: _form),
+                  const SizedBox(height: 4),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -136,7 +137,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   SizedBox(
                     width: double.infinity,
                     child: _isEditing

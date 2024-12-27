@@ -15,10 +15,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Endpoint  string `json:"endpoint"    validate:"required"`
 	Bucket    string `json:"bucket"      validate:"required"`
 	Region    string `json:"region"`
@@ -47,7 +48,7 @@ func (d *S3) getPath(path string, isDir bool) string {
 	return path
 }
 
-func (d *S3) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *S3) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	input := &s3.ListObjectsInput{
 		Bucket:    aws.String(d.opt.Bucket),
 		Prefix:    aws.String(d.getPath(path, true)),
@@ -121,7 +122,7 @@ func (d *S3) copyFile(ctx context.Context, src, dst string) error {
 }
 
 func (d *S3) Copy(ctx context.Context, src, dst string) error {
-	info, err := d.Get(src)
+	info, err := d.Get(ctx, src)
 	if err != nil {
 		return err
 	}
@@ -169,7 +170,7 @@ func (d *S3) removeFile(ctx context.Context, path string) error {
 }
 
 func (d *S3) Remove(ctx context.Context, path string) error {
-	info, err := d.Get(path)
+	info, err := d.Get(ctx, path)
 	if err != nil {
 		return err
 	}
@@ -233,8 +234,8 @@ func (d *S3) Create(path string) (driver.FileWriter, error) {
 	return w, nil
 }
 
-func (d *S3) Get(path string) (driver.File, error) {
-	result, err := d.client.HeadObject(&s3.HeadObjectInput{
+func (d *S3) Get(ctx context.Context, path string) (driver.File, error) {
+	result, err := d.client.HeadObjectWithContext(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(d.opt.Bucket),
 		Key:    aws.String(d.getPath(path, false)),
 	})
@@ -246,7 +247,6 @@ func (d *S3) Get(path string) (driver.File, error) {
 				Delimiter: aws.String("/"),
 				MaxKeys:   aws.Int64(1),
 			}
-			ctx := context.Background()
 			result, err := d.client.ListObjectsWithContext(ctx, input)
 			if err != nil {
 				return nil, err
@@ -289,10 +289,7 @@ func New(opt *Option) (driver.FS, error) {
 		client:  s3.New(sess),
 		session: sess,
 	}
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

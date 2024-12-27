@@ -19,7 +19,7 @@ class _SettingLocaleState extends ConsumerState<SettingLocale> {
         ref.watch(appearanceProvider.select((state) => state.locale));
     return Scaffold(
       appBar: AppBar(
-        title: Text('Language'.tr()),
+        title: Text('语言'.tr()),
       ),
       body: Container(
         // margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),

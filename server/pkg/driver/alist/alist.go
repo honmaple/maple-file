@@ -10,12 +10,13 @@ import (
 	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 	httputil "github.com/honmaple/maple-file/server/pkg/util/http"
 	"github.com/tidwall/gjson"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Endpoint string `json:"endpoint"  validate:"required"`
 	Username string `json:"username"  validate:"required"`
 	Password string `json:"password"  validate:"required"`
@@ -72,12 +73,14 @@ func (d *Alist) requestWithData(ctx context.Context, method, url string, data ma
 	return io.ReadAll(r)
 }
 
-func (d *Alist) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *Alist) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
+	meta := driver.NewMeta(metas...)
+
 	resp, err := d.requestWithData(ctx, http.MethodPost, "/api/fs/list", map[string]any{
 		"page":     1,
 		"per_page": 0,
 		"path":     path,
-		"password": "",
+		"password": meta.GetString("password"),
 		"refresh":  false,
 	})
 	if err != nil {
@@ -133,8 +136,8 @@ func (d *Alist) MakeDir(ctx context.Context, path string) error {
 	return err
 }
 
-func (d *Alist) Get(path string) (driver.File, error) {
-	resp, err := d.requestWithData(context.Background(), http.MethodPost, "/api/fs/get", map[string]any{
+func (d *Alist) Get(ctx context.Context, path string) (driver.File, error) {
+	resp, err := d.requestWithData(ctx, http.MethodPost, "/api/fs/get", map[string]any{
 		"path":     path,
 		"password": "",
 	})
@@ -228,11 +231,7 @@ func New(opt *Option) (driver.FS, error) {
 	if err := d.login(); err != nil {
 		return nil, err
 	}
-
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

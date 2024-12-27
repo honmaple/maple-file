@@ -10,13 +10,13 @@ import (
 
 type (
 	FS interface {
-		List(context.Context, string) ([]File, error)
+		List(context.Context, string, ...Meta) ([]File, error)
 		Move(context.Context, string, string) error
 		Copy(context.Context, string, string) error
 		Rename(context.Context, string, string) error
 		Remove(context.Context, string) error
 		MakeDir(context.Context, string) error
-		Get(string) (File, error)
+		Get(context.Context, string) (File, error)
 		Open(string) (FileReader, error)
 		Create(string) (FileWriter, error)
 		Close() error
@@ -29,24 +29,18 @@ type (
 	OptionCreator func() Option
 )
 
-type (
-	Base       struct{}
-	BaseOption struct {
-		RootPath    string   `json:"root_path" validate:"omitempty,startswith=/"`
-		HiddenFiles []string `json:"hidden_files"`
-	}
-)
+type Base struct{}
 
-func (Base) List(context.Context, string) ([]File, error) { return nil, ErrNotSupport }
-func (Base) Move(context.Context, string, string) error   { return ErrNotSupport }
-func (Base) Copy(context.Context, string, string) error   { return ErrNotSupport }
-func (Base) Rename(context.Context, string, string) error { return ErrNotSupport }
-func (Base) Remove(context.Context, string) error         { return ErrNotSupport }
-func (Base) MakeDir(context.Context, string) error        { return ErrNotSupport }
-func (Base) Get(string) (File, error)                     { return nil, ErrNotSupport }
-func (Base) Open(string) (FileReader, error)              { return nil, ErrNotSupport }
-func (Base) Create(string) (FileWriter, error)            { return nil, ErrNotSupport }
-func (Base) Close() error                                 { return nil }
+func (Base) List(context.Context, string, ...Meta) ([]File, error) { return nil, ErrNotSupport }
+func (Base) Move(context.Context, string, string) error            { return ErrNotSupport }
+func (Base) Copy(context.Context, string, string) error            { return ErrNotSupport }
+func (Base) Rename(context.Context, string, string) error          { return ErrNotSupport }
+func (Base) Remove(context.Context, string) error                  { return ErrNotSupport }
+func (Base) MakeDir(context.Context, string) error                 { return ErrNotSupport }
+func (Base) Get(context.Context, string) (File, error)             { return nil, ErrNotSupport }
+func (Base) Open(string) (FileReader, error)                       { return nil, ErrNotSupport }
+func (Base) Create(string) (FileWriter, error)                     { return nil, ErrNotSupport }
+func (Base) Close() error                                          { return nil }
 
 var allOptions map[string]OptionCreator
 
@@ -82,7 +76,7 @@ func walkDir(ctx context.Context, srcFS FS, root string, d File, walkDirFn WalkD
 }
 
 func WalkDir(ctx context.Context, srcFS FS, root string, walkDirFn WalkDirFunc) error {
-	info, err := srcFS.Get(root)
+	info, err := srcFS.Get(ctx, root)
 	if err != nil {
 		err = walkDirFn(root, nil, err)
 	} else {

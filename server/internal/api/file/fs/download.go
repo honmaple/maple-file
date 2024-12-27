@@ -19,7 +19,7 @@ func (opt *DownloadTask) String() string {
 }
 
 func (opt *DownloadTask) Execute(task runner.Task, fs FS) error {
-	info, err := fs.Get(opt.Path)
+	info, err := fs.Get(task.Context(), opt.Path)
 	if err != nil {
 		return err
 	}

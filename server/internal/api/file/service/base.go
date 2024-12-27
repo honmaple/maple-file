@@ -69,7 +69,7 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 			Path: c.QueryParams().Get("path"),
 		}
 
-		info, err := srv.fs.Get(req.GetPath())
+		info, err := srv.fs.Get(c.Request().Context(), req.GetPath())
 		if err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 			Path: c.QueryParams().Get("path"),
 		}
 
-		info, err := srv.fs.Get(req.GetPath())
+		info, err := srv.fs.Get(c.Request().Context(), req.GetPath())
 		if err != nil {
 			return err
 		}

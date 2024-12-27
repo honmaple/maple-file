@@ -73,7 +73,7 @@ class Setting extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    title: Text(context.tr("存储设置")),
+                    title: Text("存储设置".tr()),
                     dense: true,
                   ),
                   ListTile(

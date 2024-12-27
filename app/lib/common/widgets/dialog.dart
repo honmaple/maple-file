@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 
@@ -81,10 +82,10 @@ class _CustomEditingDialogState extends State<CustomEditingDialog> {
         inputFormatters: widget.inputFormatters,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
+          // isDense: true,
           border: const OutlineInputBorder(),
           labelText: widget.label,
           helper: widget.helper,
-          isDense: true,
           suffixIcon: widget.obscureText
               ? GestureDetector(
                   onTap: () {
@@ -101,13 +102,13 @@ class _CustomEditingDialogState extends State<CustomEditingDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('取消'),
+          child: Text('取消'.tr()),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         TextButton(
-          child: const Text('确认'),
+          child: Text('确认'.tr()),
           onPressed: () {
             Navigator.of(context).pop(_controller.text);
           },
@@ -204,7 +205,7 @@ List<Widget> _dialogChildren<T>(
   if (cancelAction) {
     children.add(ListTile(
       leading: const Icon(Icons.cancel),
-      title: const Text('取消'),
+      title: Text('取消'.tr()),
       onTap: () {
         Navigator.pop(context);
       },

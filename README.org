@@ -2,7 +2,7 @@
 
 * 红枫云盘
   #+BEGIN_QUOTE
-  使用 *Flutter* + *Go* 实现的无服务端云盘文件上传和管理APP
+  使用 *Flutter* + *Go* 实现的无服务端多协议云盘文件上传和管理APP
   #+END_QUOTE
 
 ** 支持的存储
@@ -16,8 +16,19 @@
    - [X] Mirror(镜像站，支持文件查看和下载，支持格式：清华源、阿里源或者其他 *nginx* 文件列表源)
    - [X] 又拍云
 
+** 功能
+   - 支持文件列表查看/复制/移动/删除/重命名/上传/下载
+   - 支持文件多选及操作
+   - 支持视频、音频、图片和文本文件的预览
+   - 支持文件加密和压缩(*测试中*)
+   - 支持各存储之间的备份和同步(*测试中*)
+   - 支持多语言(中文、英文)
+   - 支持 *Android* 和 *MacOS*
+
 ** 截图
+   |-----------------------------------------+-----------------------------------------+-----------------------------------------|
+   | [[./example/screenshot/flutter_01.png]] | [[./example/screenshot/flutter_02.png]] | [[./example/screenshot/flutter_03.png]] |
+   | [[./example/screenshot/flutter_04.png]] | [[./example/screenshot/flutter_05.png]] |                                         |
+
    |-----------------------------------------+-----------------------------------------|
-   | [[./example/screenshot/flutter_01.png]] | [[./example/screenshot/flutter_02.png]] |
-   | [[./example/screenshot/flutter_03.png]] | [[./example/screenshot/flutter_04.png]] |
-   | [[./example/screenshot/flutter_05.png]] |                                         |
+   | [[./example/screenshot/flutter_06.png]] | [[./example/screenshot/flutter_07.png]] |

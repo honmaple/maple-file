@@ -61,7 +61,7 @@ class _WebdavState extends State<Webdav> {
             },
           ),
           CustomFormField(
-            label: "用户名".tr(),
+            label: "用户".tr(),
             value: _option.username,
             isRequired: true,
             onTap: (result) {

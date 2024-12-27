@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
+import "base.dart";
 import "alist.dart";
 import "ftp.dart";
 import "local.dart";
@@ -41,32 +43,61 @@ extension DriverTypeTypeExtension on DriverType {
   }
 }
 
-class DriverForm extends StatelessWidget {
+class DriverForm extends StatefulWidget {
+  const DriverForm({super.key, required this.form});
+
   final Repo form;
 
-  const DriverForm({super.key, required this.form});
+  @override
+  State<DriverForm> createState() => _DriverFormState();
+}
+
+class _DriverFormState extends State<DriverForm> {
+  bool _showMore = false;
 
   @override
   Widget build(BuildContext context) {
-    switch (form.driver) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildForm(),
+        if (_showMore) BaseForm(form: widget.form),
+        if (_showMore) const SizedBox(height: 4),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            child: Text(_showMore ? "隐藏更多设置" : "更多设置".tr()),
+            onPressed: () {
+              setState(() {
+                _showMore = !_showMore;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  _buildForm() {
+    switch (widget.form.driver) {
       case "s3":
-        return S3(form: form);
+        return S3(form: widget.form);
       case "smb":
-        return SMB(form: form);
+        return SMB(form: widget.form);
       case "ftp":
-        return FTP(form: form);
+        return FTP(form: widget.form);
       case "sftp":
-        return SFTP(form: form);
+        return SFTP(form: widget.form);
       case "alist":
-        return Alist(form: form);
+        return Alist(form: widget.form);
       case "local":
-        return Local(form: form);
+        return Local(form: widget.form);
       case "upyun":
-        return Upyun(form: form);
+        return Upyun(form: widget.form);
       case "webdav":
-        return Webdav(form: form);
+        return Webdav(form: widget.form);
       case "mirror":
-        return Mirror(form: form);
+        return Mirror(form: widget.form);
       default:
         return const SizedBox.shrink();
     }

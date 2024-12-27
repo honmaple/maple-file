@@ -20,6 +20,7 @@ class CustomFormFieldOption<T> {
 }
 
 enum CustomFormFieldType {
+  path,
   string,
   number,
   password,
@@ -27,7 +28,7 @@ enum CustomFormFieldType {
   option,
 }
 
-class CustomFormField extends StatelessWidget {
+class CustomFormField extends StatefulWidget {
   const CustomFormField({
     super.key,
     required this.label,
@@ -50,42 +51,64 @@ class CustomFormField extends StatelessWidget {
   final Function(String) onTap;
 
   @override
+  State<CustomFormField> createState() => _CustomFormFieldState();
+}
+
+class _CustomFormFieldState extends State<CustomFormField> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListTile(
       title: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
+          Text(widget.label),
           const SizedBox(width: 16),
           Flexible(
-            child: trailing ?? _emptyText(context, value),
+            child: widget.trailing ?? _emptyText(context, widget.value),
           ),
         ],
       ),
-      subtitle: subtitle,
+      subtitle: widget.subtitle,
       onTap: () async {
         String? result;
-        switch (type) {
+        switch (widget.type) {
+          case CustomFormFieldType.path:
+            result = await showEditingDialog(
+              context,
+              widget.label,
+              value: widget.value ?? "",
+              controller: _controller,
+              helper: _buildPathFormat(context),
+            );
+            break;
           case CustomFormFieldType.string:
             result = await showEditingDialog(
               context,
-              label,
-              value: value ?? "",
+              widget.label,
+              value: widget.value ?? "",
             );
             break;
           case CustomFormFieldType.number:
             result = await showNumberEditingDialog(
               context,
-              label,
-              value: value ?? "",
+              widget.label,
+              value: widget.value ?? "",
             );
             break;
           case CustomFormFieldType.password:
             result = await showPasswordEditingDialog(
               context,
-              label,
-              value: value ?? "",
+              widget.label,
+              value: widget.value ?? "",
             );
             break;
           case CustomFormFieldType.directory:
@@ -93,7 +116,7 @@ class CustomFormField extends StatelessWidget {
             break;
           case CustomFormFieldType.option:
             result = await showListDialog(context, items: [
-              for (final opt in options!)
+              for (final opt in widget.options!)
                 ListDialogItem(
                   label: opt.label,
                   value: opt.value,
@@ -103,7 +126,7 @@ class CustomFormField extends StatelessWidget {
             break;
         }
         if (result != null) {
-          onTap(result);
+          widget.onTap(result);
         }
       },
     );
@@ -114,12 +137,12 @@ class CustomFormField extends StatelessWidget {
     String? value,
   ) {
     bool isEmpty = value == null || value == "";
-    if (type == CustomFormFieldType.password) {
+    if (widget.type == CustomFormFieldType.password) {
       if (!isEmpty) {
         return const Icon(Icons.more_horiz);
       }
     }
-    final option = options?.where((o) => o.value == value);
+    final option = widget.options?.where((o) => o.value == value);
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -130,9 +153,50 @@ class CustomFormField extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        if (isRequired && isEmpty)
+        if (widget.isRequired && isEmpty)
           const Text(' *', style: TextStyle(color: Colors.red)),
-        if (options != null) const Icon(Icons.chevron_right),
+        if (widget.options != null) const Icon(Icons.chevron_right),
+      ],
+    );
+  }
+
+  Widget _buildPathFormat(BuildContext context) {
+    Map<String, String> formats = {
+      "文件分隔".tr(): "/",
+      "文件路径".tr(): "{rawpath}",
+      "文件名称".tr(): "{filename}",
+      "文件扩展".tr(): "{extension}",
+      "年".tr(): "{time:year}",
+      "月".tr(): "{time:month}",
+      "日".tr(): "{time:day}",
+      "时".tr(): "{time:hour}",
+      "分".tr(): "{time:minute}",
+      "秒".tr(): "{time:second}",
+    };
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        for (final key in formats.keys)
+          ActionChip(
+            label: Text(key),
+            labelStyle: TextStyle(
+              fontSize: kDefaultFontSize * 0.875,
+              color: Theme.of(context).primaryColor,
+            ),
+            onPressed: () {
+              final text = formats[key] ?? "";
+
+              final offset = _controller.selection.base.offset;
+              final prefix = _controller.text.substring(0, offset);
+              final suffix = _controller.text.substring(offset);
+
+              _controller.text = "$prefix$text$suffix";
+              _controller.selection = TextSelection.collapsed(
+                offset: offset + text.length,
+              );
+            },
+          ),
       ],
     );
   }

@@ -42,11 +42,11 @@ class _LocalState extends State<Local> {
               CustomFormField(
                 type: CustomFormFieldType.directory,
                 label: '目录'.tr(),
-                value: _option["root_path"],
+                value: _option["path"],
                 isRequired: true,
                 onTap: (result) {
                   setState(() {
-                    _option["root_path"] = result;
+                    _option["path"] = result;
                   });
 
                   widget.form.option = jsonEncode(_option);
@@ -107,11 +107,11 @@ class _LocalState extends State<Local> {
               final result = await showEditingDialog(
                 context,
                 "自定义目录".tr(),
-                value: _option["root_path"] ?? "",
+                value: _option["path"] ?? "",
               );
               if (result != null) {
                 setState(() {
-                  _option["root_path"] = result;
+                  _option["path"] = result;
                 });
 
                 widget.form.option = jsonEncode(_option);
@@ -119,7 +119,7 @@ class _LocalState extends State<Local> {
             },
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
       ],
     );
   }

@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 	"github.com/jlaffaye/ftp"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Host     string `json:"host"      validate:"required"`
 	Port     int    `json:"port"`
 	Username string `json:"username"  validate:"required"`
@@ -35,7 +36,7 @@ func (d *FTP) Close() error {
 	return d.client.Logout()
 }
 
-func (d *FTP) Get(path string) (driver.File, error) {
+func (d *FTP) Get(ctx context.Context, path string) (driver.File, error) {
 	info, err := d.client.GetEntry(path)
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func (d *FTP) Create(path string) (driver.FileWriter, error) {
 	return w, nil
 }
 
-func (d *FTP) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *FTP) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	entries, err := d.client.List(path)
 	if err != nil {
 		return nil, err
@@ -131,10 +132,7 @@ func New(opt *Option) (driver.FS, error) {
 	}
 
 	d := &FTP{opt: opt, client: conn}
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

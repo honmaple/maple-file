@@ -49,7 +49,7 @@ func TestSyncTask(t *testing.T) {
 	assert.Nil(err)
 
 	lfs, err := local.New(&local.Option{
-		RootPath: root,
+		Path: root,
 	})
 	assert.Nil(err)
 

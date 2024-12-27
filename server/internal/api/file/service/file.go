@@ -13,6 +13,7 @@ import (
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 	settingpb "github.com/honmaple/maple-file/server/internal/proto/api/setting"
+	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/util"
 	"github.com/spf13/viper"
 )
@@ -66,7 +67,7 @@ func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.Lis
 		results[i] = result
 	}
 	if path != "/" {
-		files, err := srv.fs.List(ctx, path)
+		files, err := srv.fs.List(ctx, path, driver.WithPagination(filter.GetInt("page"), filter.GetInt("page_size")))
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +105,7 @@ func (srv *Service) Move(ctx context.Context, req *pb.MoveFileRequest) (*pb.Move
 
 		fmt.Println("move", oldPath, newPath)
 
-		srv.fs.SubmitTask(&fs.CopyTaskOption{
+		srv.fs.SubmitTask(&fs.MoveTaskOption{
 			SrcPath: oldPath,
 			DstPath: newPath,
 		})
@@ -119,7 +120,7 @@ func (srv *Service) Copy(ctx context.Context, req *pb.CopyFileRequest) (*pb.Copy
 
 		fmt.Println("copy", oldPath, newPath)
 
-		srv.fs.SubmitTask(&fs.MoveTaskOption{
+		srv.fs.SubmitTask(&fs.CopyTaskOption{
 			SrcPath: oldPath,
 			DstPath: newPath,
 		})
@@ -184,7 +185,7 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 
 	time.Sleep(time.Second)
 
-	info, err := srv.fs.Get(filepath.Join(req.GetPath(), filename))
+	info, err := srv.fs.Get(ctx, filepath.Join(req.GetPath(), filename))
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +209,7 @@ func (srv *Service) Upload(stream pb.FileService_UploadServer) error {
 }
 
 func (srv *Service) Preview(req *pb.PreviewFileRequest, stream pb.FileService_PreviewServer) error {
-	info, err := srv.fs.Get(req.GetPath())
+	info, err := srv.fs.Get(stream.Context(), req.GetPath())
 	if err != nil {
 		return err
 	}

@@ -55,7 +55,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                     },
                   ),
                   ListTile(
-                    title: const Text('排序'),
+                    title: Text('排序'.tr()),
                     trailing: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [

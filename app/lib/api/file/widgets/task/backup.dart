@@ -123,35 +123,20 @@ class _BackupState extends State<Backup> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          ListTile(
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('文件整理'.tr()),
-                const SizedBox(width: 16),
-                Flexible(
-                  child: Text(
-                    _option.customPath == "" ? "默认" : _option.customPath,
-                    maxLines: 2,
-                    textAlign: TextAlign.end,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
+          CustomFormField(
+            label: '文件整理'.tr(),
+            value: _option.customPath,
+            type: CustomFormFieldType.path,
             subtitle: Text(
               "将需要备份的文件按照时间格式重新进行分类".tr(),
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            onTap: () async {
-              final result = await showEditingDialog(
-                context,
-                "文件整理".tr(),
-                helper: _buildFormat(),
-              );
-              if (result != null) {}
+            onTap: (result) {
+              setState(() {
+                _option.customPath = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
             },
           ),
           ListTile(

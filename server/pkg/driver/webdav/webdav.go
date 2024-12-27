@@ -7,12 +7,13 @@ import (
 	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 
 	"github.com/studio-b12/gowebdav"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Endpoint string      `json:"endpoint"  validate:"required"`
 	Username string      `json:"username"  validate:"required"`
 	Password string      `json:"password"  validate:"required"`
@@ -31,7 +32,7 @@ type Webdav struct {
 
 var _ driver.FS = (*Webdav)(nil)
 
-func (d *Webdav) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *Webdav) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	infos, err := d.client.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -85,7 +86,7 @@ func (d *Webdav) Create(path string) (driver.FileWriter, error) {
 	return w, nil
 }
 
-func (d *Webdav) Get(path string) (driver.File, error) {
+func (d *Webdav) Get(ctx context.Context, path string) (driver.File, error) {
 	fi, err := d.client.Stat(path)
 	if err != nil {
 		return nil, err
@@ -112,10 +113,7 @@ func New(opt *Option) (driver.FS, error) {
 		return nil, err
 	}
 	d := &Webdav{opt: opt, client: client}
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

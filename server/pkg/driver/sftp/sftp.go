@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/honmaple/maple-file/server/pkg/driver"
-
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
+
+	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Host       string `json:"host"        validate:"required"`
 	Port       int    `json:"port"`
 	Username   string `json:"username"    validate:"required"`
@@ -37,7 +38,7 @@ func (d *SFTP) Close() error {
 	return d.client.Close()
 }
 
-func (d *SFTP) Get(path string) (driver.File, error) {
+func (d *SFTP) Get(ctx context.Context, path string) (driver.File, error) {
 	info, err := d.client.Stat(path)
 	if err != nil {
 		return nil, err
@@ -53,7 +54,7 @@ func (d *SFTP) Create(path string) (driver.FileWriter, error) {
 	return d.client.Create(path)
 }
 
-func (d *SFTP) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *SFTP) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	infos, err := d.client.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -157,10 +158,7 @@ func New(opt *Option) (driver.FS, error) {
 	}
 
 	d := &SFTP{opt: opt, client: client}
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

@@ -67,17 +67,6 @@ class _AlistState extends State<Alist> {
               widget.form.option = jsonEncode(_option);
             },
           ),
-          CustomFormField(
-            label: "根目录".tr(),
-            value: _option["root_path"],
-            onTap: (result) {
-              setState(() {
-                _option["root_path"] = result;
-              });
-
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
         ],
       ),
     );

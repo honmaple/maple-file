@@ -41,7 +41,7 @@ func (opt *MoveTaskOption) Execute(task runner.Task, fs FS) error {
 func move(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, dstPath string) error {
 	ctx := task.Context()
 
-	dstFile, err := dstFS.Get(dstPath)
+	dstFile, err := dstFS.Get(ctx, dstPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -54,7 +54,7 @@ func move(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, ds
 		return fmt.Errorf("无法复制文件")
 	}
 
-	srcFile, err := srcFS.Get(srcPath)
+	srcFile, err := srcFS.Get(ctx, srcPath)
 	if err != nil {
 		return err
 	}

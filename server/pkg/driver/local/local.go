@@ -7,14 +7,16 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 )
 
 type Option struct {
-	driver.BaseOption
-	DirPerm  uint32 `json:"-"`
-	RootPath string `json:"root_path" validate:"required,startswith=/"`
+	base.Option
+	Path    string `json:"path" validate:"required,startswith=/"`
+	DirPerm uint32 `json:"-"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -119,8 +121,12 @@ func copyFile(src, dst string) (err error) {
 	return
 }
 
-func (d *Local) List(ctx context.Context, path string) ([]driver.File, error) {
-	entries, err := os.ReadDir(path)
+func (d *Local) getActualPath(path string) string {
+	return filepath.Join(d.opt.Path, path)
+}
+
+func (d *Local) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
+	entries, err := os.ReadDir(d.getActualPath(path))
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +142,8 @@ func (d *Local) List(ctx context.Context, path string) ([]driver.File, error) {
 	return files, nil
 }
 
-func (d *Local) Get(path string) (driver.File, error) {
-	info, err := os.Stat(path)
+func (d *Local) Get(ctx context.Context, path string) (driver.File, error) {
+	info, err := os.Stat(d.getActualPath(path))
 	if err != nil {
 		return nil, err
 	}
@@ -145,28 +151,28 @@ func (d *Local) Get(path string) (driver.File, error) {
 }
 
 func (d *Local) Open(path string) (driver.FileReader, error) {
-	return os.Open(path)
+	return os.Open(d.getActualPath(path))
 }
 
 func (d *Local) Create(path string) (driver.FileWriter, error) {
-	return os.Create(path)
+	return os.Create(d.getActualPath(path))
 }
 
 func (d *Local) Rename(ctx context.Context, path, newName string) error {
-	return os.Rename(path, filepath.Join(filepath.Dir(path), newName))
+	actualPath := d.getActualPath(path)
+	return os.Rename(actualPath, filepath.Join(filepath.Dir(actualPath), newName))
 }
 
 func (d *Local) Move(ctx context.Context, src, dst string) error {
-	basePath := filepath.Dir(dst)
-	if !fileExists(basePath) {
-		if err := os.MkdirAll(basePath, 0744); err != nil {
-			return err
-		}
-	}
+	src = d.getActualPath(src)
+	dst = filepath.Join(d.getActualPath(dst), filepath.Base(src))
 	return os.Rename(src, dst)
 }
 
 func (d *Local) Copy(ctx context.Context, src, dst string) error {
+	src = d.getActualPath(src)
+	dst = filepath.Join(d.getActualPath(dst), filepath.Base(src))
+
 	if ok, err := isDir(src); err != nil {
 		return err
 	} else if ok {
@@ -176,18 +182,20 @@ func (d *Local) Copy(ctx context.Context, src, dst string) error {
 }
 
 func (d *Local) MakeDir(ctx context.Context, path string) error {
-	return os.MkdirAll(path, fs.FileMode(0755))
+	return os.MkdirAll(d.getActualPath(path), fs.FileMode(0755))
 }
 
 func (d *Local) Remove(ctx context.Context, path string) error {
-	fi, err := os.Stat(path)
+	actualPath := d.getActualPath(path)
+
+	fi, err := os.Stat(actualPath)
 	if err != nil {
 		return err
 	}
 	if fi.IsDir() {
-		return os.RemoveAll(path)
+		return os.RemoveAll(actualPath)
 	}
-	return os.Remove(path)
+	return os.Remove(actualPath)
 }
 
 func New(opt *Option) (driver.FS, error) {
@@ -195,15 +203,11 @@ func New(opt *Option) (driver.FS, error) {
 		return nil, err
 	}
 
-	if opt.DirPerm == 0 {
-		opt.DirPerm = 0755
-	}
+	opt.Path = strings.TrimRight(opt.Path, "/")
+	opt.DirPerm = 0755
 
 	d := &Local{opt: opt}
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

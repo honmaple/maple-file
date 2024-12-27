@@ -2,7 +2,6 @@ package driver
 
 import (
 	"context"
-	"io/fs"
 	"path/filepath"
 	"strings"
 )
@@ -13,13 +12,15 @@ type rootFS struct {
 	fileFn func(string, File) File
 }
 
-func (d *rootFS) List(ctx context.Context, path string) ([]File, error) {
+var _ FS = (*rootFS)(nil)
+
+func (d *rootFS) List(ctx context.Context, path string, metas ...Meta) ([]File, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {
 		return nil, err
 	}
 
-	files, err := dstFS.List(ctx, dstPath)
+	files, err := dstFS.List(ctx, dstPath, metas...)
 	if err != nil {
 		return nil, err
 	}
@@ -30,30 +31,18 @@ func (d *rootFS) List(ctx context.Context, path string) ([]File, error) {
 	return files, nil
 }
 
-func (d *rootFS) Get(path string) (File, error) {
+func (d *rootFS) Get(ctx context.Context, path string) (File, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := dstFS.Get(dstPath)
+	file, err := dstFS.Get(ctx, dstPath)
 	if err != nil {
 		return nil, err
 	}
 	file = d.fileFn(strings.TrimSuffix(path, dstPath), file)
 	return file, nil
-}
-
-func (d *rootFS) Read(path string) (fs.File, error) {
-	fi, err := d.Get(path)
-	if err != nil {
-		return nil, err
-	}
-	file, err := d.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	return &fsFile{fi, file}, nil
 }
 
 func (d *rootFS) Open(path string) (FileReader, error) {

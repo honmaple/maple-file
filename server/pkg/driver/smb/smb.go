@@ -9,10 +9,11 @@ import (
 
 	"github.com/hirochachacha/go-smb2"
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Host      string `json:"host"       validate:"required"`
 	Port      int    `json:"port"`
 	Username  string `json:"username"   validate:"required"`
@@ -36,7 +37,7 @@ func (d *SMB) Close() error {
 	return d.client.Umount()
 }
 
-func (d *SMB) Get(path string) (driver.File, error) {
+func (d *SMB) Get(ctx context.Context, path string) (driver.File, error) {
 	info, err := d.client.Stat(path)
 	if err != nil {
 		return nil, err
@@ -52,7 +53,7 @@ func (d *SMB) Create(path string) (driver.FileWriter, error) {
 	return d.client.Create(path)
 }
 
-func (d *SMB) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *SMB) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	infos, err := d.client.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -133,10 +134,7 @@ func New(opt *Option) (driver.FS, error) {
 
 	d := &SMB{opt: opt, client: client}
 
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return driver.NewFS(
+	newFS := driver.NewFS(
 		// smb访问路径不能以/开头
 		func(path string) (driver.FS, string, error) {
 			return d, strings.TrimPrefix(path, "/"), nil
@@ -144,7 +142,8 @@ func New(opt *Option) (driver.FS, error) {
 		func(root string, file driver.File) driver.File {
 			return file
 		},
-	), nil
+	)
+	return opt.Option.NewFS(newFS)
 }
 
 func init() {

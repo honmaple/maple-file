@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base"
 	"github.com/upyun/go-sdk/v3/upyun"
 )
 
 type Option struct {
-	driver.BaseOption
+	base.Option
 	Bucket   string `json:"bucket"    validate:"required"`
 	Operator string `json:"operator"  validate:"required"`
 	Password string `json:"password"  validate:"required"`
@@ -29,7 +30,7 @@ type Upyun struct {
 
 var _ driver.FS = (*Upyun)(nil)
 
-func (d *Upyun) List(ctx context.Context, path string) ([]driver.File, error) {
+func (d *Upyun) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
 	errs := make(chan error, 1)
 	defer close(errs)
 
@@ -81,7 +82,7 @@ func (d *Upyun) MakeDir(ctx context.Context, path string) error {
 	return d.client.Mkdir(path)
 }
 
-func (d *Upyun) Get(path string) (driver.File, error) {
+func (d *Upyun) Get(ctx context.Context, path string) (driver.File, error) {
 	info, err := d.client.GetInfo(path)
 	if err != nil {
 		return nil, err
@@ -147,10 +148,7 @@ func New(opt *Option) (driver.FS, error) {
 			Password: opt.Password,
 		}),
 	}
-	if opt.RootPath != "" {
-		return driver.PrefixFS(d, opt.RootPath), nil
-	}
-	return d, nil
+	return opt.Option.NewFS(d)
 }
 
 func init() {

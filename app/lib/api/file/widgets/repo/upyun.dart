@@ -17,7 +17,6 @@ class UpyunOption with _$UpyunOption {
     @Default("") String bucket,
     @Default("") String operator,
     @Default("") String password,
-    @Default("") @JsonKey(name: 'root_path') String rootPath,
   }) = _UpyunOption;
 
   factory UpyunOption.fromJson(Map<String, Object?> json) =>
@@ -82,17 +81,6 @@ class _UpyunState extends State<Upyun> {
             onTap: (result) {
               setState(() {
                 _option.password = result;
-              });
-
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          CustomFormField(
-            label: "根目录".tr(),
-            value: _option.rootPath,
-            onTap: (result) {
-              setState(() {
-                _option.rootPath = result;
               });
 
               widget.form.option = jsonEncode(_option);

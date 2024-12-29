@@ -3,35 +3,35 @@ import 'package:mime/mime.dart';
 import 'package:flutter/foundation.dart';
 
 class Util {
-  static isWeb() {
+  static bool get isWeb {
     return kIsWeb;
   }
 
-  static isIOS() {
+  static bool get isIOS {
     return !kIsWeb && Platform.isIOS;
   }
 
-  static isAndroid() {
+  static bool get isAndroid {
     return !kIsWeb && Platform.isAndroid;
   }
 
-  static isMacos() {
+  static bool get isMacos {
     return !kIsWeb && Platform.isMacOS;
   }
 
-  static isLinux() {
+  static bool get isLinux {
     return !kIsWeb && Platform.isLinux;
   }
 
-  static isWindows() {
+  static bool get isWindows {
     return !kIsWeb && Platform.isWindows;
   }
 
-  static isMobile() {
+  static bool get isMobile {
     return !kIsWeb && (Platform.isAndroid || Platform.isIOS);
   }
 
-  static isDesktop() {
+  static bool get isDesktop {
     if (kIsWeb) {
       return false;
     }

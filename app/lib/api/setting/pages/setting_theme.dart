@@ -31,7 +31,7 @@ class _SettingThemeState extends ConsumerState<SettingTheme> {
                   ButtonSegment<ThemeMode>(
                       value: ThemeMode.system,
                       label: Text("系统".tr()),
-                      icon: Icon(Util.isMobile()
+                      icon: Icon(Util.isMobile
                           ? Icons.phone_android
                           : Icons.computer)),
                   ButtonSegment<ThemeMode>(

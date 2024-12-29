@@ -26,9 +26,12 @@
    - 支持 *Android* 和 *MacOS*
 
 ** 截图
-   |-----------------------------------------+-----------------------------------------+-----------------------------------------|
-   | [[./example/screenshot/flutter_01.png]] | [[./example/screenshot/flutter_02.png]] | [[./example/screenshot/flutter_03.png]] |
-   | [[./example/screenshot/flutter_04.png]] | [[./example/screenshot/flutter_05.png]] |                                         |
+   - android
+     |-----------------------------------------+-----------------------------------------|
+     | [[./example/screenshot/flutter_01.png]] | [[./example/screenshot/flutter_02.png]] |
+     | [[./example/screenshot/flutter_03.png]] | [[./example/screenshot/flutter_04.png]] |
+     | [[./example/screenshot/flutter_05.png]] |                                         |
 
-   |-----------------------------------------+-----------------------------------------|
-   | [[./example/screenshot/flutter_06.png]] | [[./example/screenshot/flutter_07.png]] |
+   - macOS
+     |-----------------------------------------+-----------------------------------------|
+     | [[./example/screenshot/flutter_06.png]] | [[./example/screenshot/flutter_07.png]] |

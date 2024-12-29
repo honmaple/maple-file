@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
-
+import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/api/task/providers/persist.dart';
 import 'package:maple_file/api/task/providers/service.dart';
 import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
@@ -109,7 +109,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TaskForm(form: _form),
-                  const SizedBox(height: 4),
+                  SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
                   SizedBox(
                     width: double.infinity,
                     child: _isEditing
@@ -126,7 +126,8 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                             },
                           ),
                   ),
-                  if (_isEditing) const SizedBox(height: 4),
+                  if (_isEditing)
+                    SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
                   if (_isEditing)
                     Container(
                       alignment: Alignment.center,
@@ -152,6 +153,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                     ),
                 ],
               ),
+            SizedBox(height: Breakpoint.isMobile(context) ? 8 : 16),
           ],
         ),
       ),

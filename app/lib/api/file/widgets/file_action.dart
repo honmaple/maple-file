@@ -354,7 +354,7 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
         final result = await showListDialog(
           context,
           items: [
-            if (Util.isMobile())
+            if (Util.isMobile)
               ListDialogItem(
                 label: "拍照上传".tr(),
                 value: "camera",

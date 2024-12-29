@@ -68,7 +68,7 @@ class _LocalState extends State<Local> {
             ],
           ),
         ),
-        if (Util.isAndroid())
+        if (Util.isAndroid)
           FutureBuilder(
             future: Permission.manageExternalStorage.status,
             builder: (context, snapshot) {

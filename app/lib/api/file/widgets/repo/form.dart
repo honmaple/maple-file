@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 import "base.dart";
@@ -34,8 +35,8 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.ftp: "FTP",
       DriverType.sftp: "SFTP",
       DriverType.alist: "Alist",
-      DriverType.local: "本地",
-      DriverType.upyun: "又拍云",
+      DriverType.local: "本地".tr(),
+      DriverType.upyun: "又拍云".tr(),
       DriverType.webdav: "Webdav",
       DriverType.mirror: "Mirror",
     };
@@ -61,12 +62,13 @@ class _DriverFormState extends State<DriverForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildForm(),
+        if (!Breakpoint.isMobile(context)) const SizedBox(height: 4),
         if (_showMore) BaseForm(form: widget.form),
-        if (_showMore) const SizedBox(height: 4),
+        if (_showMore) SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            child: Text(_showMore ? "隐藏更多设置" : "更多设置".tr()),
+            child: Text(_showMore ? "隐藏更多设置".tr() : "更多设置".tr()),
             onPressed: () {
               setState(() {
                 _showMore = !_showMore;

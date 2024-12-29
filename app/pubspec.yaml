@@ -63,6 +63,7 @@ dependencies:
   external_path: ^2.0.1
   table_calendar: ^3.1.2
   permission_handler: ^11.3.1
+  desktop_drop: ^0.5.0
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 import '../widgets/repo/form.dart';
@@ -65,7 +66,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
         ],
       ),
       body: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
         child: ListView(
           children: <Widget>[
             Card(
@@ -127,7 +128,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DriverForm(form: _form),
-                  const SizedBox(height: 4),
+                  SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -137,7 +138,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
                   SizedBox(
                     width: double.infinity,
                     child: _isEditing
@@ -172,7 +173,8 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                             },
                           ),
                   ),
-                  if (_isEditing) const SizedBox(height: 4),
+                  if (_isEditing)
+                    SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
                   if (_isEditing)
                     Container(
                       alignment: Alignment.center,
@@ -198,6 +200,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     ),
                 ],
               ),
+            SizedBox(height: Breakpoint.isMobile(context) ? 8 : 16),
           ],
         ),
       ),

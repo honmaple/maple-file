@@ -158,6 +158,16 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
+      - name: Decode key.properties file
+        env:
+          ENCODED_STRING: ${{ secrets.ANDROID_KEY_PROPERTIES }}
+        run: echo $ENCODED_STRING | base64 -di > app/android/key.properties
+
+      - name: Decode keystore.jks file
+        env:
+          ENCODED_STRING: ${{ secrets.ANDROID_KEY_STORE }}
+        run: echo $ENCODED_STRING | base64 -di > app/android/keystore.jks
+
       - name: Build Go aar
         run: |
           mkdir app/android/app/libs

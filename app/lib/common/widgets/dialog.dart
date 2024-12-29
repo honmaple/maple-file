@@ -243,11 +243,13 @@ Future<T?> showListDialog2<T>(
   Widget? child,
   double? width,
   double? height,
+  bool useRootNavigator = false,
 }) {
   if (Breakpoint.isMobile(context)) {
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: useRootNavigator,
       clipBehavior: Clip.hardEdge,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
@@ -270,15 +272,14 @@ Future<T?> showListDialog2<T>(
   }
   return showDialog<T>(
     context: context,
-    useRootNavigator: false,
+    useRootNavigator: useRootNavigator,
     builder: (BuildContext context) {
-      return AlertDialog(
+      return Dialog(
         clipBehavior: Clip.hardEdge,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
-        contentPadding: const EdgeInsets.all(0),
-        content: SizedBox(
+        child: SizedBox(
           width: width,
           height: height,
           child: child,
@@ -305,13 +306,13 @@ Future<bool?> showAlertDialog<T>(BuildContext context,
         content: content,
         actions: [
           TextButton(
-            child: const Text('取消'),
+            child: Text('取消'.tr()),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           TextButton(
-            child: const Text('确认'),
+            child: Text('确认'.tr()),
             onPressed: () {
               Navigator.of(context).pop(true);
             },

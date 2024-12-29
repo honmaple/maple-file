@@ -178,7 +178,14 @@ class _BaseFormState extends State<BaseForm> {
               isRequired: true,
               onTap: (result) {
                 setState(() {
-                  _compressOption["level"] = result;
+                  switch (result) {
+                    case "fast":
+                      _compressOption["level"] = 1;
+                    case "best":
+                      _compressOption["level"] = 9;
+                    default:
+                      _compressOption["level"] = -1;
+                  }
                   _option["compress_option"] = _compressOption;
                 });
 

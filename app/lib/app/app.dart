@@ -43,7 +43,7 @@ class App {
   }
 
   Future<void> initWindow() async {
-    if (Util.isDesktop()) {
+    if (Util.isDesktop) {
       await windowManager.ensureInitialized();
 
       WindowOptions windowOptions = const WindowOptions(

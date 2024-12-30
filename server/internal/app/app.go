@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	// "fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/labstack/echo/v4"
 
 	"github.com/honmaple/maple-file/server/internal/app/config"
@@ -52,7 +53,7 @@ func Listen(addr string) (net.Listener, error) {
 	}
 }
 
-func (app *App) Start(listener net.Listener) error {
+func (app *App) Start(listener net.Listener, webFS fs.FS) error {
 	conf := app.Config
 
 	e := echo.New()
@@ -73,14 +74,26 @@ func (app *App) Start(listener net.Listener) error {
 		srv.RegisterGateway(app.ctx, mux, e)
 	}
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			gsrv.ServeHTTP(w, r)
-		} else {
-			mux.ServeHTTP(w, r)
+	if webFS != nil {
+		e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(webFS))))
+
+		options := []grpcweb.Option{
+			grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+			grpcweb.WithOriginFunc(func(_ string) bool {
+				return true
+			}),
 		}
-	})
-	e.Any("/*", echo.WrapHandler(handler))
+		e.Any("/api.*", echo.WrapHandler(grpcweb.WrapServer(gsrv, options...)))
+	} else {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+				gsrv.ServeHTTP(w, r)
+			} else {
+				mux.ServeHTTP(w, r)
+			}
+		})
+		e.Any("/*", echo.WrapHandler(handler))
+	}
 
 	e.Listener = listener
 

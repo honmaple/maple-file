@@ -40,6 +40,6 @@ func Start(pathPtr *C.char) (*C.char, *C.char) {
 		return nil, C.CString(err.Error())
 	}
 
-	go srv.Start(listener)
+	go srv.Start(listener, nil)
 	return C.CString(listener.Addr().String()), nil
 }

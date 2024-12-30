@@ -27,7 +27,7 @@ func Start(path string) (string, error) {
 		return "", err
 	}
 
-	go srv.Start(listener)
+	go srv.Start(listener, nil)
 
 	return listener.Addr().String(), nil
 }

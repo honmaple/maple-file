@@ -1,6 +1,7 @@
 import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:extended_image/extended_image.dart';
+import 'package:extended_image_library/extended_image_library.dart' show File;
 
 import 'source.dart';
 
@@ -54,7 +55,7 @@ class _ImagePreviewState extends State<ImagePreview> {
     switch (widget.source.sourceType) {
       case SourceType.file:
         return ExtendedImage.file(
-          io.File(widget.source.source),
+          File(widget.source.source),
           fit: widget.fit,
           mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),

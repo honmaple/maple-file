@@ -13,7 +13,7 @@ type Option struct {
 	RootPath       string         `json:"root_path" validate:"omitempty,startswith=/"`
 	HiddenFiles    []string       `json:"hidden_files"`
 	Encrypt        bool           `json:"encrypt"`
-	EncryptOption  *EncryptOption `json:"encrypt_option"`
+	EncryptOption  EncryptOption  `json:"encrypt_option"`
 	Compress       bool           `json:"compress"`
 	CompressOption CompressOption `json:"compress_option"`
 }
@@ -195,7 +195,7 @@ func New(fs driver.FS, opt *Option) (driver.FS, error) {
 		opt: opt,
 	}
 	if opt.Encrypt {
-		encryptFS, err := NewEncryptFS(fs, opt.EncryptOption)
+		encryptFS, err := NewEncryptFS(fs, &opt.EncryptOption)
 		if err != nil {
 			return nil, err
 		}

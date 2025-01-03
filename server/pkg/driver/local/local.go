@@ -2,15 +2,15 @@ package local
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Option struct {
@@ -28,101 +28,8 @@ type Local struct {
 	opt *Option
 }
 
-func fileExists(path string) bool {
-	if _, err := os.Stat(path); os.IsExist(err) || err == nil {
-		return true
-	}
-	return false
-}
-
-func isDir(src string) (bool, error) {
-	fi, err := os.Lstat(src)
-	if err != nil {
-		return false, err
-	}
-	return fi.IsDir(), nil
-}
-
-func copyDir(src, dst string) error {
-	src = filepath.Clean(src)
-	dst = filepath.Clean(dst)
-
-	// We use os.Lstat() here to ensure we don't fall in a loop where a symlink
-	// actually links to a one of its parent directories.
-	fi, err := os.Lstat(src)
-	if err != nil {
-		return err
-	}
-	if !fi.IsDir() {
-		return driver.ErrSrcNotExist
-	}
-
-	_, err = os.Stat(dst)
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	if err == nil {
-		return driver.ErrDstIsExist
-	}
-
-	if err = os.MkdirAll(dst, fi.Mode()); err != nil {
-		return fmt.Errorf("cannot mkdir %s: %s", dst, err.Error())
-	}
-
-	files, err := os.ReadDir(src)
-	if err != nil {
-		return fmt.Errorf("cannot read directory %s: %s", dst, err.Error())
-	}
-
-	for _, file := range files {
-		srcPath := filepath.Join(src, file.Name())
-		dstPath := filepath.Join(dst, file.Name())
-
-		if file.IsDir() {
-			if err = copyDir(srcPath, dstPath); err != nil {
-				return fmt.Errorf("copying directory failed: %s", err.Error())
-			}
-		} else {
-			if err = copyFile(srcPath, dstPath); err != nil {
-				return fmt.Errorf("copying file failed: %s", err.Error())
-			}
-		}
-	}
-
-	return nil
-}
-
-func copyFile(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-
-	if _, err = io.Copy(out, in); err != nil {
-		out.Close()
-		return
-	}
-
-	if err = out.Close(); err != nil {
-		return
-	}
-
-	info, err := in.Stat()
-	if err != nil {
-		return
-	}
-	err = os.Chmod(dst, info.Mode())
-	return
-}
-
 func (d *Local) getActualPath(path string) string {
-	return filepath.Join(d.opt.Path, path)
+	return filepath.Join(d.opt.Path, filepath.Clean(path))
 }
 
 func (d *Local) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
@@ -164,21 +71,100 @@ func (d *Local) Rename(ctx context.Context, path, newName string) error {
 }
 
 func (d *Local) Move(ctx context.Context, src, dst string) error {
-	src = d.getActualPath(src)
-	dst = filepath.Join(d.getActualPath(dst), filepath.Base(src))
-	return os.Rename(src, dst)
+	dstFile, err := d.Get(ctx, dst)
+	if err != nil {
+		return err
+	}
+	if !dstFile.IsDir() {
+		return errors.New("move dst must be a dir")
+	}
+	return os.Rename(d.getActualPath(src), filepath.Join(d.getActualPath(dst), filepath.Base(src)))
+}
+
+func (d *Local) copyFile(ctx context.Context, src, dst string) (err error) {
+	in, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return
+	}
+
+	if _, err = util.CopyWithContext(ctx, out, in); err != nil {
+		out.Close()
+		return
+	}
+
+	if err = out.Close(); err != nil {
+		return
+	}
+
+	info, err := in.Stat()
+	if err != nil {
+		return
+	}
+	err = os.Chmod(dst, info.Mode())
+	return
+}
+
+func (d *Local) copyDir(ctx context.Context, src, dst string) error {
+	stat, err := os.Stat(dst)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if err != nil {
+		if err := d.MakeDir(ctx, dst); err != nil {
+			return err
+		}
+	}
+	if !stat.IsDir() {
+		return fmt.Errorf("cannot copy dir to file: %s", dst)
+	}
+
+	files, err := os.ReadDir(src)
+	if err != nil {
+		return fmt.Errorf("cannot read dir %s: %s", src, err.Error())
+	}
+
+	for _, file := range files {
+		srcPath := filepath.Join(src, file.Name())
+		dstPath := filepath.Join(dst, file.Name())
+
+		if file.IsDir() {
+			err = d.copyDir(ctx, srcPath, dstPath)
+		} else {
+			err = d.copyFile(ctx, srcPath, dstPath)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (d *Local) Copy(ctx context.Context, src, dst string) error {
+	dstFile, err := d.Get(ctx, dst)
+	if err != nil {
+		return err
+	}
+	if !dstFile.IsDir() {
+		return errors.New("copy dst must be a dir")
+	}
+
+	srcFile, err := d.Get(ctx, src)
+	if err != nil {
+		return err
+	}
+
 	src = d.getActualPath(src)
 	dst = filepath.Join(d.getActualPath(dst), filepath.Base(src))
-
-	if ok, err := isDir(src); err != nil {
-		return err
-	} else if ok {
-		return copyDir(src, dst)
+	if srcFile.IsDir() {
+		return d.copyDir(ctx, src, dst)
 	}
-	return copyFile(src, dst)
+	return d.copyFile(ctx, src, dst)
 }
 
 func (d *Local) MakeDir(ctx context.Context, path string) error {
@@ -186,13 +172,13 @@ func (d *Local) MakeDir(ctx context.Context, path string) error {
 }
 
 func (d *Local) Remove(ctx context.Context, path string) error {
-	actualPath := d.getActualPath(path)
-
-	fi, err := os.Stat(actualPath)
+	file, err := d.Get(ctx, path)
 	if err != nil {
 		return err
 	}
-	if fi.IsDir() {
+
+	actualPath := d.getActualPath(path)
+	if file.IsDir() {
 		return os.RemoveAll(actualPath)
 	}
 	return os.Remove(actualPath)
@@ -203,7 +189,7 @@ func New(opt *Option) (driver.FS, error) {
 		return nil, err
 	}
 
-	opt.Path = strings.TrimRight(opt.Path, "/")
+	opt.Path = filepath.Clean(opt.Path)
 	opt.DirPerm = 0755
 
 	d := &Local{opt: opt}

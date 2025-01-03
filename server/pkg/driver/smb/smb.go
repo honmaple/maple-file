@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"path/filepath"
-	"strings"
 
 	"github.com/hirochachacha/go-smb2"
 	"github.com/honmaple/maple-file/server/pkg/driver"
@@ -134,16 +133,8 @@ func New(opt *Option) (driver.FS, error) {
 
 	d := &SMB{opt: opt, client: client}
 
-	newFS := driver.NewFS(
-		// smb访问路径不能以/开头
-		func(path string) (driver.FS, string, error) {
-			return d, strings.TrimPrefix(path, "/"), nil
-		},
-		func(root string, file driver.File) driver.File {
-			return file
-		},
-	)
-	return opt.Option.NewFS(newFS)
+	// smb访问路径不能以/开头
+	return opt.Option.NewFS(base.TrimPrefixFS(d, "/"))
 }
 
 func init() {

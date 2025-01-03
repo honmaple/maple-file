@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Option struct {
@@ -220,7 +221,7 @@ func (d *S3) Open(path string) (driver.FileReader, error) {
 }
 
 func (d *S3) Create(path string) (driver.FileWriter, error) {
-	r, w := io.Pipe()
+	r, w := util.Pipe()
 	go func() {
 		uploader := s3manager.NewUploader(d.session)
 

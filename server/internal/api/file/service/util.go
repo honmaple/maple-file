@@ -58,9 +58,6 @@ func infoToFile(m driver.File) *pb.File {
 		CreatedAt: timestamppb.New(m.ModTime()),
 		UpdatedAt: timestamppb.New(m.ModTime()),
 	}
-	if m.IsDir() {
-		file.Type = "DIR"
-	}
 	return file
 }
 

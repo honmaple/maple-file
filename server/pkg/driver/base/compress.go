@@ -12,7 +12,7 @@ type CompressOption struct {
 }
 
 func (opt *CompressOption) NewFS(fs driver.FS) (driver.FS, error) {
-	return NewCompressFS(fs, opt)
+	return CompressFS(fs, opt)
 }
 
 type compressFS struct {
@@ -59,7 +59,7 @@ func (d *compressFS) Create(path string) (driver.FileWriter, error) {
 	return &WrapWriter{w, nw}, nil
 }
 
-func NewCompressFS(fs driver.FS, opt *CompressOption) (driver.FS, error) {
+func CompressFS(fs driver.FS, opt *CompressOption) (driver.FS, error) {
 	if err := driver.VerifyOption(opt); err != nil {
 		return nil, err
 	}

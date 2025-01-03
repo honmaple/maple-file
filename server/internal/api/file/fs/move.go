@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/runner"
@@ -32,8 +31,8 @@ func (opt *MoveTaskOption) Execute(task runner.Task, fs FS) error {
 		return err
 	}
 
-	if strings.TrimSuffix(opt.SrcPath, srcPath) == strings.TrimSuffix(opt.DstPath, dstPath) {
-		return srcFS.Move(task.Context(), srcPath, dstPath)
+	if srcFS == dstFS {
+		return srcFS.Copy(task.Context(), srcPath, dstPath)
 	}
 	return move(task, srcFS, srcPath, dstFS, dstPath)
 }

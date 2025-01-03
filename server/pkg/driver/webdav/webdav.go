@@ -8,6 +8,7 @@ import (
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 
 	"github.com/studio-b12/gowebdav"
 )
@@ -79,7 +80,7 @@ func (d *Webdav) Open(path string) (driver.FileReader, error) {
 }
 
 func (d *Webdav) Create(path string) (driver.FileWriter, error) {
-	r, w := io.Pipe()
+	r, w := util.Pipe()
 	go func() {
 		r.CloseWithError(d.client.WriteStream(path, r, d.opt.DirPerm))
 	}()

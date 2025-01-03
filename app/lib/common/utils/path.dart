@@ -1,11 +1,11 @@
 import 'dart:io' show Directory, Platform, File;
 
-import 'package:flutter/material.dart';
+import 'package:external_path/external_path.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:path_provider/path_provider.dart';
-import 'package:external_path/external_path.dart';
 
 class PathUtil {
   static Future<String> getDownloadsPath() async {
@@ -70,7 +70,9 @@ class PathUtil {
     if (type == null || type == "") {
       type = mimeType(name);
     }
-    if (type == "DIR") {
+    if (type == "RECYCLE") {
+      return Icons.recycling;
+    } else if (type == "DIR") {
       return Icons.folder;
     } else if (type.startsWith("text/")) {
       return Icons.note;

@@ -1,45 +1,11 @@
 package base
 
 import (
-	"io"
-	"mime"
 	"path/filepath"
 	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 )
-
-type WrapFile struct {
-	driver.File
-	name string
-}
-
-func (f *WrapFile) Name() string { return f.name }
-func (f *WrapFile) Type() string {
-	if f.IsDir() {
-		return "DIR"
-	}
-	return mime.TypeByExtension(filepath.Ext(f.name))
-}
-
-type WrapReader struct {
-	driver.FileReader
-	r io.Reader
-}
-
-func (r *WrapReader) Read(p []byte) (n int, err error) { return r.r.Read(p) }
-
-type WrapWriter struct {
-	driver.FileWriter
-	w io.WriteCloser
-}
-
-func (w *WrapWriter) Write(p []byte) (n int, err error) { return w.w.Write(p) }
-func (w *WrapWriter) Close() error {
-	w.FileWriter.Close()
-	w.w.Close()
-	return nil
-}
 
 func Included(file driver.File, types []string) bool {
 	if len(types) == 0 {

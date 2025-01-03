@@ -26,6 +26,7 @@ type (
 
 type FileInfo struct {
 	Name    string      `json:"name"`
+	Type    string      `json:"type"`
 	Size    int64       `json:"size"`
 	Path    string      `json:"path"`
 	Mode    fs.FileMode `json:"mode"`
@@ -33,11 +34,23 @@ type FileInfo struct {
 	ModTime time.Time   `json:"mod_time"`
 }
 
+func (info *FileInfo) File() File {
+	if info.Path == "" || info.Path == "." {
+		info.Path = "/"
+	}
+	return &emptyFile{
+		FileInfo: *info,
+	}
+}
+
 type emptyFile struct {
 	FileInfo
 }
 
 func (f *emptyFile) Type() string {
+	if f.FileInfo.Type != "" {
+		return f.FileInfo.Type
+	}
 	if f.FileInfo.IsDir {
 		return "DIR"
 	}
@@ -119,19 +132,23 @@ func (s *seeker) Close() error {
 	return nil
 }
 
-func NewFile(path string, info fs.FileInfo) File {
-	if path == "" {
+func NewFile(path string, info fs.FileInfo, opts ...func(*FileInfo)) File {
+	if path == "" || path == "." {
 		path = "/"
 	}
+	fi := &FileInfo{
+		Path:    path,
+		Name:    info.Name(),
+		Size:    info.Size(),
+		Mode:    info.Mode(),
+		ModTime: info.ModTime(),
+		IsDir:   info.IsDir(),
+	}
+	for _, opt := range opts {
+		opt(fi)
+	}
 	return &emptyFile{
-		FileInfo: FileInfo{
-			Path:    path,
-			Name:    info.Name(),
-			Size:    info.Size(),
-			Mode:    info.Mode(),
-			ModTime: info.ModTime(),
-			IsDir:   info.IsDir(),
-		},
+		FileInfo: *fi,
 	}
 }
 

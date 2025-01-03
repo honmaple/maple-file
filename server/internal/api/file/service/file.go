@@ -8,7 +8,6 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
@@ -182,8 +181,6 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 	if err := task.Err(); err != nil {
 		return nil, err
 	}
-
-	time.Sleep(time.Second)
 
 	info, err := srv.fs.Get(ctx, filepath.Join(req.GetPath(), filename))
 	if err != nil {

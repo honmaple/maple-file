@@ -25,7 +25,7 @@ type EncryptOption struct {
 }
 
 func (opt *EncryptOption) NewFS(fs driver.FS) (driver.FS, error) {
-	return NewEncryptFS(fs, opt)
+	return EncryptFS(fs, opt)
 }
 
 type encryptFS struct {
@@ -160,7 +160,9 @@ func (d *encryptFS) getActualFile(file driver.File) driver.File {
 			if n, err := d.decrypt([]byte(name)); err == nil {
 				name = n
 			}
-			return driver.NewFile(path, &WrapFile{name: name, File: file})
+			return driver.NewFile(path, file, func(info *driver.FileInfo) {
+				info.Name = name
+			})
 		}
 		return file
 	}
@@ -177,7 +179,9 @@ func (d *encryptFS) getActualFile(file driver.File) driver.File {
 	} else if d.opt.Suffix != "" {
 		name = strings.TrimSuffix(name, d.opt.Suffix)
 	}
-	return driver.NewFile(path, &WrapFile{name: name, File: file})
+	return driver.NewFile(path, file, func(info *driver.FileInfo) {
+		info.Name = name
+	})
 }
 
 func (d *encryptFS) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
@@ -242,8 +246,6 @@ func (d *encryptFS) Copy(ctx context.Context, src string, dst string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(src, dst, "===")
-	fmt.Println(d.getActualPath(src, srcFile.IsDir()), d.getActualPath(dst, true))
 	return d.FS.Copy(ctx, d.getActualPath(src, srcFile.IsDir()), d.getActualPath(dst, true))
 }
 
@@ -281,7 +283,7 @@ func (d *encryptFS) MakeDir(ctx context.Context, path string) error {
 	return d.FS.MakeDir(ctx, d.getActualPath(path, true))
 }
 
-func NewEncryptFS(fs driver.FS, opt *EncryptOption) (driver.FS, error) {
+func EncryptFS(fs driver.FS, opt *EncryptOption) (driver.FS, error) {
 	if opt.Password == "" {
 		return nil, errors.New("Password is required")
 	}

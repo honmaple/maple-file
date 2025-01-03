@@ -9,6 +9,7 @@ import (
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 	"github.com/jlaffaye/ftp"
 )
 
@@ -57,7 +58,7 @@ func (d *FTP) Open(path string) (driver.FileReader, error) {
 }
 
 func (d *FTP) Create(path string) (driver.FileWriter, error) {
-	r, w := io.Pipe()
+	r, w := util.Pipe()
 	go func() {
 		err := d.client.Stor(path, r)
 		r.CloseWithError(err)

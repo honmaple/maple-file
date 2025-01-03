@@ -15,7 +15,7 @@ class Util {
     return !kIsWeb && Platform.isAndroid;
   }
 
-  static bool get isMacos {
+  static bool get isMacOS {
     return !kIsWeb && Platform.isMacOS;
   }
 

@@ -126,18 +126,3 @@ func NewFS(fn func(string) (FS, string, error), fileFn func(string, File) File) 
 	fs.fileFn = fileFn
 	return fs
 }
-
-func PrefixFS(fs FS, prefix string) FS {
-	if prefix == "" {
-		return fs
-	}
-	prefix = strings.TrimRight(prefix, "/")
-	return NewFS(
-		func(path string) (FS, string, error) {
-			return fs, filepath.Join(prefix, path), nil
-		},
-		func(root string, file File) File {
-			return NewFile(strings.TrimPrefix(file.Path(), prefix), file)
-		},
-	)
-}

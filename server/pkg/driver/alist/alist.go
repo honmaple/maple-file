@@ -11,6 +11,7 @@ import (
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 	httputil "github.com/honmaple/maple-file/server/pkg/util/http"
 	"github.com/tidwall/gjson"
 )
@@ -175,7 +176,7 @@ func (d *Alist) Open(path string) (driver.FileReader, error) {
 }
 
 func (d *Alist) Create(path string) (driver.FileWriter, error) {
-	r, w := io.Pipe()
+	r, w := util.Pipe()
 	go func() {
 		resp, err := d.request(context.Background(), http.MethodPut, "/api/fs/put", httputil.WithBody(r), httputil.WithNeverTimeout(), httputil.WithRequest(func(req *http.Request) {
 			req.Header.Set("File-Path", path)

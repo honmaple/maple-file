@@ -34,6 +34,7 @@ class BaseForm extends StatefulWidget {
 
 class _BaseFormState extends State<BaseForm> {
   late Map<String, dynamic> _option;
+  late Map<String, dynamic> _recycleOption;
   late Map<String, dynamic> _encryptOption;
   late Map<String, dynamic> _compressOption;
 
@@ -42,6 +43,7 @@ class _BaseFormState extends State<BaseForm> {
     super.initState();
 
     _option = widget.form.option == "" ? {} : jsonDecode(widget.form.option);
+    _recycleOption = _option["recycle_option"] ?? {};
     _encryptOption = _option["encrypt_option"] ?? {};
     _compressOption = _option["compress_option"] ?? {};
   }
@@ -73,6 +75,39 @@ class _BaseFormState extends State<BaseForm> {
               widget.form.option = jsonEncode(_option);
             },
           ),
+          ListTile(
+            title: Text('回收站'.tr()),
+            subtitle: Text("是否激活回收站".tr()),
+            trailing: Switch(
+              value: _option["recycle"] ?? false,
+              onChanged: (result) {
+                setState(() {
+                  _option["recycle"] = result;
+                  if (!result) {
+                    _recycleOption = {};
+                    _option.remove("recycle");
+                    _option.remove("recycle_option");
+                  }
+                });
+
+                widget.form.option = jsonEncode(_option);
+              },
+            ),
+          ),
+          if (_option["recycle"] ?? false)
+            CustomFormField(
+              label: "回收站路径".tr(),
+              value: _recycleOption["path"],
+              subtitle: Text("未设置时将在根目录创建.maplerecycle".tr()),
+              onTap: (result) {
+                setState(() {
+                  _recycleOption["path"] = result;
+                  _option["recycle_option"] = _recycleOption;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              },
+            ),
           ListTile(
             title: Text('文件加密'.tr()),
             trailing: Switch(

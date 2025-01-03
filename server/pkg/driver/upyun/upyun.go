@@ -8,6 +8,7 @@ import (
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 	"github.com/upyun/go-sdk/v3/upyun"
 )
 
@@ -104,7 +105,7 @@ func (d *Upyun) Open(path string) (driver.FileReader, error) {
 			headers["Range"] = fmt.Sprintf("bytes=%d-", offset)
 		}
 
-		r, w := io.Pipe()
+		r, w := util.Pipe()
 		go func() {
 			_, err := d.client.Get(&upyun.GetObjectConfig{
 				Path:    path,
@@ -119,7 +120,7 @@ func (d *Upyun) Open(path string) (driver.FileReader, error) {
 }
 
 func (d *Upyun) Create(path string) (driver.FileWriter, error) {
-	r, w := io.Pipe()
+	r, w := util.Pipe()
 	go func() {
 		err := d.client.Put(&upyun.PutObjectConfig{
 			Path:   path,

@@ -132,7 +132,7 @@ class _FileViewState extends ConsumerState<FileView> {
                 },
           child: ListTile(
             leading: _buildIcon(row, setting, 0.8),
-            title: Text(row.name),
+            title: _buildName(row),
             subtitle: Wrap(
               spacing: 8,
               children: [
@@ -191,11 +191,7 @@ class _FileViewState extends ConsumerState<FileView> {
                 children: [
                   _buildIcon(row, setting, 1),
                   const SizedBox(height: 8),
-                  Text(
-                    row.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  _buildName(row, maxLines: 2),
                 ],
               ),
             ),
@@ -208,6 +204,17 @@ class _FileViewState extends ConsumerState<FileView> {
           ),
         ]);
       },
+    );
+  }
+
+  _buildName(File row, {int? maxLines}) {
+    if (row.type == "RECYCLE") {
+      return Text("回收站".tr());
+    }
+    return Text(
+      row.name,
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
     );
   }
 

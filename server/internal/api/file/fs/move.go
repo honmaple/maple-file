@@ -32,7 +32,7 @@ func (opt *MoveTaskOption) Execute(task runner.Task, fs FS) error {
 	}
 
 	if srcFS == dstFS {
-		return srcFS.Copy(task.Context(), srcPath, dstPath)
+		return srcFS.Move(task.Context(), srcPath, dstPath)
 	}
 	return move(task, srcFS, srcPath, dstFS, dstPath)
 }

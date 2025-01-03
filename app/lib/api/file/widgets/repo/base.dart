@@ -21,6 +21,15 @@ extension CompressLevelExtension on CompressLevel {
     };
     return labels[this] ?? "unknown";
   }
+
+  int value() {
+    final Map<CompressLevel, int> values = {
+      CompressLevel.normal: -1,
+      CompressLevel.best: 9,
+      CompressLevel.fast: 1,
+    };
+    return values[this] ?? -1;
+  }
 }
 
 class BaseForm extends StatefulWidget {
@@ -110,6 +119,7 @@ class _BaseFormState extends State<BaseForm> {
             ),
           ListTile(
             title: Text('文件加密'.tr()),
+            subtitle: Text("文件加密创建后不可更改加密配置".tr()),
             trailing: Switch(
               value: _option["encrypt"] ?? false,
               onChanged: (result) {
@@ -135,6 +145,21 @@ class _BaseFormState extends State<BaseForm> {
               onTap: (result) {
                 setState(() {
                   _encryptOption["password"] = result;
+                  _option["encrypt_option"] = _encryptOption;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              },
+            ),
+          if (_option["encrypt"] ?? false)
+            CustomFormField(
+              type: CustomFormFieldType.password,
+              label: "文件密码加密".tr(),
+              value: _encryptOption["password_salt"],
+              subtitle: Text("类似二次密码".tr()),
+              onTap: (result) {
+                setState(() {
+                  _encryptOption["password_salt"] = result;
                   _option["encrypt_option"] = _encryptOption;
                 });
 
@@ -186,6 +211,7 @@ class _BaseFormState extends State<BaseForm> {
             ),
           ListTile(
             title: Text('文件压缩'.tr()),
+            subtitle: Text("文件压缩创建后不可更改压缩配置".tr()),
             trailing: Switch(
               value: _option["compress"] ?? false,
               onChanged: (result) {
@@ -205,7 +231,7 @@ class _BaseFormState extends State<BaseForm> {
           if (_option["compress"] ?? false)
             CustomFormField(
               label: "压缩水平".tr(),
-              value: _compressOption["level"],
+              value: _compressValue(_compressOption['level']),
               type: CustomFormFieldType.option,
               options: CompressLevel.values.map((v) {
                 return CustomFormFieldOption(label: v.label(), value: v.name);
@@ -213,14 +239,8 @@ class _BaseFormState extends State<BaseForm> {
               isRequired: true,
               onTap: (result) {
                 setState(() {
-                  switch (result) {
-                    case "fast":
-                      _compressOption["level"] = 1;
-                    case "best":
-                      _compressOption["level"] = 9;
-                    default:
-                      _compressOption["level"] = -1;
-                  }
+                  _compressOption["level"] =
+                      CompressLevel.values.byName(result).value();
                   _option["compress_option"] = _compressOption;
                 });
 
@@ -230,5 +250,18 @@ class _BaseFormState extends State<BaseForm> {
         ],
       ),
     );
+  }
+
+  String? _compressValue(int? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value == 1) {
+      return CompressLevel.fast.name;
+    }
+    if (value == 9) {
+      return CompressLevel.best.name;
+    }
+    return CompressLevel.normal.name;
   }
 }

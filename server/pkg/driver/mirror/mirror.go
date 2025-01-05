@@ -36,7 +36,7 @@ type Mirror struct {
 var _ driver.FS = (*Mirror)(nil)
 
 func (d *Mirror) getURL(path string) string {
-	return strings.TrimSuffix(d.opt.Endpoint, "/") + filepath.Clean(path)
+	return strings.TrimSuffix(d.opt.Endpoint, "/") + path
 }
 
 func (d *Mirror) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {

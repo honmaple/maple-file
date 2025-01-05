@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"path/filepath"
 	"time"
 
@@ -50,6 +51,9 @@ func (d *FTP) Open(path string) (driver.FileReader, error) {
 	if err != nil {
 		return nil, err
 	}
+	if info.Type == ftp.EntryTypeFolder {
+		return nil, &fs.PathError{Op: "open", Path: path, Err: driver.ErrOpenDirectory}
+	}
 
 	rangeFunc := func(offset, length int64) (io.ReadCloser, error) {
 		return d.client.RetrFrom(path, uint64(offset))
@@ -84,7 +88,7 @@ func (d *FTP) Move(ctx context.Context, src, dst string) error {
 }
 
 func (d *FTP) Copy(ctx context.Context, src, dst string) error {
-	return driver.ErrNotSupport
+	return driver.Copy(ctx, d, src, dst)
 }
 
 func (d *FTP) Rename(ctx context.Context, path, newName string) error {

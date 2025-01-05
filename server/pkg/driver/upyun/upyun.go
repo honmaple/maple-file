@@ -55,20 +55,23 @@ func (d *Upyun) List(ctx context.Context, path string, metas ...driver.Meta) ([]
 }
 
 func (d *Upyun) Rename(ctx context.Context, path, newName string) error {
-	return d.Move(ctx, path, filepath.Join(filepath.Dir(path), newName))
+	return d.client.Move(&upyun.MoveObjectConfig{
+		SrcPath:  path,
+		DestPath: filepath.Join(filepath.Dir(path), newName),
+	})
 }
 
 func (d *Upyun) Move(ctx context.Context, src, dst string) error {
 	return d.client.Move(&upyun.MoveObjectConfig{
 		SrcPath:  src,
-		DestPath: dst,
+		DestPath: filepath.Join(dst, filepath.Base(src)),
 	})
 }
 
 func (d *Upyun) Copy(ctx context.Context, src, dst string) error {
 	return d.client.Copy(&upyun.CopyObjectConfig{
 		SrcPath:  src,
-		DestPath: dst,
+		DestPath: filepath.Join(dst, filepath.Base(src)),
 	})
 }
 

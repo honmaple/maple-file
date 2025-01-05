@@ -39,6 +39,12 @@ func WithForce(force bool) Meta {
 	}
 }
 
+func WithAutoRename(rename bool) Meta {
+	return func(meta *meta) {
+		meta.Set("auto_rename", rename)
+	}
+}
+
 func WithOverride(pw string) Meta {
 	return func(meta *meta) {
 		meta.Set("override", pw)

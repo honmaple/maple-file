@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/fs"
-	"path/filepath"
 )
 
 type (
@@ -21,7 +19,6 @@ type (
 		Create(string) (FileWriter, error)
 		Close() error
 	}
-	WalkDirFunc func(string, File, error) error
 
 	Option interface {
 		NewFS() (FS, error)
@@ -43,50 +40,6 @@ func (Base) Create(string) (FileWriter, error)                     { return nil,
 func (Base) Close() error                                          { return nil }
 
 var allOptions map[string]OptionCreator
-
-func walkDir(ctx context.Context, srcFS FS, root string, d File, walkDirFn WalkDirFunc) error {
-	if err := walkDirFn(root, d, nil); err != nil || !d.IsDir() {
-		if err == fs.SkipDir && d.IsDir() {
-			err = nil
-		}
-		return err
-	}
-
-	files, err := srcFS.List(ctx, filepath.Join(d.Path(), d.Name()))
-	if err != nil {
-		err = walkDirFn(root, d, err)
-		if err != nil {
-			if err == fs.SkipDir && d.IsDir() {
-				err = nil
-			}
-			return err
-		}
-		return err
-	}
-	for _, file := range files {
-		name := filepath.Join(root, file.Name())
-		if err := walkDir(ctx, srcFS, name, file, walkDirFn); err != nil {
-			if err == fs.SkipDir {
-				break
-			}
-			return err
-		}
-	}
-	return nil
-}
-
-func WalkDir(ctx context.Context, srcFS FS, root string, walkDirFn WalkDirFunc) error {
-	info, err := srcFS.Get(ctx, root)
-	if err != nil {
-		err = walkDirFn(root, nil, err)
-	} else {
-		err = walkDir(ctx, srcFS, root, info, walkDirFn)
-	}
-	if err == fs.SkipDir || err == fs.SkipAll {
-		return nil
-	}
-	return err
-}
 
 func DriverFS(driver string, option string) (FS, error) {
 	creator, ok := allOptions[driver]

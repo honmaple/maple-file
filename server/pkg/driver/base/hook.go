@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type HookOption struct {
@@ -25,7 +26,7 @@ type hookFS struct {
 var _ driver.FS = (*hookFS)(nil)
 
 func (d *hookFS) getActualPath(path string) string {
-	path = filepath.Clean(path)
+	path = util.CleanPath(path)
 	if d.opt.PathFn == nil {
 		return path
 	}

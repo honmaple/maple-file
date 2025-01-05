@@ -13,6 +13,37 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func initFS(ctx context.Context, lfs driver.FS, files []string) error {
+	for _, file := range files {
+		if file == "/" {
+			continue
+		}
+		if strings.HasSuffix(file, "/") {
+			err := lfs.MakeDir(ctx, strings.TrimSuffix(file, "/"))
+			if err != nil {
+				return err
+			}
+		} else {
+			w, err := lfs.Create(file)
+			if err != nil {
+				return err
+			}
+			w.Write([]byte(file))
+			w.Close()
+		}
+	}
+	return nil
+}
+
+func readFile(lfs driver.FS, path string) ([]byte, error) {
+	r, err := lfs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	return io.ReadAll(r)
+}
+
 func TestMemory(t *testing.T) {
 	assert := assert.New(t)
 
@@ -134,11 +165,13 @@ func TestMemory(t *testing.T) {
 func TestRecycle(t *testing.T) {
 	assert := assert.New(t)
 
+	recyclePath := "/testdata/.maplerecycle"
+
 	lfs, err := New(&Option{
 		Option: base.Option{
 			Recycle: true,
 			RecycleOption: base.RecycleOption{
-				Path: "/testdata/.maplerecycle",
+				Path: recyclePath,
 			},
 		},
 	})
@@ -146,33 +179,38 @@ func TestRecycle(t *testing.T) {
 
 	ctx := context.Background()
 
-	dirs := []string{
-		"/testdata",
-	}
-	for _, dir := range dirs {
-		err = lfs.MakeDir(ctx, dir)
-		assert.Nil(err)
-	}
-
-	files := []string{
+	err = initFS(ctx, lfs, []string{
+		"/testdata/",
 		"/testdata/1.txt",
-	}
-	for _, file := range files {
-		w, err := lfs.Create(file)
-		assert.Nil(err)
-		w.Write([]byte(file))
-		w.Close()
-	}
-
-	err = lfs.Remove(ctx, "/testdata/1.txt")
-	assert.Nil(err)
-
-	err = driver.WalkDir(ctx, lfs, "/testdata", func(path string, file driver.File, err error) error {
-		if err != nil {
-			return err
-		}
-		fmt.Println(path, file.Name(), file.Type())
-		return nil
+		"/testdata/2.txt",
+		"/testdata/dir/",
+		"/testdata/dir/3.txt",
 	})
 	assert.Nil(err)
+
+	for i, file := range []string{
+		"/testdata/1.txt",
+		"/testdata/2.txt",
+	} {
+		err = lfs.Remove(ctx, file)
+		assert.Nil(err)
+
+		files, err := lfs.List(ctx, recyclePath)
+		assert.Nil(err)
+		assert.Equal(i+1, len(files))
+
+		content, err := readFile(lfs, filepath.Join(files[i].Path(), files[i].Name()))
+		assert.Nil(err)
+		assert.Equal(string(content), file)
+	}
+
+	err = lfs.Remove(ctx, "/testdata/dir")
+	assert.Nil(err)
+	files, err := lfs.List(ctx, recyclePath)
+	assert.Nil(err)
+	assert.Equal(3, len(files))
+
+	content, err := readFile(lfs, filepath.Join(recyclePath, files[2].Name(), "3.txt"))
+	assert.Nil(err)
+	assert.Equal(string(content), "/testdata/dir/3.txt")
 }

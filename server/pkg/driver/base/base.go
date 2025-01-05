@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Option struct {
@@ -19,7 +20,7 @@ type Option struct {
 }
 
 func (opt *Option) getActualPath(path string) string {
-	path = filepath.Clean(path)
+	path = util.CleanPath(path)
 	if opt.RootPath == "" {
 		return path
 	}

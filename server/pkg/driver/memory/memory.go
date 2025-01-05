@@ -97,7 +97,7 @@ func (d *Memory) Rename(ctx context.Context, path, newName string) error {
 	if info.IsDir() {
 		newFiles := make(map[string]*fstest.MapFile)
 		for key, value := range d.client {
-			if strings.HasPrefix(key, path) {
+			if util.IsSubPath(path, key) {
 				newFiles[filepath.Join(dst, strings.TrimPrefix(key, path))] = value
 				delete(d.client, key)
 			}
@@ -117,10 +117,12 @@ func (d *Memory) Move(ctx context.Context, src, dst string) error {
 	if err != nil {
 		return err
 	}
+	dst = filepath.Join(dst, filepath.Base(src))
+
 	if info.IsDir() {
 		newFiles := make(map[string]*fstest.MapFile)
 		for key, value := range d.client {
-			if strings.HasPrefix(key, src) {
+			if util.IsSubPath(src, key) {
 				newFiles[filepath.Join(dst, strings.TrimPrefix(key, src))] = value
 				delete(d.client, key)
 			}
@@ -130,7 +132,7 @@ func (d *Memory) Move(ctx context.Context, src, dst string) error {
 		}
 		return nil
 	}
-	d.client[filepath.Join(dst, filepath.Base(src))] = d.client[src]
+	d.client[dst] = d.client[src]
 	delete(d.client, src)
 	return nil
 }
@@ -140,10 +142,12 @@ func (d *Memory) Copy(ctx context.Context, src, dst string) error {
 	if err != nil {
 		return err
 	}
+	dst = filepath.Join(dst, filepath.Base(src))
+
 	if info.IsDir() {
 		newFiles := make(map[string]*fstest.MapFile)
 		for key, value := range d.client {
-			if strings.HasPrefix(key, src) {
+			if util.IsSubPath(src, key) {
 				newFiles[filepath.Join(dst, strings.TrimPrefix(key, src))] = value
 			}
 		}
@@ -152,7 +156,7 @@ func (d *Memory) Copy(ctx context.Context, src, dst string) error {
 		}
 		return nil
 	}
-	d.client[filepath.Join(dst, filepath.Base(src))] = d.client[src]
+	d.client[dst] = d.client[src]
 	return nil
 }
 

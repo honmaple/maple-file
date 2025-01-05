@@ -29,7 +29,7 @@ type Local struct {
 }
 
 func (d *Local) getActualPath(path string) string {
-	return filepath.Join(d.opt.Path, filepath.Clean(path))
+	return filepath.Join(d.opt.Path, path)
 }
 
 func (d *Local) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
@@ -81,47 +81,42 @@ func (d *Local) Move(ctx context.Context, src, dst string) error {
 	return os.Rename(d.getActualPath(src), filepath.Join(d.getActualPath(dst), filepath.Base(src)))
 }
 
-func (d *Local) copyFile(ctx context.Context, src, dst string) (err error) {
-	in, err := os.Open(src)
+func (d *Local) copyFile(ctx context.Context, src, dst string) error {
+	srcFile, err := os.Open(src)
 	if err != nil {
-		return
+		return err
 	}
-	defer in.Close()
+	defer srcFile.Close()
 
-	out, err := os.Create(dst)
+	dstFile, err := os.Create(dst)
 	if err != nil {
-		return
+		return err
 	}
 
-	if _, err = util.CopyWithContext(ctx, out, in); err != nil {
-		out.Close()
-		return
+	if _, err = util.CopyWithContext(ctx, dstFile, srcFile); err != nil {
+		dstFile.Close()
+		return err
 	}
 
-	if err = out.Close(); err != nil {
-		return
+	if err = dstFile.Close(); err != nil {
+		return err
 	}
 
-	info, err := in.Stat()
+	info, err := os.Stat(src)
 	if err != nil {
-		return
+		return err
 	}
-	err = os.Chmod(dst, info.Mode())
-	return
+	return os.Chmod(dst, info.Mode())
 }
 
 func (d *Local) copyDir(ctx context.Context, src, dst string) error {
-	stat, err := os.Stat(dst)
-	if err != nil && !os.IsNotExist(err) {
+	info, err := os.Stat(src)
+	if err != nil {
 		return err
 	}
-	if err != nil {
-		if err := d.MakeDir(ctx, dst); err != nil {
-			return err
-		}
-	}
-	if !stat.IsDir() {
-		return fmt.Errorf("cannot copy dir to file: %s", dst)
+
+	if err := os.MkdirAll(dst, info.Mode()); err != nil {
+		return err
 	}
 
 	files, err := os.ReadDir(src)
@@ -188,8 +183,10 @@ func New(opt *Option) (driver.FS, error) {
 	if err := driver.VerifyOption(opt); err != nil {
 		return nil, err
 	}
+	if util.CleanPath(opt.Path) != opt.Path {
+		return nil, fs.ErrInvalid
+	}
 
-	opt.Path = filepath.Clean(opt.Path)
 	opt.DirPerm = 0755
 
 	d := &Local{opt: opt}

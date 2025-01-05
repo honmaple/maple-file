@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"path/filepath"
 
 	"github.com/pkg/sftp"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Option struct {
@@ -71,8 +73,87 @@ func (d *SFTP) Move(ctx context.Context, src, dst string) error {
 	return d.client.Rename(src, dst)
 }
 
+func (d *SFTP) copyFile(ctx context.Context, src, dst string) error {
+	srcFile, err := d.client.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := d.client.Open(dst)
+	if err != nil {
+		return err
+	}
+
+	if _, err = util.CopyWithContext(ctx, dstFile, srcFile); err != nil {
+		dstFile.Close()
+		return err
+	}
+
+	if err = dstFile.Close(); err != nil {
+		return err
+	}
+
+	info, err := d.client.Stat(src)
+	if err != nil {
+		return err
+	}
+	return d.client.Chmod(dst, info.Mode())
+}
+
+func (d *SFTP) copyDir(ctx context.Context, src, dst string) error {
+	info, err := d.client.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	if err := d.client.MkdirAll(dst); err != nil {
+		return err
+	}
+
+	if err := d.client.Chmod(dst, info.Mode()); err != nil {
+		return err
+	}
+
+	files, err := d.client.ReadDir(src)
+	if err != nil {
+		return fmt.Errorf("cannot read dir %s: %s", src, err.Error())
+	}
+
+	for _, file := range files {
+		srcPath := filepath.Join(src, file.Name())
+		dstPath := filepath.Join(dst, file.Name())
+
+		if file.IsDir() {
+			err = d.copyDir(ctx, srcPath, dstPath)
+		} else {
+			err = d.copyFile(ctx, srcPath, dstPath)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (d *SFTP) Copy(ctx context.Context, src, dst string) error {
-	return driver.ErrNotSupport
+	dstFile, err := d.Get(ctx, dst)
+	if err != nil {
+		return err
+	} else if !dstFile.IsDir() {
+		return &fs.PathError{Op: "copy", Path: dst, Err: errors.New("copy dst must be a dir")}
+	} else {
+		dst = filepath.Join(dst, filepath.Base(src))
+	}
+
+	srcFile, err := d.Get(ctx, src)
+	if err != nil {
+		return err
+	}
+	if srcFile.IsDir() {
+		return d.copyDir(ctx, src, dst)
+	}
+	return d.copyFile(ctx, src, dst)
 }
 
 func (d *SFTP) Rename(ctx context.Context, path, newName string) error {

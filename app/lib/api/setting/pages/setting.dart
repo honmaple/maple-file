@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/tree.dart';
+import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 
 class Setting extends StatelessWidget {
@@ -171,15 +174,8 @@ class Setting extends StatelessWidget {
 }
 
 class DesktopSetting extends StatefulWidget {
-  final Widget? child;
-  final String? initialRoute;
-  final RouteFactory? onGenerateRoute;
-
   const DesktopSetting({
     super.key,
-    this.child,
-    this.initialRoute,
-    this.onGenerateRoute,
   });
 
   @override
@@ -189,32 +185,94 @@ class DesktopSetting extends StatefulWidget {
 class _DesktopSettingState extends State<DesktopSetting> {
   final _navigatorKey = GlobalKey<NavigatorState>();
 
+  NavigatorState navigatorState(context) {
+    return _navigatorKey.currentState ?? Navigator.of(context);
+  }
+
+  _navigatorPush(String name) {
+    navigatorState(context).pushReplacementNamed(name);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-      },
-      child: Scaffold(
-        body: Row(
-          // mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Expanded(
-              child: Setting(navigatorKey: _navigatorKey),
-            ),
-            const VerticalDivider(thickness: 1, width: 0.5),
-            Expanded(
-              child: widget.child ??
-                  Navigator(
-                    key: _navigatorKey,
-                    initialRoute: widget.initialRoute,
-                    onGenerateRoute: widget.onGenerateRoute,
-                  ),
-            ),
-          ],
-        ),
+    final menu = [
+      CustomTreeMenu(
+        label: "基础设置".tr(),
+        expanded: true,
+        children: [
+          CustomTreeMenu(
+            icon: Icons.brightness_medium,
+            label: "主题".tr(),
+            onTap: () {
+              _navigatorPush('/setting/theme');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.language,
+            label: "语言".tr(),
+            onTap: () {
+              _navigatorPush('/setting/locale');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.backup,
+            label: "备份与恢复".tr(),
+            onTap: () {
+              _navigatorPush('/setting/backup');
+            },
+          ),
+        ],
       ),
+      CustomTreeMenu(
+        label: "存储设置".tr(),
+        expanded: true,
+        children: [
+          CustomTreeMenu(
+            icon: Icons.storage,
+            label: "存储库".tr(),
+            onTap: () {
+              _navigatorPush('/file/setting/repo');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.sync,
+            label: '同步备份'.tr(),
+            onTap: () {
+              _navigatorPush('/file/setting/task');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.upload,
+            label: '文件上传'.tr(),
+            onTap: () {
+              _navigatorPush('/file/setting/upload');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.download,
+            label: '文件下载'.tr(),
+            onTap: () {
+              _navigatorPush('/file/setting/download');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.palette,
+            label: '文件展示'.tr(),
+            onTap: () {
+              _navigatorPush('/file/setting/theme');
+            },
+          ),
+        ],
+      ),
+    ];
+
+    return CustomLayout(
+      menu: menu,
+      navigatorKey: _navigatorKey,
+      initialRoute: "/setting",
+      onGenerateRoute: App.router.replaceRoute(replace: {
+        "/": null,
+      }),
     );
   }
 }

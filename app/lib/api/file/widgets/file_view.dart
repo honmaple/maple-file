@@ -108,7 +108,6 @@ class _FileViewState extends ConsumerState<FileView> {
 
   buildListView(BuildContext context, List<File> rows) {
     final selection = widget.selection ?? Selection<File>();
-    final setting = ref.watch(fileSettingProvider);
 
     return SliverList.builder(
       // separatorBuilder: (context, index) => Divider(
@@ -131,7 +130,7 @@ class _FileViewState extends ConsumerState<FileView> {
                   widget.onLongPress?.call(context, row);
                 },
           child: ListTile(
-            leading: _buildIcon(row, setting, 0.8),
+            leading: FileIcon(file: row, size: 0.8),
             title: _buildName(row),
             subtitle: Wrap(
               spacing: 8,
@@ -167,7 +166,6 @@ class _FileViewState extends ConsumerState<FileView> {
   buildGridView(BuildContext context, List<File> rows) {
     final selection = widget.selection ?? Selection<File>();
 
-    final setting = ref.watch(fileSettingProvider);
     return SliverAlignedGrid.extent(
       itemCount: rows.length,
       // 单个文件占用的宽度
@@ -189,7 +187,7 @@ class _FileViewState extends ConsumerState<FileView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildIcon(row, setting, 1),
+                  FileIcon(file: row, size: 1),
                   const SizedBox(height: 8),
                   _buildName(row, maxLines: 2),
                 ],
@@ -218,33 +216,6 @@ class _FileViewState extends ConsumerState<FileView> {
     );
   }
 
-  _buildIcon(File row, FileSetting setting, double size) {
-    if (setting.icon == FileListIcon.circle) {
-      return Container(
-        height: 48 * size,
-        width: 48 * size,
-        decoration: BoxDecoration(
-          color: setting.iconColor != null
-              ? setting.color
-              : ColorUtil.backgroundColorWithString(row.name),
-          borderRadius: BorderRadius.all(Radius.circular(24 * size)),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          PathUtil.icon(row.name, type: row.type),
-          color: ColorUtil.foregroundColorWithString(row.name),
-        ),
-      );
-    }
-    return Icon(
-      PathUtil.icon(row.name, type: row.type),
-      size: 64 * size,
-      color: setting.iconColor != null
-          ? setting.color
-          : ColorUtil.backgroundColorWithString(row.name),
-    );
-  }
-
   _buildCheckbox(Selection<File> selection, File row) {
     return Checkbox(
       value: selection.contains(row),
@@ -262,5 +233,45 @@ class _FileViewState extends ConsumerState<FileView> {
       return true;
     }
     return false;
+  }
+}
+
+class FileIcon extends ConsumerWidget {
+  const FileIcon({
+    super.key,
+    required this.file,
+    this.size = 1,
+  });
+
+  final double size;
+  final File file;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final setting = ref.watch(fileSettingProvider);
+    if (setting.icon == FileListIcon.circle) {
+      return Container(
+        height: 48 * size,
+        width: 48 * size,
+        decoration: BoxDecoration(
+          color: setting.iconColor != null
+              ? setting.color
+              : ColorUtil.backgroundColorWithString(file.name),
+          borderRadius: BorderRadius.all(Radius.circular(24 * size)),
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          PathUtil.icon(file.name, type: file.type),
+          color: ColorUtil.foregroundColorWithString(file.name),
+        ),
+      );
+    }
+    return Icon(
+      PathUtil.icon(file.name, type: file.type),
+      size: 64 * size,
+      color: setting.iconColor != null
+          ? setting.color
+          : ColorUtil.backgroundColorWithString(file.name),
+    );
   }
 }

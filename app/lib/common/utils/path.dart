@@ -124,7 +124,7 @@ class PathUtil {
     return isImage(name, type: type) || isVideo(name, type: type);
   }
 
-  static bool isFolder(String name, {String? type}) {
+  static bool isDir(String name, {String? type}) {
     return type == "DIR" || name.endsWith("/");
   }
 

@@ -308,7 +308,7 @@ class _CustomFileTypeState extends State<CustomFileType>
     return Scaffold(
       appBar: AppBar(
         title: Text("文件类型".tr()),
-        leading: Breakpoint.isMobile(context)
+        leading: Breakpoint.isSmall(context)
             ? null
             : IconButton(
                 icon: const Icon(Icons.close),

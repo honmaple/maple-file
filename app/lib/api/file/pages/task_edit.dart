@@ -109,7 +109,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TaskForm(form: _form),
-                  SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
+                  SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
                   SizedBox(
                     width: double.infinity,
                     child: _isEditing
@@ -127,7 +127,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                           ),
                   ),
                   if (_isEditing)
-                    SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
+                    SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
                   if (_isEditing)
                     Container(
                       alignment: Alignment.center,
@@ -153,7 +153,7 @@ class _TaskEditState extends ConsumerState<TaskEdit> {
                     ),
                 ],
               ),
-            SizedBox(height: Breakpoint.isMobile(context) ? 8 : 16),
+            SizedBox(height: Breakpoint.isSmall(context) ? 8 : 16),
           ],
         ),
       ),

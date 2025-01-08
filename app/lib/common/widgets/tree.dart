@@ -1,4 +1,116 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+
+class CustomTreeMenu {
+  final String label;
+  final IconData? icon;
+  final bool expanded;
+  final List<CustomTreeMenu>? children;
+  final GestureTapCallback? onTap;
+
+  const CustomTreeMenu({
+    required this.label,
+    this.icon,
+    this.onTap,
+    this.children,
+    this.expanded = false,
+  });
+}
+
+class CustomTree extends StatefulWidget {
+  const CustomTree({
+    super.key,
+    required this.tree,
+    this.navigatorKey,
+    this.sliver = false,
+  });
+
+  const CustomTree.sliver({
+    super.key,
+    required this.tree,
+    this.navigatorKey,
+  }) : sliver = true;
+
+  final bool sliver;
+  final List<CustomTreeMenu> tree;
+  final GlobalKey<NavigatorState>? navigatorKey;
+
+  @override
+  State<CustomTree> createState() => CustomTreeState();
+}
+
+class CustomTreeState extends State<CustomTree> {
+  final CustomTreeViewController _controller = CustomTreeViewController();
+
+  @override
+  Widget build(BuildContext context) {
+    final tree = _tree(widget.tree);
+    if (widget.sliver) {
+      return CustomSliverTreeView<CustomTreeMenu>(
+        tree: tree,
+        controller: _controller,
+        nodeBuilder: _nodeBuilder,
+      );
+    }
+    return CustomTreeView<CustomTreeMenu>(
+      tree: tree,
+      controller: _controller,
+      nodeBuilder: _nodeBuilder,
+    );
+  }
+
+  List<CustomTreeNode<CustomTreeMenu>> _tree(List<CustomTreeMenu> menus) {
+    return [
+      for (final menu in menus)
+        CustomTreeNode<CustomTreeMenu>(
+          menu,
+          key: menu.label,
+          expanded: menu.expanded,
+          children: (menu.children == null || menu.children!.isEmpty)
+              ? null
+              : _tree(menu.children!),
+        ),
+    ];
+  }
+
+  Widget _nodeBuilder(
+    BuildContext context,
+    CustomTreeNode<CustomTreeMenu> node,
+  ) {
+    final menu = node.content;
+    final themeData = Theme.of(context);
+    return Container(
+      padding: EdgeInsets.only(left: 12.0 * (node.depth ?? 0)),
+      child: ListTile(
+        dense: true,
+        leading: menu.icon == null
+            ? null
+            : Icon(menu.icon, color: themeData.colorScheme.primary),
+        title: Wrap(
+          spacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              menu.label,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        trailing: AnimatedRotation(
+          turns: node.isExpanded ? 0 : -0.25,
+          duration: const Duration(milliseconds: 200),
+          child: Transform.rotate(
+              angle: math.pi / 180,
+              child: const Icon(Icons.expand_more, size: 18)),
+        ),
+        onTap: menu.onTap ??
+            () {
+              _controller.toggleNode(node);
+            },
+      ),
+    );
+  }
+}
 
 class CustomTreeNode<T> {
   CustomTreeNode(

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 const (
@@ -71,7 +71,7 @@ func (d *recycleFS) List(ctx context.Context, path string, metas ...driver.Meta)
 }
 
 func (d *recycleFS) Remove(ctx context.Context, path string) error {
-	if strings.HasPrefix(path, d.opt.Path) {
+	if util.IsSubPath(d.opt.Path, path) {
 		return d.FS.Remove(ctx, path)
 	}
 	newName := fmt.Sprintf("%s.%s", filepath.Base(path), time.Now().Format("20060102150405"))

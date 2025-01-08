@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/widgets/tree.dart';
+import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/api/file/pages/file_list.dart';
+import 'package:maple_file/api/file/widgets/file_tree.dart';
 import 'package:maple_file/api/file/providers/file.dart';
 import 'package:maple_file/api/setting/pages/setting.dart';
 
@@ -71,10 +76,9 @@ class DesktopIndex extends ConsumerStatefulWidget {
 class _DesktopIndexState extends ConsumerState<DesktopIndex> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   final _navigatorKey1 = GlobalKey<NavigatorState>();
-  final _navigatorKey2 = GlobalKey<NavigatorState>();
 
   int _selectedIndex = 0;
-  bool _extended = false;
+  bool _showFileTree = false;
 
   @override
   Widget build(BuildContext context) {
@@ -86,36 +90,74 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
       child: Scaffold(
         body: Row(
           children: <Widget>[
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _extended ? _buildMenu() : const SizedBox(height: 32),
-                Expanded(
-                  child: NavigationRail(
-                    minExtendedWidth: 200,
-                    extended: _extended,
-                    labelType: _extended ? null : NavigationRailLabelType.all,
-                    selectedIndex: _selectedIndex,
-                    onDestinationSelected: _onDestinationSelected,
-                    destinations: <NavigationRailDestination>[
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.school),
-                        label: Text('文件'.tr()),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.swap_vert_circle),
-                        label: Text('任务'.tr()),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.settings),
-                        label: Text('设置'.tr()),
-                      ),
-                    ],
-                  ),
+            NavigationRail(
+              minExtendedWidth: 200,
+              extended: false,
+              labelType: NavigationRailLabelType.all,
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onDestinationSelected,
+              destinations: <NavigationRailDestination>[
+                NavigationRailDestination(
+                  icon: const Icon(Icons.school),
+                  label: Text('文件'.tr()),
                 ),
-                if (!_extended) _buildMenu(),
-                if (!_extended) const SizedBox(height: 8)
+                NavigationRailDestination(
+                  icon: const Icon(Icons.swap_vert_circle),
+                  label: Text('任务'.tr()),
+                ),
               ],
+              leading: const SizedBox(height: 16),
+              trailing: Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.settings),
+                      onPressed: () {
+                        showListDialog2(
+                          context,
+                          child: const DesktopSetting(),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.help),
+                      onPressed: () {
+                        showListDialog2(
+                          context,
+                          child: const DesktopHelp(),
+                        );
+                      },
+                    ),
+                    if (_selectedIndex == 0)
+                      IconButton(
+                        icon: Icon(
+                          _showFileTree ? Icons.menu_open : Icons.menu,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _showFileTree = !_showFileTree;
+                          });
+                        },
+                      ),
+                    const SizedBox(height: 8)
+                  ],
+                ),
+              ),
+            ),
+            if (_selectedIndex == 0 && _showFileTree)
+              const VerticalDivider(thickness: 1, width: 0.5),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              child: SizedBox(
+                width: (_selectedIndex == 0 && _showFileTree) ? 200 : 0,
+                child: CustomScrollView(
+                  slivers: [
+                    FileTree(navigatorKey: _navigatorKey),
+                  ],
+                ),
+              ),
             ),
             const VerticalDivider(thickness: 1, width: 0.5),
             Expanded(
@@ -130,11 +172,6 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                   initialRoute: "/task/list",
                   onGenerateRoute: widget.onGenerateRoute,
                 ),
-                Navigator(
-                  key: _navigatorKey2,
-                  initialRoute: "/setting",
-                  onGenerateRoute: widget.onGenerateRoute,
-                ),
               ].elementAt(_selectedIndex),
             ),
           ],
@@ -143,20 +180,55 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
     );
   }
 
-  _buildMenu() {
-    return IconButton(
-      icon: Icon(_extended ? Icons.menu_open : Icons.menu),
-      onPressed: () {
-        setState(() {
-          _extended = !_extended;
-        });
-      },
-    );
-  }
-
   _onDestinationSelected(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+}
+
+class DesktopHelp extends StatefulWidget {
+  const DesktopHelp({
+    super.key,
+  });
+
+  @override
+  State<DesktopHelp> createState() => _DesktopHelpState();
+}
+
+class _DesktopHelpState extends State<DesktopHelp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  _navigatorPush(String name) {
+    final state = _navigatorKey.currentState ?? Navigator.of(context);
+    state.pushReplacementNamed(name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final menu = [
+      CustomTreeMenu(
+        icon: Icons.help,
+        label: "帮助".tr(),
+        onTap: () {
+          _navigatorPush('/help');
+        },
+      ),
+      CustomTreeMenu(
+        icon: Icons.person,
+        label: "关于".tr(),
+        onTap: () {
+          _navigatorPush('/about');
+        },
+      ),
+    ];
+    return CustomLayout(
+      menu: menu,
+      navigatorKey: _navigatorKey,
+      initialRoute: "/about",
+      onGenerateRoute: App.router.replaceRoute(replace: {
+        "/": null,
+      }),
+    );
   }
 }

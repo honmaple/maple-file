@@ -245,7 +245,7 @@ Future<T?> showListDialog2<T>(
   double? height,
   bool useRootNavigator = false,
 }) {
-  if (Breakpoint.isMobile(context)) {
+  if (Breakpoint.isSmall(context)) {
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,

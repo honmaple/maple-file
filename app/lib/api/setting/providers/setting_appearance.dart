@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:maple_file/app/i18n.dart';
+
 import 'setting.dart';
 
 part 'setting_appearance.freezed.dart';
@@ -15,16 +17,16 @@ class ThemeModel {
     required this.color,
   });
 
-  static const defaultTheme = ThemeModel(
-    name: '默认',
-    color: Color.fromRGBO(32, 82, 67, 1),
+  // static const defaultColor = Color.fromRGBO(32, 82, 67, 1);
+  static const defaultColor = Color.fromRGBO(244, 63, 94, 0.2);
+
+  static final defaultTheme = ThemeModel(
+    name: '默认'.tr(),
+    color: defaultColor,
   );
 
   static final themes = [
-    const ThemeModel(
-      name: '默认',
-      color: Color.fromRGBO(32, 82, 67, 1),
-    ),
+    defaultTheme,
     const ThemeModel(
       name: 'Blue',
       color: Colors.blue,
@@ -102,15 +104,11 @@ class ThemeModel {
 
 @freezed
 class AppearanceSetting with _$AppearanceSetting {
-  static const String PREFIX = "app.appearance";
-
-  static const Color defaultColor = Color.fromRGBO(32, 82, 67, 1);
-
   const AppearanceSetting._();
 
   const factory AppearanceSetting({
     @Default(ThemeMode.system) @JsonKey(name: 'theme.mode') ThemeMode themeMode,
-    @Default("") @JsonKey(name: 'theme.color') String themeColor,
+    @JsonKey(name: 'theme.color') String? themeColor,
     @Default("zh") @JsonKey(name: 'locale') String locale,
   }) = _AppearanceSetting;
 
@@ -125,12 +123,12 @@ class AppearanceSetting with _$AppearanceSetting {
       .color;
 
   bool isDefaultColor() {
-    return color == defaultColor;
+    return color == ThemeModel.defaultColor;
   }
 }
 
 final appearanceProvider = newSettingNotifier(
-  AppearanceSetting.PREFIX,
+  "app.appearance",
   const AppearanceSetting(),
   AppearanceSetting.fromJson,
 );

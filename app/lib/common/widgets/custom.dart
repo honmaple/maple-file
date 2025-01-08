@@ -8,6 +8,7 @@ import 'package:grpc/grpc.dart';
 
 import 'package:maple_file/app/i18n.dart';
 
+import 'tree.dart';
 import 'dialog.dart';
 
 class CustomError extends StatelessWidget {
@@ -386,6 +387,80 @@ class _CustomListTileState extends State<CustomListTile> {
       label,
       controller: _textController,
       obscureText: widget.obscureText,
+    );
+  }
+}
+
+class CustomLayout extends StatefulWidget {
+  final List<CustomTreeMenu> menu;
+  final String? initialRoute;
+  final RouteFactory? onGenerateRoute;
+  final GlobalKey<NavigatorState>? navigatorKey;
+  final Widget? body;
+
+  const CustomLayout({
+    super.key,
+    required this.menu,
+    this.body,
+    this.initialRoute,
+    this.onGenerateRoute,
+    this.navigatorKey,
+  });
+
+  @override
+  State<CustomLayout> createState() => _CustomLayoutState();
+}
+
+class _CustomLayoutState extends State<CustomLayout> {
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+      },
+      child: Scaffold(
+        body: Row(
+          children: <Widget>[
+            SizedBox(
+              width: 200,
+              child: CustomScrollView(
+                slivers: [
+                  SliverFillRemaining(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: CustomTree(tree: widget.menu),
+                        ),
+                        ListTile(
+                          title: SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              child: Text('关闭'.tr()),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const VerticalDivider(thickness: 1, width: 0.5),
+            Expanded(
+              child: widget.body ??
+                  Navigator(
+                    key: widget.navigatorKey,
+                    initialRoute: widget.initialRoute,
+                    onGenerateRoute: widget.onGenerateRoute,
+                  ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

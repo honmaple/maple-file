@@ -128,7 +128,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DriverForm(form: _form),
-                  SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
+                  SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -138,7 +138,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                       },
                     ),
                   ),
-                  SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
+                  SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
                   SizedBox(
                     width: double.infinity,
                     child: _isEditing
@@ -174,7 +174,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                           ),
                   ),
                   if (_isEditing)
-                    SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
+                    SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
                   if (_isEditing)
                     Container(
                       alignment: Alignment.center,
@@ -200,7 +200,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     ),
                 ],
               ),
-            SizedBox(height: Breakpoint.isMobile(context) ? 8 : 16),
+            SizedBox(height: Breakpoint.isSmall(context) ? 8 : 16),
           ],
         ),
       ),

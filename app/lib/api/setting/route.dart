@@ -1,5 +1,4 @@
 import 'package:maple_file/app/router.dart';
-import 'package:maple_file/common/widgets/responsive.dart';
 
 import "pages/setting.dart";
 import "pages/setting_theme.dart";
@@ -9,16 +8,7 @@ import "pages/setting_backup.dart";
 Future<void> init(CustomRouter router) async {
   router.registerMany({
     '/setting': (context) {
-      if (Breakpoint.isSmall(context)) {
-        return const Setting();
-      }
-      return DesktopSetting(
-        initialRoute: "/setting/theme",
-        onGenerateRoute: router.replaceRoute(replace: {
-          "/": null,
-          "/setting": null,
-        }),
-      );
+      return const Setting();
     },
     '/setting/theme': (context) {
       return const SettingTheme();

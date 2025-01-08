@@ -9,7 +9,7 @@ import "pages/not_found.dart";
 Future<void> init(CustomRouter router) async {
   router.registerMany({
     "/": (context) {
-      if (Breakpoint.isMobile(context)) {
+      if (Breakpoint.isSmall(context)) {
         return const Index();
       }
       return DesktopIndex(

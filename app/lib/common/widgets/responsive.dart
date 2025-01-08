@@ -33,23 +33,18 @@ class Breakpoint {
       MediaQuery.of(context).size.width < end &&
       MediaQuery.of(context).size.width >= start;
 
-  static const Breakpoint small = Breakpoint(start: 0, end: 600);
-  static const Breakpoint mobile = Breakpoint(start: 0, end: 450);
-  static const Breakpoint tablet = Breakpoint(start: 450, end: 800);
-  static const Breakpoint desktop =
-      Breakpoint(start: 800, end: double.infinity);
+  static const Breakpoint small = Breakpoint(start: 0, end: 540);
+  static const Breakpoint medium = Breakpoint(start: 540, end: 720);
+  static const Breakpoint large = Breakpoint(start: 720, end: double.infinity);
 
   static bool isSmall(BuildContext context) =>
       Breakpoint.small.isActive(context);
 
-  static bool isMobile(BuildContext context) =>
-      Breakpoint.mobile.isActive(context);
+  static bool isMedium(BuildContext context) =>
+      Breakpoint.medium.isActive(context);
 
-  static bool isTablet(BuildContext context) =>
-      Breakpoint.tablet.isActive(context);
-
-  static bool isDesktop(BuildContext context) =>
-      Breakpoint.desktop.isActive(context);
+  static bool isLarge(BuildContext context) =>
+      Breakpoint.large.isActive(context);
 }
 
 typedef ResponsiveBuilder = Widget Function(

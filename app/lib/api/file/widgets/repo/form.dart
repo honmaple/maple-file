@@ -62,9 +62,9 @@ class _DriverFormState extends State<DriverForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildForm(),
-        if (!Breakpoint.isMobile(context)) const SizedBox(height: 4),
+        if (!Breakpoint.isSmall(context)) const SizedBox(height: 4),
         if (_showMore) BaseForm(form: widget.form),
-        if (_showMore) SizedBox(height: Breakpoint.isMobile(context) ? 4 : 8),
+        if (_showMore) SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(

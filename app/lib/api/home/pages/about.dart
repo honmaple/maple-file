@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/api/setting/providers/info.dart';
 import 'package:maple_file/common/widgets/custom.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 
 class About extends ConsumerWidget {
   const About({super.key});
@@ -13,6 +14,7 @@ class About extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("关于".tr()),
+        automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),
       body: CustomAsyncValue(
         value: ref.watch(infoProvider),

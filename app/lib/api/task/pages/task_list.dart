@@ -2,9 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/color.dart';
+import 'package:maple_file/common/widgets/tree.dart';
 import 'package:maple_file/common/widgets/custom.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/task/task.pb.dart';
 
 import '../widgets/task_action.dart';
@@ -56,6 +59,7 @@ class _TaskListState extends ConsumerState<TaskList>
     return Scaffold(
       appBar: AppBar(
         title: Text("任务列表".tr()),
+        automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),
       body: CustomScrollView(
         slivers: [
@@ -240,6 +244,50 @@ class _TaskListState extends ConsumerState<TaskList>
           ],
         ),
       ],
+    );
+  }
+}
+
+class DesktopTask extends StatefulWidget {
+  const DesktopTask({
+    super.key,
+  });
+
+  @override
+  State<DesktopTask> createState() => _DesktopTaskState();
+}
+
+class _DesktopTaskState extends State<DesktopTask> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  NavigatorState navigatorState(context) {
+    return _navigatorKey.currentState ?? Navigator.of(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final menu = [
+      CustomTreeMenu(
+        label: "正在进行".tr(),
+        expanded: true,
+      ),
+      CustomTreeMenu(
+        label: "已完成".tr(),
+        expanded: true,
+      ),
+      CustomTreeMenu(
+        label: "已失败".tr(),
+        expanded: true,
+      ),
+    ];
+
+    return CustomLayout(
+      menu: menu,
+      navigatorKey: _navigatorKey,
+      initialRoute: "/task/list",
+      onGenerateRoute: App.router.replaceRoute(replace: {
+        "/": null,
+      }),
     );
   }
 }

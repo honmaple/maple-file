@@ -92,17 +92,6 @@ class Setting extends StatelessWidget {
                   ),
                   ListTile(
                     leading: Icon(
-                      Icons.sync,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text('同步备份'.tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/file/setting/task');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
                       Icons.upload,
                       color: themeData.colorScheme.primary,
                     ),
@@ -232,13 +221,6 @@ class _DesktopSettingState extends State<DesktopSetting> {
             label: "存储库".tr(),
             onTap: () {
               _navigatorPush('/file/setting/repo');
-            },
-          ),
-          CustomTreeMenu(
-            icon: Icons.sync,
-            label: '同步备份'.tr(),
-            onTap: () {
-              _navigatorPush('/file/setting/task');
             },
           ),
           CustomTreeMenu(

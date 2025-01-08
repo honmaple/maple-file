@@ -13,7 +13,6 @@ import (
 	"github.com/honmaple/maple-file/server/internal/app"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
-	"github.com/honmaple/maple-file/server/pkg/runner"
 )
 
 type Service struct {
@@ -121,12 +120,5 @@ func New(app *app.App) *Service {
 		app: app,
 	}
 	srv.fs = fs.New(app)
-
-	runner.Register("sync", func() runner.FuncOption {
-		return runner.NewFuncOptionWithArg(&fs.SyncTaskOption{}, srv.fs)
-	})
-	runner.Register("backup", func() runner.FuncOption {
-		return runner.NewFuncOptionWithArg(&fs.BackupTaskOption{}, srv.fs)
-	})
 	return srv
 }

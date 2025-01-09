@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"io/fs"
 	"net"
-	"path/filepath"
+
+	filepath "path"
 
 	"github.com/hirochachacha/go-smb2"
 	"github.com/honmaple/maple-file/server/pkg/driver"

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"path/filepath"
+	filepath "path"
 	"strings"
 
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"

@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	filepath "path"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/honmaple/maple-file/server/pkg/driver"

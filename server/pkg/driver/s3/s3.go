@@ -5,8 +5,9 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"strings"
+
+	filepath "path"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"

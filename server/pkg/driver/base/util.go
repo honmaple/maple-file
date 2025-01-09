@@ -1,7 +1,7 @@
 package base
 
 import (
-	"path/filepath"
+	filepath "path"
 	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"

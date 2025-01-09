@@ -4,7 +4,8 @@ import (
 	"context"
 	"io"
 	"os"
-	"path/filepath"
+
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"

@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"
@@ -15,7 +16,7 @@ import (
 
 type Option struct {
 	base.Option
-	Path    string `json:"path" validate:"required,startswith=/"`
+	Path    string `json:"path" validate:"required"`
 	DirPerm uint32 `json:"-"`
 }
 
@@ -29,7 +30,17 @@ type Local struct {
 }
 
 func (d *Local) getActualPath(path string) string {
-	return filepath.Join(d.opt.Path, path)
+	if runtime.GOOS != "windows" {
+		return filepath.Join(d.opt.Path, path)
+	}
+	return filepath.Join(d.opt.Path, filepath.ToSlash(path))
+}
+
+func (d *Local) getActualFile(file driver.File) driver.File {
+	if runtime.GOOS != "windows" {
+		return file
+	}
+	return driver.NewFile(filepath.FromSlash(file.Path()), file)
 }
 
 func (d *Local) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
@@ -44,7 +55,7 @@ func (d *Local) List(ctx context.Context, path string, metas ...driver.Meta) ([]
 		if err != nil {
 			return nil, err
 		}
-		files[i] = driver.NewFile(path, info)
+		files[i] = d.getActualFile(driver.NewFile(path, info))
 	}
 	return files, nil
 }
@@ -54,7 +65,7 @@ func (d *Local) Get(ctx context.Context, path string) (driver.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return driver.NewFile(filepath.Dir(path), info), nil
+	return d.getActualFile(driver.NewFile(filepath.Dir(path), info)), nil
 }
 
 func (d *Local) Open(path string) (driver.FileReader, error) {
@@ -183,7 +194,12 @@ func New(opt *Option) (driver.FS, error) {
 	if err := driver.VerifyOption(opt); err != nil {
 		return nil, err
 	}
-	if util.CleanPath(opt.Path) != opt.Path {
+
+	if !filepath.IsAbs(opt.Path) {
+		return nil, errors.New("path must be abspath")
+	}
+
+	if filepath.Clean(opt.Path) != opt.Path {
 		return nil, fs.ErrInvalid
 	}
 

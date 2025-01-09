@@ -2,7 +2,7 @@ package s3
 
 import (
 	"io/fs"
-	"path/filepath"
+	filepath "path"
 	"strings"
 	"time"
 

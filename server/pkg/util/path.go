@@ -1,11 +1,12 @@
 package util
 
 import (
-	"path/filepath"
+	filepath "path"
 	"strings"
 )
 
 func CleanPath(path string) string {
+	// path = filepath.FromSlash(path)
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}

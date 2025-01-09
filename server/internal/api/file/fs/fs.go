@@ -2,7 +2,7 @@ package fs
 
 import (
 	"errors"
-	"path/filepath"
+	filepath "path"
 	"strings"
 
 	"github.com/honmaple/maple-file/server/internal/app"

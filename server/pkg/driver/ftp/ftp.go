@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"path/filepath"
 	"time"
+
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"

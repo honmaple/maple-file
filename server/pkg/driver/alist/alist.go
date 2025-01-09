@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path/filepath"
 	"strings"
+
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"

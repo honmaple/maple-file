@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"path/filepath"
+	filepath "path"
 	"time"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"

@@ -2,8 +2,9 @@ package driver
 
 import (
 	"context"
-	"path/filepath"
 	"strings"
+
+	filepath "path"
 )
 
 type rootFS struct {

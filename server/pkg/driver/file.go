@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"mime"
 	"os"
-	"path/filepath"
+	filepath "path"
 	"time"
 )
 

@@ -3,7 +3,7 @@ package fs
 import (
 	"fmt"
 	"io"
-	"path/filepath"
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"

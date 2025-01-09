@@ -6,10 +6,11 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"path/filepath"
 	"strings"
 	"testing/fstest"
 	"time"
+
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"

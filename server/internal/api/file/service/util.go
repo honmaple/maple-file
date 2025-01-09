@@ -1,7 +1,7 @@
 package service
 
 import (
-	"path/filepath"
+	filepath "path"
 	"time"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"

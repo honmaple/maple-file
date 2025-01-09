@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"path/filepath"
+
+	filepath "path"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"

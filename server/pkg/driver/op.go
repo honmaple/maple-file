@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"io/fs"
-	"path/filepath"
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/util"
 )

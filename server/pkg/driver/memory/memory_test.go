@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"strings"
 	"testing"
+
+	filepath "path"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/driver/base"

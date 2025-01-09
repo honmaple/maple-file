@@ -39,13 +39,19 @@ class PathUtil {
   }
 
   static Future<String> getApplicationPath() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return dir.path;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.windows:
+        final executablePath = Platform.resolvedExecutable;
+        final executableParentPath = File(executablePath).parent.path;
+        return executableParentPath;
+      default:
+        return (await getApplicationDocumentsDirectory()).path;
+    }
   }
 
   static Future<String> getDatabasePath() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return filepath.join(dir.path, "server.db");
+    final path = await getApplicationPath();
+    return filepath.join(path, "server.db");
   }
 
   static RegExp exp = RegExp(r'(.*?)\.(\d+)$');

@@ -1,6 +1,5 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:grpc/grpc.dart';
 import 'package:grpc/service_api.dart' as grpcapi;
 import 'package:ffi/ffi.dart';
@@ -8,6 +7,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 
 import '../common/utils/util.dart';
+import '../common/utils/path.dart';
 import '../generated/ffi/libserver.dart';
 
 class GrpcService {
@@ -34,9 +34,9 @@ class GrpcService {
   }
 
   Future<String> _initMobile() async {
-    final directory = await getApplicationDocumentsDirectory();
+    final path = await PathUtil.getApplicationPath();
     final Map<String, dynamic> args = {
-      'path': directory.path,
+      'path': path,
     };
 
     return await platform.invokeMethod("Start", args).catchError((err) {
@@ -55,8 +55,7 @@ class GrpcService {
       libname += ".so";
     }
 
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
+    final path = await PathUtil.getApplicationPath();
 
     // ffi.Char
     final lib = LibserverBind(ffi.DynamicLibrary.open(libname));

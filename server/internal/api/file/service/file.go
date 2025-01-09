@@ -142,8 +142,9 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 	filename := req.GetFilename()
 
 	cf, err := srv.getSetting(ctx, "app.file")
+	// 不要返回错误
 	if err != nil {
-		return nil, err
+		cf = viper.New()
 	}
 
 	if limitSize := cf.GetInt32("upload.limit_size"); limitSize > 0 && req.GetSize() > limitSize*1024*1024 {

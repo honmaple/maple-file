@@ -133,6 +133,46 @@ jobs:
           name: macos-result
           path: app/build/macos/Build/Products/Release/dist/*.dmg
 
+  build-windows:
+    needs:
+      - get-version
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build dll
+        run: |
+          cd server
+          go build -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=${{ needs.get-version.outputs.version }}" -buildmode=c-shared -o ../app/windows/libserver.dll github.com/honmaple/maple-file/server/cmd/desktop
+
+      - name: Build exe
+        run: |
+          cd app
+          flutter pub get
+          dart run build_runner build
+          flutter build windows
+
+          mkdir dist
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath dist/maple-file-${{ needs.get-version.outputs.version }}-windows-x86_64.zip
+
+      - name: Upload exe file
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-result
+          path: app/dist/maple-file-*.zip
+
   build-android:
     needs:
       - get-version
@@ -200,6 +240,7 @@ jobs:
   release:
     needs:
       - build-macos
+      - build-windows
       - build-android
     runs-on: ubuntu-22.04
 
@@ -216,6 +257,12 @@ jobs:
           name: macos-result
           path: macos-result
 
+      - name: Download exe file
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-result
+          path: windows-result
+
       - name: Download apk file
         uses: actions/download-artifact@v4
         with:
@@ -228,5 +275,6 @@ jobs:
         with:
           files: |
             macos-result/*.dmg
+            windows-result/*.zip
             android-result/*.apk
           token: ${{ secrets.GITHUB_TOKEN }}

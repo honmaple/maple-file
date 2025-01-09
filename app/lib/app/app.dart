@@ -49,7 +49,7 @@ class App {
       WindowOptions windowOptions = WindowOptions(
         size: const Size(800, 600),
         center: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Util.isWindows ? null : Colors.transparent,
         titleBarStyle:
             Util.isWindows ? TitleBarStyle.normal : TitleBarStyle.hidden,
       );

@@ -33,14 +33,14 @@ func (d *Local) getActualPath(path string) string {
 	if runtime.GOOS != "windows" {
 		return filepath.Join(d.opt.Path, path)
 	}
-	return filepath.Join(d.opt.Path, filepath.ToSlash(path))
+	return filepath.Join(d.opt.Path, filepath.FromSlash(path))
 }
 
 func (d *Local) getActualFile(file driver.File) driver.File {
 	if runtime.GOOS != "windows" {
 		return file
 	}
-	return driver.NewFile(filepath.FromSlash(file.Path()), file)
+	return driver.NewFile(filepath.ToSlash(file.Path()), file)
 }
 
 func (d *Local) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {

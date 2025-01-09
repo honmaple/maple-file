@@ -7,7 +7,6 @@ toolchain go1.23.4
 require (
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/aws/aws-sdk-go v1.51.21
-	github.com/elliotchance/orderedmap/v3 v3.0.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.23.0
@@ -97,3 +96,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
 )
+
+replace nhooyr.io/websocket => github.com/coder/websocket v1.8.7

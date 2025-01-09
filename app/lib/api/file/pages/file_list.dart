@@ -151,7 +151,7 @@ class _FileListState extends ConsumerState<FileList> {
     if (file.type == "DIR") {
       Navigator.of(context).pushNamed(
         '/file/list',
-        arguments: filepath.join(file.path, file.name),
+        arguments: filepath.posix.join(file.path, file.name),
       );
       return;
     }

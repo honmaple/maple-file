@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/tree.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/custom.dart';
@@ -106,7 +107,7 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                   label: Text('任务'.tr()),
                 ),
               ],
-              leading: const SizedBox(height: 16),
+              leading: Util.isWindows ? null : const SizedBox(height: 16),
               trailing: Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

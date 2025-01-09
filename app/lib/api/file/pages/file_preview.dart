@@ -72,7 +72,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
   }
 
   _buildFile(File file) {
-    final remotePath = filepath.join(file.path, file.name);
+    final remotePath = filepath.posix.join(file.path, file.name);
 
     if (PathUtil.isText(file.name, type: file.type)) {
       return TextPreview.remote(remotePath);
@@ -213,7 +213,7 @@ class _FileImagePreviewState extends ConsumerState<FileImagePreview> {
                   });
                 },
                 child: ImagePreview.remote(
-                  filepath.join(file.path, file.name),
+                  filepath.posix.join(file.path, file.name),
                   fit: BoxFit.contain,
                 ),
               );
@@ -277,7 +277,7 @@ class _FileAudioPreviewState extends State<FileAudioPreview>
 
     _controller = AudioPreviewController(
       currentFiles.map((file) {
-        final remotePath = filepath.join(file.path, file.name);
+        final remotePath = filepath.posix.join(file.path, file.name);
         return PreviewSource.network(GRPC().previewURL(remotePath));
       }).toList(),
       index: index,
@@ -344,7 +344,7 @@ class _FileVideoPreviewState extends State<FileVideoPreview>
 
     _controller = VideoPreviewController(
       currentFiles.map((file) {
-        final remotePath = filepath.join(file.path, file.name);
+        final remotePath = filepath.posix.join(file.path, file.name);
         return PreviewSource.network(GRPC().previewURL(remotePath));
       }).toList(),
       index: index,

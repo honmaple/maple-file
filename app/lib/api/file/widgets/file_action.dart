@@ -71,7 +71,7 @@ extension FileActionTypeExtension on FileActionType {
         }
         return;
       case FileActionType.rename:
-        final ext = filepath.extension(file.name);
+        final ext = filepath.posix.extension(file.name);
         final result = await showEditingDialog(
           context,
           "重命名".tr(),
@@ -96,7 +96,7 @@ extension FileActionTypeExtension on FileActionType {
         }
         await FileService()
             .download(
-          filepath.join(file.path, file.name),
+          filepath.posix.join(file.path, file.name),
           io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
         )
             .then((_) {

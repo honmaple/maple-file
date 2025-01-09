@@ -113,12 +113,13 @@ class FileService {
     const int chunkSize = 1024 * 32;
 
     var size = file.lengthSync();
+    var name = filepath.basename(file.path);
 
     // 第0片不包括chunk
     yield FileRequest(
       path: path,
       size: size,
-      filename: filepath.basename(file.path),
+      filename: name,
     );
 
     var index = 0;
@@ -134,7 +135,7 @@ class FileService {
         size: size,
         index: index,
         chunk: chunk.toList(),
-        filename: filepath.basename(file.path),
+        filename: name,
       );
 
       chunk = readFile.readSync(readSize);
@@ -145,7 +146,7 @@ class FileService {
         size: size,
         index: index + 1,
         chunk: chunk.toList(),
-        filename: filepath.basename(file.path),
+        filename: name,
       );
     }
   }
@@ -254,5 +255,4 @@ class FileService {
       return _client.deleteRepo(request);
     });
   }
-
 }

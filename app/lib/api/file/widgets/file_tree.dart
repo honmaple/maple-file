@@ -112,10 +112,10 @@ class FileTreeState extends ConsumerState<FileTree> {
           CustomTreeNode<File>? parent = node.parent;
 
           while (parent != null) {
-            path = filepath.join(parent.content.name, path);
+            path = filepath.posix.join(parent.content.name, path);
             parent = parent.parent;
           }
-          path = filepath.join(widget.path, path);
+          path = filepath.posix.join(widget.path, path);
 
           final files = ref.refresh(fileProvider(path)).valueOrNull ?? [];
           node.children.clear();

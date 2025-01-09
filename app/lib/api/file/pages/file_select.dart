@@ -112,7 +112,7 @@ class _FileSelectState extends ConsumerState<FileSelect> {
               final result = ref
                   .read(fileSelectionProvider)
                   .selected
-                  .map((file) => filepath.join(file.path, file.name))
+                  .map((file) => filepath.posix.join(file.path, file.name))
                   .toList();
 
               _resetProvider();
@@ -136,7 +136,7 @@ class _FileSelectState extends ConsumerState<FileSelect> {
   _onTap(BuildContext context, File item) async {
     if (item.type == "DIR") {
       final Map<String, dynamic> args = {
-        "path": filepath.join(item.path, item.name),
+        "path": filepath.posix.join(item.path, item.name),
         "title": widget.title,
         "filter": widget.filter,
         "multiple": widget.multiple,

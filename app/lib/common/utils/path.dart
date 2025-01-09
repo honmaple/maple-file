@@ -86,7 +86,7 @@ class PathUtil {
     Map<String, IconData> icons = {
       ".apk": Icons.android,
     };
-    return icons[filepath.extension(name)] ?? Icons.note;
+    return icons[filepath.posix.extension(name)] ?? Icons.note;
   }
 
   static bool isText(String name, {String? type}) {

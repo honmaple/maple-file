@@ -39,7 +39,7 @@ class PreviewSource {
   PreviewSource.network(
     String url, {
     String? name,
-  })  : name = name ?? filepath.basename(url),
+  })  : name = name ?? filepath.url.basename(url),
         source = url,
         sourceType = SourceType.network;
 
@@ -49,7 +49,7 @@ class PreviewSource {
         sourceType = SourceType.file;
 
   PreviewSource.remote(String path)
-      : name = filepath.basename(path),
+      : name = filepath.posix.basename(path),
         source = GRPC().previewURL(path),
         sourceType = SourceType.network;
 }

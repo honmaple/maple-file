@@ -46,11 +46,12 @@ class App {
     if (Util.isDesktop) {
       await windowManager.ensureInitialized();
 
-      WindowOptions windowOptions = const WindowOptions(
-        size: Size(800, 600),
+      WindowOptions windowOptions = WindowOptions(
+        size: const Size(800, 600),
         center: true,
         backgroundColor: Colors.transparent,
-        titleBarStyle: TitleBarStyle.hidden,
+        titleBarStyle:
+            Util.isWindows ? TitleBarStyle.normal : TitleBarStyle.hidden,
       );
       windowManager.waitUntilReadyToShow(windowOptions, () async {
         await windowManager.show();

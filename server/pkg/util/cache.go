@@ -1,6 +1,7 @@
 package util
 
 import (
+	"iter"
 	"sync"
 )
 
@@ -11,6 +12,7 @@ type Cache[K comparable, V any] interface {
 	Reset()
 	Range(func(K, V) bool)
 	Len() int
+	Iter() iter.Seq2[K, V]
 }
 
 type cache[K comparable, V any] struct {
@@ -32,6 +34,12 @@ func (c *cache[K, V]) Store(key K, value V) {
 
 func (c *cache[K, V]) Delete(key K) {
 	c.m.Delete(key)
+}
+
+func (c *cache[K, V]) Iter() iter.Seq2[K, V] {
+	return func(yield func(key K, value V) bool) {
+		c.Range(yield)
+	}
 }
 
 func (c *cache[K, V]) Range(f func(K, V) bool) {

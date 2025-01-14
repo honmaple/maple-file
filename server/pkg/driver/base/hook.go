@@ -57,7 +57,8 @@ func (d *hookFS) List(ctx context.Context, path string, metas ...driver.Meta) ([
 		}
 		newFiles = append(newFiles, newFile)
 	}
-	return newFiles, nil
+	meta := driver.NewMeta(metas...)
+	return meta.Paginator(meta.Sort(newFiles)), nil
 }
 
 func (d *hookFS) Get(ctx context.Context, path string) (driver.File, error) {

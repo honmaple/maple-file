@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"context"
 	"errors"
 	filepath "path"
 	"strings"
@@ -25,7 +26,7 @@ type (
 	FS interface {
 		driver.FS
 		GetFS(string) (driver.FS, string, error)
-		GetRepo(string) (*pb.Repo, error)
+		GetRepo(string) *pb.Repo
 		CreateRepo(*pb.Repo)
 		UpdateRepo(*pb.Repo, *pb.Repo)
 		DeleteRepo(*pb.Repo)
@@ -53,10 +54,63 @@ type defaultFS struct {
 	repos util.Cache[string, *pb.Repo]
 }
 
+func (d *defaultFS) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
+	results := make([]driver.File, 0)
+	repoMap := make(map[string]bool)
+	if path != "/" && d.GetRepo(path) != nil {
+		files, err := d.FS.List(ctx, path, metas...)
+		if err != nil {
+			return nil, err
+		}
+		for _, file := range files {
+			if file.IsDir() {
+				repoMap[file.Name()] = true
+			}
+			results = append(results, file)
+		}
+	}
+
+	for _, repo := range d.repos.Iter() {
+		if !repo.GetStatus() {
+			continue
+		}
+		if path == repo.GetPath() {
+			if name := repo.GetName(); !repoMap[name] {
+				info := &driver.FileInfo{
+					Path:    path,
+					Name:    name,
+					IsDir:   true,
+					ModTime: repo.UpdatedAt.AsTime(),
+				}
+				results = append(results, info.File())
+				repoMap[name] = true
+			}
+		} else if util.IsSubPath(path, repo.GetPath()) {
+			relPath := ""
+			if strings.HasSuffix(path, "/") {
+				relPath = strings.TrimPrefix(repo.GetPath(), path)
+			} else {
+				relPath = strings.TrimPrefix(repo.GetPath(), path+"/")
+			}
+			if root := strings.SplitN(relPath, "/", 2); len(root) > 0 && !repoMap[root[0]] {
+				info := &driver.FileInfo{
+					Path:    path,
+					Name:    root[0],
+					IsDir:   true,
+					ModTime: repo.UpdatedAt.AsTime(),
+				}
+				results = append(results, info.File())
+				repoMap[root[0]] = true
+			}
+		}
+	}
+	return results, nil
+}
+
 func (d *defaultFS) GetFS(path string) (driver.FS, string, error) {
-	repo, err := d.GetRepo(path)
-	if err != nil {
-		return nil, "", err
+	repo := d.GetRepo(path)
+	if repo == nil {
+		return nil, "", errors.New("路径不存在或者路径为虚拟路径")
 	}
 	if !repo.Status {
 		return nil, "", errors.New("存储未激活")
@@ -80,7 +134,7 @@ func (d *defaultFS) GetFS(path string) (driver.FS, string, error) {
 	return fs, realPath, nil
 }
 
-func (d *defaultFS) GetRepo(path string) (*pb.Repo, error) {
+func (d *defaultFS) GetRepo(path string) *pb.Repo {
 	path = util.CleanPath(path)
 
 	var (
@@ -99,10 +153,7 @@ func (d *defaultFS) GetRepo(path string) (*pb.Repo, error) {
 		}
 		pathstr = pathstr[:index]
 	}
-	if repo == nil {
-		return nil, errors.New("错误的路径")
-	}
-	return repo, nil
+	return repo
 }
 
 func (d *defaultFS) CreateRepo(repo *pb.Repo) {

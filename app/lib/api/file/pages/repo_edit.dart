@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
@@ -53,7 +54,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
               child: Text("删除".tr()),
               onPressed: () async {
                 final result = await showAlertDialog<bool>(context,
-                    content: Text(("确认删除存储?".tr())));
+                    content: Text("确认删除存储?".tr()));
                 if (result != null && result) {
                   await FileService().deleteRepo(_form.id).then((_) {
                     ref.invalidate(repoProvider);

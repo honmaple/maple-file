@@ -60,23 +60,3 @@ func infoToFile(m driver.File) *pb.File {
 	}
 	return file
 }
-
-func paginator(files []*pb.File, page int, pageSize int) []*pb.File {
-	if pageSize <= 0 {
-		return files
-	}
-
-	if page <= 0 {
-		page = 1
-	}
-	total := len(files)
-	start := (page - 1) * pageSize
-	if start > total {
-		return []*pb.File{}
-	}
-	end := start + pageSize
-	if end > total {
-		end = total
-	}
-	return files[start:end]
-}

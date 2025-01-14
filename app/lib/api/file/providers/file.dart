@@ -20,7 +20,10 @@ class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
     }));
 
     final results = await _service.list(
-      filter: {"path": arg, "page_size": "$size"},
+      filter: {
+        "path": arg,
+        "page_size": "$size",
+      },
     );
 
     final sort = ref.watch(fileSettingProvider.select((state) {

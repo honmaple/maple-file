@@ -45,37 +45,19 @@ func (srv *Service) getSetting(ctx context.Context, key string) (*viper.Viper, e
 func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.ListFilesResponse, error) {
 	filter := util.NewFilter(req.GetFilter())
 
-	path := util.CleanPath(filter.GetString("path"))
+	metas := []driver.Meta{
+		driver.WithOrder(filter.GetString("order"), filter.GetBool("desc")),
+		driver.WithPagination(filter.GetInt("page"), filter.GetInt("page_size")),
+	}
 
-	q := srv.app.DB.WithContext(ctx).Model(pb.Repo{}).Where("status = ? AND path = ?", true, path).Order("name DESC")
-
-	repos := make([]*pb.Repo, 0)
-	if err := q.Find(&repos).Error; err != nil {
+	files, err := srv.fs.List(ctx, util.CleanPath(filter.GetString("path")), metas...)
+	if err != nil {
 		return nil, err
 	}
-
-	results := make([]*pb.File, len(repos))
-	for i, m := range repos {
-		result := &pb.File{
-			Path:      "/",
-			Name:      m.Name,
-			Type:      "DIR",
-			CreatedAt: m.CreatedAt,
-			UpdatedAt: m.UpdatedAt,
-		}
-		results[i] = result
+	results := make([]*pb.File, len(files))
+	for i, m := range files {
+		results[i] = infoToFile(m)
 	}
-	if path != "/" {
-		files, err := srv.fs.List(ctx, path, driver.WithPagination(filter.GetInt("page"), filter.GetInt("page_size")))
-		if err != nil {
-			return nil, err
-		}
-		for _, m := range files {
-			results = append(results, infoToFile(m))
-		}
-	}
-
-	results = paginator(results, filter.GetInt("page"), filter.GetInt("page_size"))
 	return &pb.ListFilesResponse{Results: results}, nil
 }
 

@@ -2,7 +2,7 @@
 
 * 红枫云盘
   #+BEGIN_QUOTE
-  使用 *Flutter* + *Go* 实现的无服务端多协议云盘文件上传和管理APP
+  使用 *Flutter* 实现的无服务端多协议云盘文件上传和管理APP
   #+END_QUOTE
 
 ** 支持的存储
@@ -25,7 +25,7 @@
    - 支持文件加密和压缩(*测试中*)
    - 支持各存储之间的备份和同步(*测试中*)
    - 支持多语言(中文、英文)
-   - 支持 *Web*, *Android* 和 *MacOS*
+   - 支持 *Web*, *Android*, *MacOS* 和 *Windows*
 
 ** 截图
    - android

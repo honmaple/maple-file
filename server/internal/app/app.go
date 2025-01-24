@@ -23,7 +23,7 @@ import (
 var (
 	PROCESS     = "maple-file"
 	VERSION     = "dev"
-	DESCRIPTION = "Upload or download file, manage cloud file"
+	DESCRIPTION = "Multi-protocol cloud file upload and management with serverless."
 )
 
 type App struct {

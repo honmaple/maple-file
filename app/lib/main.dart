@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 import 'api/setting/providers/setting_appearance.dart';
 import 'app/app.dart';
@@ -51,17 +52,8 @@ class MyApp extends ConsumerWidget {
       ),
       scaffoldMessengerKey: App.scaffoldMessengerKey,
       themeMode: appearance.themeMode,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: appearance.color,
-        ),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: appearance.color,
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: FlexThemeData.light(scheme: appearance.scheme),
+      darkTheme: FlexThemeData.dark(scheme: appearance.scheme),
       localizationsDelegates: I18n.localizationsDelegates,
       supportedLocales: I18n.supportedLocales,
       initialRoute: App.initialRoute,

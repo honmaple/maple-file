@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
@@ -51,21 +52,38 @@ class _SettingThemeState extends ConsumerState<SettingTheme> {
                 },
               ),
             ),
-            for (final model in ThemeModel.themes)
+            ListTile(
+              title: Text("默认".tr()),
+              leading: Container(
+                height: 24,
+                width: 24,
+                decoration: BoxDecoration(
+                  color: defaultFlexScheme.primaryColor(context),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                ),
+              ),
+              selected: appearance.themeColor == null,
+              onTap: () {
+                ref.read(appearanceProvider.notifier).update((state) {
+                  return state.copyWith(themeColor: null);
+                });
+              },
+            ),
+            for (final scheme in FlexScheme.values)
               ListTile(
-                title: Text(model.name),
+                title: Text(scheme.name),
                 leading: Container(
                   height: 24,
                   width: 24,
                   decoration: BoxDecoration(
-                    color: model.color,
+                    color: scheme.primaryColor(context),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
                 ),
-                selected: appearance.color == model.color,
+                selected: appearance.scheme == scheme,
                 onTap: () {
                   ref.read(appearanceProvider.notifier).update((state) {
-                    return state.copyWith(themeColor: model.name);
+                    return state.copyWith(themeColor: scheme.name);
                   });
                 },
               ),

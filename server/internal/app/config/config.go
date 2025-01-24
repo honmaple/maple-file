@@ -2,9 +2,11 @@ package config
 
 import (
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 )
 
@@ -60,6 +62,29 @@ func (conf *Config) Sub(key string) *Config {
 	return &Config{cf: cf}
 }
 
+func (conf *Config) SubSlice(key string) []*Config {
+	conf.mu.RLock()
+	defer conf.mu.RUnlock()
+
+	data := conf.Get(key)
+	if data == nil {
+		return nil
+	}
+
+	if reflect.TypeOf(data).Kind() == reflect.Slice {
+		var cfs []*Config
+		for _, item := range data.([]interface{}) {
+			subv := viper.New()
+			for k, v := range cast.ToStringMap(item) {
+				subv.Set(k, v)
+			}
+			cfs = append(cfs, &Config{cf: subv})
+		}
+		return cfs
+	}
+	return nil
+}
+
 func (conf *Config) IsSet(key string) bool {
 	conf.mu.Lock()
 	defer conf.mu.Unlock()
@@ -79,6 +104,23 @@ func (conf *Config) SetDefault(key string, value any) {
 	defer conf.mu.Unlock()
 
 	conf.cf.SetDefault(key, value)
+}
+
+func (conf *Config) UnSet(key string) {
+	conf.mu.Lock()
+	defer conf.mu.Unlock()
+
+	parts := strings.Split(key, ".")
+	if len(parts) == 1 {
+		conf.cf.Set(key, nil)
+		return
+	}
+	k := strings.Join(parts[:len(parts)-1], ".")
+	m := conf.cf.GetStringMap(k)
+	if m != nil {
+		delete(m, parts[len(parts)-1])
+		conf.cf.Set(k, m)
+	}
 }
 
 func (conf *Config) Get(key string) any {

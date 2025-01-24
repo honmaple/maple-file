@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
@@ -142,35 +143,55 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       ],
                     ),
                     onTap: () async {
-                      final result = await showListDialog2(
+                      final result = await showListDialog2<FlexScheme>(
                         context,
                         height: MediaQuery.sizeOf(context).height * 0.618,
                         child: ListView(
-                          children: ThemeModel.themes.map(
-                            (theme) {
-                              return ListTile(
-                                title: Text(theme.name),
+                          children: [
+                            ListTile(
+                              title: Text("默认".tr()),
+                              leading: Container(
+                                height: 24,
+                                width: 24,
+                                decoration: BoxDecoration(
+                                  color:
+                                      defaultFlexScheme.primaryColor(context),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(12)),
+                                ),
+                              ),
+                              selected: setting.iconColor == null,
+                              onTap: () {
+                                Navigator.of(context).pop(defaultFlexScheme);
+                              },
+                            ),
+                            for (final scheme in FlexScheme.values)
+                              ListTile(
+                                title: Text(scheme.name),
                                 leading: Container(
                                   height: 24,
                                   width: 24,
                                   decoration: BoxDecoration(
-                                    color: theme.color,
+                                    color: scheme.primaryColor(context),
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(12)),
                                   ),
                                 ),
-                                selected: setting.iconColor == theme.name,
+                                selected: setting.iconColor == scheme.name,
                                 onTap: () {
-                                  Navigator.of(context).pop(theme.name);
+                                  Navigator.of(context).pop(scheme);
                                 },
-                              );
-                            },
-                          ).toList(),
+                              ),
+                          ],
                         ),
                       );
                       if (result != null) {
                         ref.read(fileSettingProvider.notifier).update((state) {
-                          return state.copyWith(iconColor: result);
+                          return state.copyWith(
+                            iconColor: result.name == defaultFlexScheme.name
+                                ? null
+                                : result.name,
+                          );
                         });
                       }
                     },

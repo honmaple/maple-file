@@ -11,6 +11,7 @@ import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/providers/selection.dart';
 
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
+import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
 import 'file_action.dart';
 import 'file_breadcrumb.dart';
@@ -254,9 +255,9 @@ class FileIcon extends ConsumerWidget {
         height: 48 * size,
         width: 48 * size,
         decoration: BoxDecoration(
-          color: setting.iconColor != null
-              ? setting.color
-              : ColorUtil.backgroundColorWithString(file.name),
+          color: setting.iconColor == null
+              ? Theme.of(context).primaryColor
+              : setting.scheme.primaryColor(context),
           borderRadius: BorderRadius.all(Radius.circular(24 * size)),
         ),
         alignment: Alignment.center,
@@ -269,9 +270,9 @@ class FileIcon extends ConsumerWidget {
     return Icon(
       PathUtil.icon(file.name, type: file.type),
       size: 64 * size,
-      color: setting.iconColor != null
-          ? setting.color
-          : ColorUtil.backgroundColorWithString(file.name),
+      color: setting.iconColor == null
+          ? Theme.of(context).primaryColor
+          : setting.scheme.primaryColor(context),
     );
   }
 }

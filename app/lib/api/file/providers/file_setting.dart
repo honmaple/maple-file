@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/api/setting/providers/setting.dart';
@@ -82,12 +83,10 @@ class FileSetting with _$FileSetting {
   factory FileSetting.fromJson(Map<String, Object?> json) =>
       _$FileSettingFromJson(json);
 
-  Color get color => ThemeModel.themes
-      .firstWhere(
+  FlexScheme get scheme => FlexScheme.values.firstWhere(
         (item) => item.name == iconColor,
-        orElse: () => ThemeModel.defaultTheme,
-      )
-      .color;
+        orElse: () => defaultFlexScheme,
+      );
 }
 
 final fileSettingProvider = newSettingNotifier(

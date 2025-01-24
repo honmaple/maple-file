@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 
 import '../providers/file_setting.dart';
@@ -16,14 +15,6 @@ class FileSettingUpload extends ConsumerStatefulWidget {
 }
 
 class _FileSettingUploadState extends ConsumerState<FileSettingUpload> {
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,11 +48,7 @@ class _FileSettingUploadState extends ConsumerState<FileSettingUpload> {
           child: Column(
             children: [
               ListTile(
-                title: Text("文件上传".tr()),
-                dense: true,
-              ),
-              ListTile(
-                title: const Text('自动重命名'),
+                title: Text('自动重命名'.tr()),
                 trailing: Switch(
                   value: setting.uploadRename,
                   onChanged: (bool value) async {
@@ -72,56 +59,34 @@ class _FileSettingUploadState extends ConsumerState<FileSettingUpload> {
                 ),
               ),
               if (setting.uploadRename)
-                ListTile(
-                  title: const Text('重命名格式'),
-                  trailing: Text(setting.uploadFormat == ""
-                      ? "{filename}{extension}"
-                      : setting.uploadFormat),
-                  onTap: () async {
-                    _controller.text = setting.uploadFormat;
-
-                    final result = await showEditingDialog(
-                      context,
-                      "重命名格式",
-                      controller: _controller,
-                      helper: buildHelper(),
-                    );
-                    if (result != null) {
-                      ref.read(fileSettingProvider.notifier).update((state) {
-                        return state.copyWith(uploadFormat: result);
-                      });
-                    }
+                CustomFormField(
+                  type: CustomFormFieldType.path,
+                  label: '重命名格式'.tr(),
+                  value: setting.uploadFormat,
+                  subtitle: Text(
+                    "默认为 {path}".tr(args: {
+                      "path": "{filename}{extension}",
+                    }),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  onTap: (result) {
+                    ref.read(fileSettingProvider.notifier).update((state) {
+                      return state.copyWith(uploadFormat: result);
+                    });
                   },
                 ),
-              ListTile(
-                title: const Text('分片大小'),
-                subtitle: const Text(
-                  '文件上传分片大小',
-                  style: TextStyle(fontSize: 10),
+              CustomFormField(
+                type: CustomFormFieldType.number,
+                label: '分片大小'.tr(),
+                value: "${setting.uploadSliceSize}",
+                subtitle: Text(
+                  '文件上传分片大小(单位：KB)'.tr(),
+                  style: const TextStyle(fontSize: 12),
                 ),
-                trailing: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text("${setting.uploadSliceSize}KB"),
-                  ],
-                ),
-                onTap: () async {
-                  _controller.text = setting.uploadSliceSize.toString();
-
-                  final result = await showEditingDialog(
-                    context,
-                    "分片大小(单位：KB)",
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                  );
-                  if (result != null) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(uploadSliceSize: int.parse(result));
-                    });
-                  }
+                onTap: (result) {
+                  ref.read(fileSettingProvider.notifier).update((state) {
+                    return state.copyWith(uploadSliceSize: int.parse(result));
+                  });
                 },
               ),
             ],
@@ -130,103 +95,36 @@ class _FileSettingUploadState extends ConsumerState<FileSettingUpload> {
         Card(
           child: Column(
             children: [
-              const ListTile(
-                title: Text("文件限制"),
-                dense: true,
-              ),
-              ListTile(
-                title: const Text('大小限制'),
-                subtitle: const Text(
-                  '0表示不限制',
-                  style: TextStyle(fontSize: 10),
+              CustomFormField(
+                type: CustomFormFieldType.number,
+                label: '大小限制'.tr(),
+                value: "${setting.uploadLimitSize}",
+                subtitle: Text(
+                  '0表示不限制(单位：MB)'.tr(),
+                  style: const TextStyle(fontSize: 12),
                 ),
-                trailing: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text("${setting.uploadLimitSize}MB"),
-                  ],
-                ),
-                onTap: () async {
-                  _controller.text = setting.uploadLimitSize.toString();
-
-                  final result = await showEditingDialog(
-                    context,
-                    "大小限制(单位：MB)",
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                  );
-                  if (result != null) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(uploadLimitSize: int.parse(result));
-                    });
-                  }
+                onTap: (result) {
+                  ref.read(fileSettingProvider.notifier).update((state) {
+                    return state.copyWith(uploadLimitSize: int.parse(result));
+                  });
                 },
               ),
-              ListTile(
-                title: const Text('格式限制'),
-                subtitle: const Text(
-                  '多个格式使用逗号分隔。例如: .mp4,.png',
-                  style: TextStyle(fontSize: 10),
+              CustomFormField(
+                label: '格式限制'.tr(),
+                value: setting.uploadLimitType,
+                subtitle: Text(
+                  '多个格式使用逗号分隔。例如: .mp4,.png'.tr(),
+                  style: const TextStyle(fontSize: 12),
                 ),
-                trailing: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(setting.uploadLimitType == ""
-                        ? "未设置"
-                        : setting.uploadLimitType),
-                  ],
-                ),
-                onTap: () async {
-                  _controller.text = setting.uploadLimitType;
-
-                  final result = await showEditingDialog(
-                    context,
-                    "格式限制",
-                    controller: _controller,
-                  );
-                  if (result != null) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(uploadLimitType: result);
-                    });
-                  }
+                onTap: (result) {
+                  ref.read(fileSettingProvider.notifier).update((state) {
+                    return state.copyWith(uploadLimitType: result);
+                  });
                 },
               ),
             ],
           ),
         )
-      ],
-    );
-  }
-
-  Widget buildHelper() {
-    Map<String, String> formats = {
-      "文件名": "{filename}",
-      "文件扩展": "{extension}",
-      "年": "{time:year}",
-      "月": "{time:month}",
-      "日": "{time:day}",
-      "时": "{time:hour}",
-      "分": "{time:minute}",
-      "秒": "{time:second}",
-    };
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      children: [
-        for (final key in formats.keys)
-          ActionChip(
-            label: Text(key),
-            labelStyle: TextStyle(
-              fontSize: kDefaultFontSize * 0.875,
-              color: Theme.of(context).primaryColor,
-            ),
-            onPressed: () {
-              _controller.text = "${_controller.text}${formats[key]}";
-            },
-          ),
       ],
     );
   }

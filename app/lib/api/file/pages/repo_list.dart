@@ -29,10 +29,6 @@ class _RepoListState extends ConsumerState<RepoList> {
             Card(
               child: Column(
                 children: [
-                  ListTile(
-                    title: Text("存储库".tr()),
-                    dense: true,
-                  ),
                   CustomAsyncValue(
                     value: ref.watch(repoProvider),
                     builder: (items) => Column(

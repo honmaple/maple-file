@@ -39,9 +39,7 @@ class GrpcService {
       'path': path,
     };
 
-    return await platform.invokeMethod("Start", args).catchError((err) {
-      print(err);
-    });
+    return await platform.invokeMethod("Start", args);
   }
 
   // https://docs.flutter.dev/platform-integration/macos/c-interop

@@ -143,6 +143,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       ],
                     ),
                     onTap: () async {
+                      final appearance = ref.read(appearanceProvider);
                       final result = await showListDialog2<FlexScheme>(
                         context,
                         height: MediaQuery.sizeOf(context).height * 0.618,
@@ -155,19 +156,19 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                                 width: 24,
                                 decoration: BoxDecoration(
                                   color:
-                                      defaultFlexScheme.primaryColor(context),
+                                      appearance.scheme.primaryColor(context),
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(12)),
                                 ),
                               ),
                               selected: setting.iconColor == null,
                               onTap: () {
-                                Navigator.of(context).pop(defaultFlexScheme);
+                                Navigator.of(context).pop(appearance.scheme);
                               },
                             ),
                             for (final scheme in FlexScheme.values)
                               ListTile(
-                                title: Text(scheme.name),
+                                title: Text(scheme.name.capitalize),
                                 leading: Container(
                                   height: 24,
                                   width: 24,
@@ -188,7 +189,7 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       if (result != null) {
                         ref.read(fileSettingProvider.notifier).update((state) {
                           return state.copyWith(
-                            iconColor: result.name == defaultFlexScheme.name
+                            iconColor: result.name == appearance.scheme.name
                                 ? null
                                 : result.name,
                           );

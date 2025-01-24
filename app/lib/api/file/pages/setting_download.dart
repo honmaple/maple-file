@@ -51,10 +51,6 @@ class _FileSettingDownloadState extends ConsumerState<FileSettingDownload> {
           child: Column(
             children: [
               ListTile(
-                title: Text("文件下载".tr()),
-                dense: true,
-              ),
-              ListTile(
                 title: Text('默认保存路径'.tr()),
                 subtitle: setting.downloadPath == null
                     ? FutureBuilder(

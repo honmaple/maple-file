@@ -71,7 +71,7 @@ class _SettingThemeState extends ConsumerState<SettingTheme> {
             ),
             for (final scheme in FlexScheme.values)
               ListTile(
-                title: Text(scheme.name),
+                title: Text(scheme.name.capitalize),
                 leading: Container(
                   height: 24,
                   width: 24,

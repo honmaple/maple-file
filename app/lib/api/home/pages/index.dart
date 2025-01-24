@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
-import 'package:maple_file/common/widgets/tree.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
-import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/api/file/pages/file_list.dart';
 import 'package:maple_file/api/file/widgets/file_tree.dart';
 import 'package:maple_file/api/file/providers/file.dart';
 import 'package:maple_file/api/setting/pages/setting.dart';
+
+import 'help.dart';
 
 class Index extends ConsumerStatefulWidget {
   const Index({super.key});
@@ -185,51 +184,5 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
     setState(() {
       _selectedIndex = index;
     });
-  }
-}
-
-class DesktopHelp extends StatefulWidget {
-  const DesktopHelp({
-    super.key,
-  });
-
-  @override
-  State<DesktopHelp> createState() => _DesktopHelpState();
-}
-
-class _DesktopHelpState extends State<DesktopHelp> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
-
-  _navigatorPush(String name) {
-    final state = _navigatorKey.currentState ?? Navigator.of(context);
-    state.pushReplacementNamed(name);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final menu = [
-      CustomTreeMenu(
-        icon: Icons.help,
-        label: "帮助".tr(),
-        onTap: () {
-          _navigatorPush('/help');
-        },
-      ),
-      CustomTreeMenu(
-        icon: Icons.person,
-        label: "关于".tr(),
-        onTap: () {
-          _navigatorPush('/about');
-        },
-      ),
-    ];
-    return CustomLayout(
-      menu: menu,
-      navigatorKey: _navigatorKey,
-      initialRoute: "/about",
-      onGenerateRoute: App.router.replaceRoute(replace: {
-        "/": null,
-      }),
-    );
   }
 }

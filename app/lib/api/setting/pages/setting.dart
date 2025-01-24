@@ -29,13 +29,13 @@ class Setting extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
         child: ListView(
           children: <Widget>[
+            ListTile(
+              title: Text("基础设置".tr()),
+              dense: true,
+            ),
             Card(
               child: Column(
                 children: [
-                  ListTile(
-                    title: Text("基础设置".tr()),
-                    dense: true,
-                  ),
                   ListTile(
                     leading: Icon(
                       Icons.brightness_medium,
@@ -72,13 +72,13 @@ class Setting extends StatelessWidget {
                 ],
               ),
             ),
+            ListTile(
+              title: Text("存储设置".tr()),
+              dense: true,
+            ),
             Card(
               child: Column(
                 children: [
-                  ListTile(
-                    title: Text("存储设置".tr()),
-                    dense: true,
-                  ),
                   ListTile(
                     leading: Icon(
                       Icons.storage,

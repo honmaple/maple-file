@@ -12,6 +12,7 @@ import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/common/providers/selection.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
@@ -131,17 +132,18 @@ class _FileListState extends ConsumerState<FileList> {
           : null,
       title: Text(title),
       actions: [
-        IconButton(
-          icon: Badge(
-            label: Text('$taskCount'),
-            isLabelVisible: taskCount > 0,
-            backgroundColor: Theme.of(context).primaryColor,
-            child: const Icon(Icons.swap_vert_circle_outlined),
+        if (Breakpoint.isSmall(context))
+          IconButton(
+            icon: Badge(
+              label: Text('$taskCount'),
+              isLabelVisible: taskCount > 0,
+              backgroundColor: Theme.of(context).primaryColor,
+              child: const Icon(Icons.swap_vert_circle_outlined),
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/task/list');
+            },
           ),
-          onPressed: () {
-            Navigator.pushNamed(context, '/task/list');
-          },
-        ),
         const FilePopupAction(),
       ],
     );

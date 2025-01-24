@@ -92,7 +92,7 @@ class FileTreeState extends ConsumerState<FileTree> {
                     child: const Icon(Icons.expand_more, size: 18)),
               )
             : null,
-        onTap: () {
+        onTap: () async {
           if (!PathUtil.isDir(file.name, type: file.type)) {
             navigatorState(context).popAndPushNamed(
               '/file/preview',
@@ -117,7 +117,7 @@ class FileTreeState extends ConsumerState<FileTree> {
           }
           path = filepath.posix.join(widget.path, path);
 
-          final files = ref.refresh(fileProvider(path)).valueOrNull ?? [];
+          final files = await ref.refresh(fileProvider(path).future);
           node.children.clear();
           for (final file in files) {
             node.children.add(CustomTreeNode<File>(

@@ -33,7 +33,12 @@ class About extends ConsumerWidget {
                       Text("红枫云盘 {version}".tr(
                         args: {"version": resp.version},
                       )),
-                      if (resp.description != "") Text(resp.description),
+                      if (resp.description != "")
+                        Text(
+                          resp.description,
+                          textAlign: TextAlign.center,
+                        ),
+                      const SizedBox(height: 8)
                     ],
                   ),
                 ),
@@ -59,14 +64,8 @@ class About extends ConsumerWidget {
                   child: Column(
                     children: [
                       ListTile(
-                        title: Text("Github".tr()),
-                        trailing: const Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text("honmaple/maple-file"),
-                            Icon(Icons.chevron_right),
-                          ],
-                        ),
+                        title: Text("开源代码".tr()),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () async {
                           await launchUrl(Uri.parse(
                             "https://github.com/honmaple/maple-file",
@@ -74,14 +73,8 @@ class About extends ConsumerWidget {
                         },
                       ),
                       ListTile(
-                        title: Text("License".tr()),
-                        trailing: const Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text("GPL-3.0"),
-                            Icon(Icons.chevron_right),
-                          ],
-                        ),
+                        title: Text("开源协议".tr()),
+                        trailing: const Icon(Icons.chevron_right),
                         onTap: () async {
                           await launchUrl(Uri.parse(
                             "https://github.com/honmaple/maple-file/blob/master/LICENSE",

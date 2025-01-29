@@ -73,6 +73,18 @@ class PathUtil {
   }
 
   static IconData icon(String name, {String? type}) {
+    Map<String, IconData> icons = {
+      ".apk": Icons.android,
+      ".html": Icons.html,
+      ".css": Icons.css,
+      ".php": Icons.php,
+      ".js": Icons.javascript,
+    };
+    IconData? result = icons[filepath.posix.extension(name)];
+    if (result != null) {
+      return result;
+    }
+
     if (type == null || type == "") {
       type = mimeType(name);
     }
@@ -81,7 +93,7 @@ class PathUtil {
     } else if (type == "DIR") {
       return Icons.folder;
     } else if (type.startsWith("text/")) {
-      return Icons.note;
+      return Icons.article;
     } else if (type.startsWith("image/")) {
       return Icons.image;
     } else if (type.startsWith("video/")) {
@@ -89,10 +101,7 @@ class PathUtil {
     } else if (type.startsWith("audio/")) {
       return Icons.audio_file;
     }
-    Map<String, IconData> icons = {
-      ".apk": Icons.android,
-    };
-    return icons[filepath.posix.extension(name)] ?? Icons.note;
+    return Icons.note;
   }
 
   static bool isText(String name, {String? type}) {

@@ -190,7 +190,7 @@ class _FileViewState extends ConsumerState<FileView> {
                 children: [
                   FileIcon(file: row, size: 1),
                   const SizedBox(height: 8),
-                  _buildName(row, maxLines: 2),
+                  _buildName(row, maxLines: 2, center: true),
                 ],
               ),
             ),
@@ -206,12 +206,16 @@ class _FileViewState extends ConsumerState<FileView> {
     );
   }
 
-  _buildName(File row, {int? maxLines}) {
+  _buildName(File row, {int? maxLines, bool center = false}) {
     if (row.type == "RECYCLE") {
-      return Text("回收站".tr());
+      return Text(
+        "回收站".tr(),
+        textAlign: center ? TextAlign.center : null,
+      );
     }
     return Text(
       row.name,
+      textAlign: center ? TextAlign.center : null,
       maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
     );

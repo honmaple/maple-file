@@ -21,6 +21,7 @@ type Option struct {
 	Port      int    `json:"port"`
 	Username  string `json:"username"   validate:"required"`
 	Password  string `json:"password"   validate:"required"`
+	Domain    string `json:"domain"`
 	ShareName string `json:"share_name" validate:"required"`
 }
 
@@ -197,6 +198,7 @@ func New(opt *Option) (driver.FS, error) {
 		Initiator: &smb2.NTLMInitiator{
 			User:     opt.Username,
 			Password: opt.Password,
+			Domain:   opt.Domain,
 		},
 	}
 

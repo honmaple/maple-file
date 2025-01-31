@@ -58,6 +58,17 @@ class _SMBState extends State<SMB> {
             },
           ),
           CustomFormField(
+            label: "域名".tr(),
+            value: _option["domain"],
+            onTap: (result) {
+              setState(() {
+                _option["domain"] = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
+            },
+          ),
+          CustomFormField(
             label: "用户".tr(),
             value: _option["username"],
             isRequired: true,

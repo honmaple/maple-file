@@ -17,6 +17,8 @@ type Option struct {
 	CompressOption CompressOption `json:"compress_option"`
 	Recycle        bool           `json:"recycle"`
 	RecycleOption  RecycleOption  `json:"recycle_option"`
+	Cache          bool           `json:"cache"`
+	CacheOption    CacheOption    `json:"cache_option"`
 }
 
 func (opt *Option) getActualPath(path string) string {
@@ -51,6 +53,9 @@ func New(fs driver.FS, opt *Option) (driver.FS, error) {
 	}
 	if opt.Recycle {
 		opts = append(opts, &opt.RecycleOption)
+	}
+	if opt.Cache {
+		opts = append(opts, &opt.CacheOption)
 	}
 	opts = append(opts, &HookOption{
 		PathFn: opt.getActualPath,

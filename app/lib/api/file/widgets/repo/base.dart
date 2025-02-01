@@ -43,6 +43,7 @@ class BaseForm extends StatefulWidget {
 
 class _BaseFormState extends State<BaseForm> {
   late Map<String, dynamic> _option;
+  late Map<String, dynamic> _cacheOption;
   late Map<String, dynamic> _recycleOption;
   late Map<String, dynamic> _encryptOption;
   late Map<String, dynamic> _compressOption;
@@ -52,6 +53,7 @@ class _BaseFormState extends State<BaseForm> {
     super.initState();
 
     _option = widget.form.option == "" ? {} : jsonDecode(widget.form.option);
+    _cacheOption = _option["cache_option"] ?? {};
     _recycleOption = _option["recycle_option"] ?? {};
     _encryptOption = _option["encrypt_option"] ?? {};
     _compressOption = _option["compress_option"] ?? {};
@@ -128,6 +130,52 @@ class _BaseFormState extends State<BaseForm> {
                     setState(() {
                       _recycleOption["path"] = result;
                       _option["recycle_option"] = _recycleOption;
+                    });
+
+                    widget.form.option = jsonEncode(_option);
+                  },
+                ),
+            ],
+          ),
+        ),
+        Card(
+          child: Column(
+            children: [
+              ListTile(
+                title: Text('文件缓存'.tr()),
+                subtitle: Text(
+                  "缓存文件列表信息".tr(),
+                  style: themeData.textTheme.bodySmall,
+                ),
+                trailing: Switch(
+                  value: _option["cache"] ?? false,
+                  onChanged: (result) {
+                    setState(() {
+                      _option["cache"] = result;
+                      if (!result) {
+                        _cacheOption = {};
+                        _option.remove("cache");
+                        _option.remove("cache_option");
+                      }
+                    });
+
+                    widget.form.option = jsonEncode(_option);
+                  },
+                ),
+              ),
+              if (_option["cache"] ?? false)
+                CustomFormField(
+                  type: CustomFormFieldType.number,
+                  label: "缓存时间".tr(),
+                  value: "${_cacheOption['expire_time'] ?? 60}",
+                  subtitle: Text(
+                    "默认60秒后自动清除缓存(单位：秒)".tr(),
+                    style: themeData.textTheme.bodySmall,
+                  ),
+                  onTap: (result) {
+                    setState(() {
+                      _cacheOption["expire_time"] = int.parse(result);
+                      _option["cache_option"] = _cacheOption;
                     });
 
                     widget.form.option = jsonEncode(_option);

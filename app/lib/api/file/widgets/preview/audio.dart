@@ -240,63 +240,73 @@ class _AudioPreviewState extends State<AudioPreview> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Icons.music_note,
-              size: 81, color: Theme.of(context).primaryColor),
-          Text(filepath
-              .basenameWithoutExtension(_controller.currentSource.name)),
-          const SizedBox(height: 300),
-          AudioPreviewSliver(
-            player: _controller.player,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          const Spacer(),
+          Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                onPressed: () {
-                  _controller.toggleRepeat();
-                },
-                iconSize: 32,
-                icon: _buildRepeatIcon(),
+              Icon(Icons.music_note,
+                  size: 81, color: Theme.of(context).primaryColor),
+              Text(filepath
+                  .basenameWithoutExtension(_controller.currentSource.name)),
+            ],
+          ),
+          const Spacer(),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AudioPreviewSliver(
+                player: _controller.player,
               ),
-              IconButton(
-                onPressed: () {
-                  _controller.prev();
-                },
-                iconSize: 32,
-                icon: const Icon(Icons.skip_previous),
-              ),
-              IconButton(
-                onPressed: () async {
-                  await _controller.toggle();
-                },
-                iconSize: 42,
-                icon: _buildPlayIcon(),
-              ),
-              IconButton(
-                onPressed: () {
-                  _controller.next();
-                },
-                iconSize: 32,
-                icon: const Icon(Icons.skip_next),
-              ),
-              IconButton(
-                onPressed: () {
-                  showListDialog2(
-                    context,
-                    height: MediaQuery.sizeOf(context).height * 0.618,
-                    child: AudioPreviewPlaylist(controller: _controller),
-                  );
-                },
-                iconSize: 32,
-                icon: const Icon(Icons.format_list_bulleted),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      _controller.toggleRepeat();
+                    },
+                    iconSize: 32,
+                    icon: _buildRepeatIcon(),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _controller.prev();
+                    },
+                    iconSize: 32,
+                    icon: const Icon(Icons.skip_previous),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      await _controller.toggle();
+                    },
+                    iconSize: 42,
+                    icon: _buildPlayIcon(),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _controller.next();
+                    },
+                    iconSize: 32,
+                    icon: const Icon(Icons.skip_next),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      showListDialog2(
+                        context,
+                        height: MediaQuery.sizeOf(context).height * 0.618,
+                        child: AudioPreviewPlaylist(controller: _controller),
+                      );
+                    },
+                    iconSize: 32,
+                    icon: const Icon(Icons.format_list_bulleted),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
         ],
       ),
     );

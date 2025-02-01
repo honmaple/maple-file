@@ -22,11 +22,12 @@ import (
 
 type Option struct {
 	base.Option
-	Endpoint  string `json:"endpoint"    validate:"required"`
-	Bucket    string `json:"bucket"      validate:"required"`
-	Region    string `json:"region"`
-	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"  validate:"required_with=AccessKey"`
+	Endpoint    string `json:"endpoint"     validate:"required"`
+	Bucket      string `json:"bucket"       validate:"required"`
+	Region      string `json:"region"`
+	AccessKey   string `json:"access_key"`
+	SecretKey   string `json:"secret_key"   validate:"required_with=AccessKey"`
+	ListVersion string `json:"list_version" validate:"omitempty,oneof=v1 v2"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -50,7 +51,46 @@ func (d *S3) getPath(path string, isDir bool) string {
 	return path
 }
 
+func (d *S3) listV2(ctx context.Context, path string, _metas ...driver.Meta) ([]driver.File, error) {
+	input := &s3.ListObjectsV2Input{
+		Bucket:    aws.String(d.opt.Bucket),
+		Prefix:    aws.String(d.getPath(path, true)),
+		Delimiter: aws.String("/"),
+	}
+
+	files := make([]driver.File, 0)
+	for {
+		result, err := d.client.ListObjectsV2WithContext(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+
+		// 处理目录
+		for _, object := range result.CommonPrefixes {
+			files = append(files, driver.NewFile(path, &dirinfo{object}))
+		}
+
+		// 处理文件
+		for _, object := range result.Contents {
+			if *input.Prefix == *object.Key {
+				continue
+			}
+			files = append(files, driver.NewFile(path, &fileinfo{object}))
+		}
+
+		if result.IsTruncated != nil && *result.IsTruncated {
+			input.ContinuationToken = result.NextContinuationToken
+		} else {
+			break
+		}
+	}
+	return files, nil
+}
+
 func (d *S3) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
+	if d.opt.ListVersion == "v2" {
+		return d.listV2(ctx, path, metas...)
+	}
 	input := &s3.ListObjectsInput{
 		Bucket:    aws.String(d.opt.Bucket),
 		Prefix:    aws.String(d.getPath(path, true)),

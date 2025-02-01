@@ -6,6 +6,11 @@ import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
+enum S3ListVersion {
+  v1,
+  v2,
+}
+
 class S3 extends StatefulWidget {
   const S3({super.key, required this.form});
 
@@ -85,6 +90,28 @@ class _S3State extends State<S3> {
             onTap: (result) {
               setState(() {
                 _option["secret_key"] = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
+            },
+          ),
+          CustomFormField(
+            label: "访问版本".tr(),
+            value: _option["list_version"] ?? "v1",
+            subtitle: Text(
+              "访问当前对象存储文件列表的版本",
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            type: CustomFormFieldType.option,
+            options: S3ListVersion.values.map((v) {
+              return CustomFormFieldOption(
+                label: v.name.toUpperCase(),
+                value: v.name,
+              );
+            }).toList(),
+            onTap: (result) {
+              setState(() {
+                _option["list_version"] = result;
               });
 
               widget.form.option = jsonEncode(_option);

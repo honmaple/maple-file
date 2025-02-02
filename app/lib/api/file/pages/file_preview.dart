@@ -7,6 +7,7 @@ import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/path.dart';
+import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
 import '../widgets/preview/text.dart';
@@ -183,6 +184,7 @@ class _FileImagePreviewState extends ConsumerState<FileImagePreview> {
   Widget build(BuildContext context) {
     final currentFile = _currentFiles[_currentIndex];
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: _fullscreen
           ? null
           : AppBar(
@@ -233,6 +235,48 @@ class _FileImagePreviewState extends ConsumerState<FileImagePreview> {
               child: Text("${_currentIndex + 1}/${_currentFiles.length}"),
             ),
           ),
+          if (!Breakpoint.isSmall(context))
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: Icon(Icons.chevron_left, size: 32),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    if (_currentIndex == 0) {
+                      _pageController.jumpToPage(
+                        _currentFiles.length - 1,
+                      );
+                    } else {
+                      _pageController.previousPage(
+                        duration: Duration(milliseconds: 200),
+                        curve: Curves.easeIn,
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          if (!Breakpoint.isSmall(context))
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: Icon(Icons.chevron_right, size: 32),
+                  color: Theme.of(context).primaryColor,
+                  onPressed: () {
+                    if (_currentIndex == _currentFiles.length - 1) {
+                      _pageController.jumpToPage(0);
+                    } else {
+                      _pageController.nextPage(
+                        duration: Duration(milliseconds: 200),
+                        curve: Curves.easeIn,
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
         ],
       ),
     );

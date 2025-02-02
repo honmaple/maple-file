@@ -38,7 +38,7 @@ class About extends ConsumerWidget {
                           resp.description,
                           textAlign: TextAlign.center,
                         ),
-                      const SizedBox(height: 8)
+                      const SizedBox(height: 16)
                     ],
                   ),
                 ),

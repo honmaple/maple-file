@@ -92,15 +92,6 @@ class _FileSettingThemeState extends ConsumerState<FileSettingTheme> {
                       }
                     },
                   ),
-                  FileTypeFormField(
-                    label: '隐藏文件'.tr(),
-                    value: setting.hideFiles,
-                    onTap: (result) {
-                      ref.read(fileSettingProvider.notifier).update((state) {
-                        return state.copyWith(hideFiles: result);
-                      });
-                    },
-                  ),
                 ],
               ),
             ),

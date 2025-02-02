@@ -76,7 +76,6 @@ class FileSetting with _$FileSetting {
     @Default(32) @JsonKey(name: 'upload.slice_size') int uploadSliceSize,
     @JsonKey(name: 'download.path') String? downloadPath,
     @Default(10) @JsonKey(name: 'download.queue_size') int downloadQueueSize,
-    @Default([".*"]) @JsonKey(name: 'hide_files') List<String> hideFiles,
     @Default(0) @JsonKey(name: 'pagination.size') int paginationSize,
   }) = _FileSetting;
 

@@ -12,7 +12,7 @@ on:
 env:
   GO_VERSION: "1.23"
   NODE_VERSION: "20"
-  FLUTTER_VERSION: "3.24.5"
+  FLUTTER_VERSION: "3.27.3"
 
 jobs:
   get-version:

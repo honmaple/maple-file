@@ -389,7 +389,10 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
               imageQuality: 100,
             );
             if (image != null) {
-              future = FileService().upload(widget.path, [io.File(image.path)]);
+              future = FileService().upload(
+                widget.path,
+                files: [io.File(image.path)],
+              );
             }
             break;
           case "photo":
@@ -399,7 +402,7 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
             if (images.isNotEmpty) {
               future = FileService().upload(
                 widget.path,
-                images.map((file) => io.File(file.path)).toList(),
+                files: images.map((file) => io.File(file.path)).toList(),
               );
             }
             break;
@@ -410,7 +413,7 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
             if (result != null) {
               future = FileService().upload(
                 widget.path,
-                result.paths.map((path) => io.File(path!)).toList(),
+                files: result.paths.map((path) => io.File(path!)).toList(),
               );
             }
             break;

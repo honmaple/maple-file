@@ -5,8 +5,10 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as filepath;
 import 'package:flutter/material.dart';
 
-import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/app/app.dart';
+import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/app/grpc.dart';
+import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 import 'package:maple_file/generated/proto/api/file/service.pbgrpc.dart';
@@ -151,17 +153,82 @@ class FileService {
     }
   }
 
-  Future<List<File>?> upload(
+  Future<List<File>> _uploadDir(
     String path,
-    List<io.File> files,
-  ) async {
+    io.Directory dir, {
+    bool recursive = true,
+  }) async {
+    final root = filepath.dirname(dir.path);
+
+    await _client.mkdir(MkdirFileRequest(
+      path: path,
+      name: filepath.basename(dir.path),
+    ));
+
+    List<File> results = <File>[];
+
+    await for (final entity in dir.list(
+      recursive: recursive,
+      followLinks: false,
+    )) {
+      String realPath =
+          filepath.dirname(entity.path).substring(root.length + 1);
+      if (Util.isWindows) {
+        realPath = filepath.toUri(realPath).path;
+      }
+
+      final uploadPath = filepath.posix.join(path, realPath);
+
+      if (entity is io.Directory) {
+        await _client.mkdir(MkdirFileRequest(
+          path: uploadPath,
+          name: filepath.basename(entity.path),
+        ));
+        continue;
+      }
+
+      final response = await _client.upload(_upload(
+        uploadPath,
+        entity as io.File,
+      ));
+      results.add(response.result);
+    }
+    return results;
+  }
+
+  Future<List<File>?> upload(
+    String path, {
+    List<io.File>? files,
+    List<io.Directory>? dirs,
+    bool recursive = true,
+  }) async {
+    final dirsCount = dirs?.length ?? 0;
+    final filesCount = files?.length ?? 0;
+    App.showSnackBar(Text("共有{file_count}{sep}{dir_count}添加至上传任务".tr(args: {
+      "sep": dirsCount > 0 && filesCount > 0 ? ", " : "",
+      "dir_count": dirsCount == 0
+          ? ""
+          : "{count}个文件夹".tr(args: {
+              "count": dirsCount,
+            }),
+      "file_count": filesCount == 0
+          ? ""
+          : "{count}个文件".tr(args: {
+              "count": filesCount,
+            }),
+    })));
+
     final result = await doFuture(() async {
       List<File> results = <File>[];
 
-      for (final file in files) {
+      for (final file in files ?? []) {
         final response = await _client.upload(_upload(path, file));
 
         results.add(response.result);
+      }
+
+      for (final dir in dirs ?? []) {
+        results.addAll(await _uploadDir(path, dir, recursive: recursive));
       }
       return results;
     });

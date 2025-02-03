@@ -4,8 +4,8 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/honmaple/maple-file/releases/tag/v1.0.3" target="_blank">
-    <img src="https://img.shields.io/badge/release-1.0.3-brightgreen.svg">
+  <a href="https://github.com/honmaple/maple-file/releases/tag/v1.0.4" target="_blank">
+    <img src="https://img.shields.io/badge/release-1.0.4-brightgreen.svg">
   </a>
   <a href="https://github.com/honmaple/maple-file/blob/master/LICENSE" target="_blank">
     <img src="https://img.shields.io/badge/license-GPL3.0-blue.svg">
@@ -16,7 +16,7 @@
 
 [home]: https://fileapp.honmaple.com
 [document]: https://fileapp.honmaple.com/guide/introduction.html
-[download]: https://github.com/honmaple/maple-file/releases/tag/v1.0.3
+[download]: https://github.com/honmaple/maple-file/releases/tag/v1.0.4
 
 > 使用 **Flutter** 实现的无服务端多协议云盘文件上传和管理APP
 
@@ -33,8 +33,9 @@
 
 ## 功能
    - 支持文件列表查看/复制/移动/删除/重命名/上传/下载
-   - 支持桌面端拖拽上传(仅文件，不支持文件夹)
+   - 支持桌面端拖拽上传(文件或者文件夹)
    - 支持文件多选及操作
+   - 支持文件列表信息缓存
    - 支持回收站
    - 支持视频、音频、图片和文本文件的预览
    - 支持文件加密和压缩

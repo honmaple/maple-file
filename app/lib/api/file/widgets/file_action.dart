@@ -353,6 +353,7 @@ class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
       onPressed: () async {
         final result = await showListDialog(
           context,
+          useAlertDialog: true,
           items: [
             if (Util.isMobile)
               ListDialogItem(

@@ -16,6 +16,7 @@ class FileSelect extends ConsumerStatefulWidget {
   final String title;
   final bool multiple;
   final bool Function(File)? filter;
+  final bool selectDir;
 
   const FileSelect({
     super.key,
@@ -23,6 +24,7 @@ class FileSelect extends ConsumerStatefulWidget {
     this.title = "选择文件",
     this.filter,
     this.multiple = false,
+    this.selectDir = true,
   });
 
   factory FileSelect.fromRoute(ModalRoute? route) {
@@ -36,6 +38,7 @@ class FileSelect extends ConsumerStatefulWidget {
       title: map["title"] ?? "选择文件",
       filter: map["filter"],
       multiple: map["multiple"] ?? false,
+      selectDir: map["selectDir"] ?? true,
     );
   }
 
@@ -52,11 +55,14 @@ class _FileSelectState extends ConsumerState<FileSelect> {
       appBar: buildAppBar(context),
       body: FileView(
         path: widget.path,
-        filter: widget.filter,
+        filter: _filter,
         selection: selection,
         onTap: _onTap,
       ),
-      bottomNavigationBar: widget.path != "/" ? buildBottomBar(context) : null,
+      bottomNavigationBar: (widget.path != "/" &&
+              (widget.selectDir || selection.selected.isNotEmpty))
+          ? buildBottomBar(context)
+          : null,
     );
   }
 
@@ -75,9 +81,9 @@ class _FileSelectState extends ConsumerState<FileSelect> {
         },
       ),
       actions: [
-        if (widget.path != "/")
+        if (widget.path != "/" && widget.selectDir)
           TextButton(
-            child: const Text("新建"),
+            child: Text("新建".tr()),
             onPressed: () async {
               final result = await showEditingDialog(
                 context,
@@ -100,46 +106,63 @@ class _FileSelectState extends ConsumerState<FileSelect> {
       children: <Widget>[
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
-            // icon: Icon(Icons.folder),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            onPressed: () {
-              List<String> list = widget.path.split('/');
+          child: Container(
+            padding: EdgeInsets.fromLTRB(8, 8, 8, 8),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+              onPressed: () {
+                List<String> list = widget.path.split('/');
 
-              final result = ref
-                  .read(fileSelectionProvider)
-                  .selected
-                  .map((file) => filepath.posix.join(file.path, file.name))
-                  .toList();
+                final result = ref
+                    .read(fileSelectionProvider)
+                    .selected
+                    .map((file) => filepath.posix.join(file.path, file.name))
+                    .toList();
 
-              _resetProvider();
+                _resetProvider();
 
-              final nav = Navigator.of(context);
-              for (int i = 0; i < list.length; i++) {
-                if (widget.multiple) {
-                  nav.pop(result);
-                } else {
-                  nav.pop(widget.path);
+                final nav = Navigator.of(context);
+                for (int i = 0; i < list.length; i++) {
+                  if (widget.selectDir) {
+                    nav.pop(widget.path);
+                  } else {
+                    if (widget.multiple) {
+                      nav.pop(result);
+                    } else {
+                      nav.pop(result.first);
+                    }
+                  }
                 }
-              }
-            },
-            child: const Text('确定'),
+              },
+              child: Text('确定'.tr()),
+            ),
           ),
         ),
       ],
     );
   }
 
+  bool _filter(File file) {
+    if (file.type == "DIR") {
+      return true;
+    }
+    return widget.filter?.call(file) ?? false;
+  }
+
   _onTap(BuildContext context, File item) async {
+    final selection = ref.read(fileSelectionProvider);
     if (item.type == "DIR") {
+      if (selection.enabled) _resetProvider();
+
       final Map<String, dynamic> args = {
         "path": filepath.posix.join(item.path, item.name),
         "title": widget.title,
         "filter": widget.filter,
         "multiple": widget.multiple,
+        "selectDir": widget.selectDir,
       };
       Navigator.pushNamed(
         context,
@@ -149,7 +172,7 @@ class _FileSelectState extends ConsumerState<FileSelect> {
       return;
     }
 
-    if (!ref.read(fileSelectionProvider).enabled) {
+    if (!selection.enabled) {
       ref.read(fileSelectionProvider.notifier).update((state) {
         return state.copyWith(
           enabled: true,

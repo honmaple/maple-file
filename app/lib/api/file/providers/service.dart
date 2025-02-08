@@ -111,11 +111,15 @@ class FileService {
     });
   }
 
-  Stream<FileRequest> _upload(String path, io.File file) async* {
+  Stream<FileRequest> _upload(
+    String path,
+    io.File file, {
+    String? newName,
+  }) async* {
     const int chunkSize = 1024 * 32;
 
     var size = file.lengthSync();
-    var name = filepath.basename(file.path);
+    var name = newName ?? filepath.basename(file.path);
 
     // 第0片不包括chunk
     yield FileRequest(
@@ -200,6 +204,7 @@ class FileService {
     String path, {
     List<io.File>? files,
     List<io.Directory>? dirs,
+    Map<String, String>? newNames,
     bool recursive = true,
   }) async {
     final dirsCount = dirs?.length ?? 0;
@@ -222,7 +227,11 @@ class FileService {
       List<File> results = <File>[];
 
       for (final file in files ?? []) {
-        final response = await _client.upload(_upload(path, file));
+        final response = await _client.upload(_upload(
+          path,
+          file,
+          newName: newNames == null ? null : newNames[file.path],
+        ));
 
         results.add(response.result);
       }
@@ -260,9 +269,13 @@ class FileService {
     return result.data;
   }
 
-  Future<void> download(String path, io.File file) {
+  Future<void> download(
+    String path,
+    io.File file, {
+    bool override = false,
+  }) {
     return doFuture(() async {
-      if (file.existsSync()) {
+      if (file.existsSync() && !override) {
         App.showSnackBar(const Text("文件已存在"));
         return;
       }
@@ -271,7 +284,7 @@ class FileService {
         DownloadFileRequest(path: path),
       );
 
-      var ios = file.openWrite(mode: io.FileMode.append);
+      var ios = file.openWrite(mode: io.FileMode.write);
 
       await response.forEach((stream) {
         ios.add(stream.chunk);

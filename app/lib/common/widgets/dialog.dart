@@ -219,11 +219,17 @@ Future<T?> showListDialog<T>(
   List<ListDialogItem<T>>? items,
   bool center = false,
   bool cancelAction = false,
+  bool useAlertDialog = false,
+  bool useRootNavigator = false,
+  double? width,
   double? height,
 }) {
   return showListDialog2(
     context,
+    width: width,
     height: height,
+    useAlertDialog: useAlertDialog,
+    useRootNavigator: useRootNavigator,
     child: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,6 +249,7 @@ Future<T?> showListDialog2<T>(
   Widget? child,
   double? width,
   double? height,
+  bool useAlertDialog = false,
   bool useRootNavigator = false,
 }) {
   if (Breakpoint.isSmall(context)) {
@@ -274,6 +281,20 @@ Future<T?> showListDialog2<T>(
     context: context,
     useRootNavigator: useRootNavigator,
     builder: (BuildContext context) {
+      if (useAlertDialog) {
+        return AlertDialog(
+          clipBehavior: Clip.hardEdge,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+          contentPadding: const EdgeInsets.all(0),
+          content: SizedBox(
+            width: width,
+            height: height,
+            child: child,
+          ),
+        );
+      }
       return Dialog(
         clipBehavior: Clip.hardEdge,
         shape: const RoundedRectangleBorder(

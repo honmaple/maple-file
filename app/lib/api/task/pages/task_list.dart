@@ -144,14 +144,14 @@ class _TaskListState extends ConsumerState<TaskList>
   ) {
     return ListTile(
       leading: status == TaskType.running
-          ? Text("剩余任务({size}})".tr(args: {
+          ? Text("剩余任务({length}})".tr(args: {
               "length": items.length,
             }))
           : status == TaskType.finished
-              ? Text("已完成({size})".tr(args: {
+              ? Text("已完成({length})".tr(args: {
                   "length": items.length,
                 }))
-              : Text("已失败({size})".tr(args: {
+              : Text("已失败({length})".tr(args: {
                   "length": items.length,
                 })),
       trailing: Wrap(

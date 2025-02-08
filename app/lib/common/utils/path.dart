@@ -79,6 +79,7 @@ class PathUtil {
       ".css": Icons.css,
       ".php": Icons.php,
       ".js": Icons.javascript,
+      ".db": Icons.dataset,
     };
     IconData? result = icons[filepath.posix.extension(name)];
     if (result != null) {

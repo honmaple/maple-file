@@ -51,40 +51,42 @@ Future<void> showTaskAction(
   Task task, {
   WidgetRef? ref,
 }) async {
-  final result = await showListDialog<TaskActionType>(context, items: [
-    ListDialogItem(
-      child: ListTile(
-        title: Text(task.name),
-        subtitle: Text(task.progressState),
-        trailing: TextButton.icon(
-          label: Text("查看详情".tr()),
-          icon: const Icon(Icons.info_outlined),
-          onPressed: () {
-            Navigator.of(context).pop();
-            showTaskDetail(context, task);
-          },
+  final result = await showListDialog<TaskActionType>(context,
+      useAlertDialog: true,
+      items: [
+        ListDialogItem(
+          child: ListTile(
+            title: Text(task.name),
+            subtitle: Text(task.progressState),
+            trailing: TextButton.icon(
+              label: Text("查看详情".tr()),
+              icon: const Icon(Icons.info_outlined),
+              onPressed: () {
+                Navigator.of(context).pop();
+                showTaskDetail(context, task);
+              },
+            ),
+          ),
         ),
-      ),
-    ),
-    if (isFinished(task))
-      ListDialogItem(
-        icon: Icons.refresh,
-        label: "重试任务".tr(),
-        value: TaskActionType.retry,
-      ),
-    if (isRunning(task))
-      ListDialogItem(
-        icon: Icons.cancel,
-        label: "取消任务".tr(),
-        value: TaskActionType.cancel,
-      ),
-    if (isFinished(task))
-      ListDialogItem(
-        icon: Icons.delete,
-        label: "删除任务".tr(),
-        value: TaskActionType.remove,
-      ),
-  ]);
+        if (isFinished(task))
+          ListDialogItem(
+            icon: Icons.refresh,
+            label: "重试任务".tr(),
+            value: TaskActionType.retry,
+          ),
+        if (isRunning(task))
+          ListDialogItem(
+            icon: Icons.cancel,
+            label: "取消任务".tr(),
+            value: TaskActionType.cancel,
+          ),
+        if (isFinished(task))
+          ListDialogItem(
+            icon: Icons.delete,
+            label: "删除任务".tr(),
+            value: TaskActionType.remove,
+          ),
+      ]);
   if (!context.mounted) return;
   result?.action(context, task, ref: ref);
 }

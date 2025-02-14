@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:maple_file/api/file/widgets/file_action.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,63 +71,82 @@ class FileTreeState extends ConsumerState<FileTree> {
 
     return Container(
       padding: EdgeInsets.only(left: 12.0 * (node.depth ?? 0)),
-      child: ListTile(
-        dense: widget.dense,
-        title: Wrap(
-          spacing: 4,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              file.name,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-        leading: FileIcon(file: file, size: 0.5),
-        trailing: PathUtil.isDir(file.name, type: file.type)
-            ? AnimatedRotation(
-                turns: node.isExpanded ? 0 : -0.25,
-                duration: const Duration(milliseconds: 200),
-                child: Transform.rotate(
-                    angle: math.pi / 180,
-                    child: const Icon(Icons.expand_more, size: 18)),
-              )
-            : null,
-        onTap: () async {
-          if (!PathUtil.isDir(file.name, type: file.type)) {
-            navigatorState(context).popAndPushNamed(
-              '/file/preview',
-              arguments: {
-                "file": file,
+      child: GestureDetector(
+        onSecondaryTapUp: file.path == "/"
+            ? null
+            : (detail) async {
+                final result = await showFilePopupAction(
+                  context,
+                  file,
+                  ref: ref,
+                  popupOffset: detail.globalPosition,
+                );
+                if (!context.mounted) return;
+                result?.action(
+                  context,
+                  file,
+                  ref: ref,
+                  navigator: navigatorState(context),
+                );
               },
-            );
-            return;
-          }
+        child: ListTile(
+          dense: widget.dense,
+          title: Wrap(
+            spacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                file.name,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+          leading: FileIcon(file: file, size: 0.5),
+          trailing: PathUtil.isDir(file.name, type: file.type)
+              ? AnimatedRotation(
+                  turns: node.isExpanded ? 0 : -0.25,
+                  duration: const Duration(milliseconds: 200),
+                  child: Transform.rotate(
+                      angle: math.pi / 180,
+                      child: const Icon(Icons.expand_more, size: 18)),
+                )
+              : null,
+          onTap: () async {
+            if (!PathUtil.isDir(file.name, type: file.type)) {
+              navigatorState(context).popAndPushNamed(
+                '/file/preview',
+                arguments: {
+                  "file": file,
+                },
+              );
+              return;
+            }
 
-          if (node.isExpanded) {
-            _controller.collapseNode(node);
-            return;
-          }
+            if (node.isExpanded) {
+              _controller.collapseNode(node);
+              return;
+            }
 
-          String path = file.name;
-          CustomTreeNode<File>? parent = node.parent;
+            String path = file.name;
+            CustomTreeNode<File>? parent = node.parent;
 
-          while (parent != null) {
-            path = filepath.posix.join(parent.content.name, path);
-            parent = parent.parent;
-          }
-          path = filepath.posix.join(widget.path, path);
+            while (parent != null) {
+              path = filepath.posix.join(parent.content.name, path);
+              parent = parent.parent;
+            }
+            path = filepath.posix.join(widget.path, path);
 
-          final files = await ref.refresh(fileProvider(path).future);
-          node.children.clear();
-          for (final file in files) {
-            node.children.add(CustomTreeNode<File>(
-              file,
-              key: "${file.path}:${file.name}",
-            ));
-          }
-          _controller.expandNode(node);
-        },
+            final files = await ref.refresh(fileProvider(path).future);
+            node.children.clear();
+            for (final file in files) {
+              node.children.add(CustomTreeNode<File>(
+                file,
+                key: "${file.path}:${file.name}",
+              ));
+            }
+            _controller.expandNode(node);
+          },
+        ),
       ),
     );
   }

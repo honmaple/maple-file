@@ -62,8 +62,14 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              showFileAction(context, widget.file, ref);
+            onPressed: () async {
+              final result = await showFileAction(
+                context,
+                widget.file,
+                ref: ref,
+              );
+              if (!context.mounted) return;
+              result?.action(context, widget.file, ref: ref);
             },
           ),
         ],
@@ -116,7 +122,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
                 child: FilledButton(
                   child: Text('下载'.tr()),
                   onPressed: () async {
-                    await FileActionType.download.action(context, file, ref);
+                    await FileAction.download.action(context, file, ref: ref);
                   },
                 ),
               ),
@@ -195,8 +201,14 @@ class _FileImagePreviewState extends ConsumerState<FileImagePreview> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.more_vert),
-                  onPressed: () {
-                    showFileAction(context, currentFile, ref);
+                  onPressed: () async {
+                    final result = await showFileAction(
+                      context,
+                      currentFile,
+                      ref: ref,
+                    );
+                    if (!context.mounted) return;
+                    result?.action(context, currentFile, ref: ref);
                   },
                 ),
               ],

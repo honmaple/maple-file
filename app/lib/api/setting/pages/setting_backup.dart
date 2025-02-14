@@ -81,7 +81,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                         Icons.local_library,
                         color: Theme.of(context).primaryColor,
                       ),
-                      title: Text("备份至本地"),
+                      title: Text("备份至本地".tr()),
                       onTap: () async {
                         Navigator.of(context).pop();
                         await _backupToLocal();
@@ -92,7 +92,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                         Icons.cloud,
                         color: Theme.of(context).primaryColor,
                       ),
-                      title: Text("备份至云盘"),
+                      title: Text("备份至云盘".tr()),
                       onTap: () async {
                         Navigator.of(context).pop();
                         await _backupToCloud();
@@ -121,7 +121,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                         Icons.local_library,
                         color: Theme.of(context).primaryColor,
                       ),
-                      title: Text("从本地恢复"),
+                      title: Text("从本地恢复".tr()),
                       onTap: () async {
                         Navigator.of(context).pop();
                         await _restoreFromLocal();
@@ -132,7 +132,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
                         Icons.cloud,
                         color: Theme.of(context).primaryColor,
                       ),
-                      title: Text("从云盘恢复"),
+                      title: Text("从云盘恢复".tr()),
                       onTap: () async {
                         Navigator.of(context).pop();
                         await _restoreFromCloud();

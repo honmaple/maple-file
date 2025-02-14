@@ -57,7 +57,14 @@ class _FileSelectState extends ConsumerState<FileSelect> {
         path: widget.path,
         filter: _filter,
         selection: selection,
-        onTap: _onTap,
+        fileBuilder: (context, file, child) {
+          return InkWell(
+            onTap: () {
+              _onTap(context, file);
+            },
+            child: child,
+          );
+        },
       ),
       bottomNavigationBar: (widget.path != "/" &&
               (widget.selectDir || selection.selected.isNotEmpty))

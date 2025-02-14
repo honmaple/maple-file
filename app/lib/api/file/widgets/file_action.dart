@@ -18,29 +18,76 @@ import '../providers/file.dart';
 import '../providers/file_setting.dart';
 import '../providers/service.dart';
 
-enum FileActionType {
+enum FileAction {
+  open,
+  detail,
   move,
   copy,
   rename,
   remove,
   download,
-  selectionMove,
-  selectionCopy,
-  selectionRemove,
-  selectionDownload,
 }
 
-extension FileActionTypeExtension on FileActionType {
-  Future<void> action(BuildContext context, File file, WidgetRef ref) async {
+extension FileActionExtension on FileAction {
+  IconData? get icon {
+    final Map<FileAction, IconData> icons = {
+      FileAction.open: Icons.file_open_outlined,
+      FileAction.detail: Icons.info_outlined,
+      FileAction.copy: Icons.folder_copy_outlined,
+      FileAction.move: Icons.move_up,
+      FileAction.rename: Icons.drive_file_rename_outline,
+      FileAction.remove: Icons.delete_outline,
+      FileAction.download: Icons.download,
+    };
+    return icons[this];
+  }
+
+  String get label {
+    final Map<FileAction, String> labels = {
+      FileAction.open: "打开".tr(),
+      FileAction.detail: "详情".tr(),
+      FileAction.copy: "复制".tr(),
+      FileAction.move: "移动".tr(),
+      FileAction.rename: "重命名".tr(),
+      FileAction.remove: "删除".tr(),
+      FileAction.download: "下载".tr(),
+    };
+    return labels[this] ?? "unknown";
+  }
+
+  Future<void> action(
+    BuildContext context,
+    File file, {
+    WidgetRef? ref,
+    NavigatorState? navigator,
+  }) async {
+    navigator ??= Navigator.of(context);
     switch (this) {
-      case FileActionType.move:
+      case FileAction.open:
+        if (file.type == "DIR") {
+          await navigator.pushNamed(
+            '/file/list',
+            arguments: filepath.posix.join(file.path, file.name),
+          );
+          return;
+        }
+        navigator.pushNamed(
+          '/file/preview',
+          arguments: {
+            "file": file,
+          },
+        );
+        return;
+      case FileAction.detail:
+        showFileDetail(context, file);
+        return;
+      case FileAction.move:
         final Map<String, dynamic> args = {
           "path": "/",
           "title": "移动文件到".tr(),
           "filter": (File file) => file.type == "DIR",
         };
-        final result = await Navigator.pushNamed(
-          context,
+        final result = await navigator.pushNamed(
           '/file/select',
           arguments: args,
         );
@@ -52,25 +99,24 @@ extension FileActionTypeExtension on FileActionType {
           );
         }
         return;
-      case FileActionType.copy:
+      case FileAction.copy:
         final Map<String, dynamic> args = {
           "path": "/",
           "title": "复制文件到".tr(),
           "filter": (File file) => file.type == "DIR",
         };
-        final result = await Navigator.pushNamed(
-          context,
+        final result = await navigator.pushNamed(
           '/file/select',
           arguments: args,
         );
         if (result != null) {
           await FileService()
               .copy(file.path, result as String, [file.name]).then((_) {
-            ref.invalidate(fileProvider(file.path));
+            ref?.invalidate(fileProvider(file.path));
           });
         }
         return;
-      case FileActionType.rename:
+      case FileAction.rename:
         final ext = filepath.posix.extension(file.name);
         final result = await showEditingDialog(
           context,
@@ -83,12 +129,12 @@ extension FileActionTypeExtension on FileActionType {
         );
         if (result != null) {
           await FileService().rename(file.path, file.name, result).then((_) {
-            ref.invalidate(fileProvider(file.path));
+            ref?.invalidate(fileProvider(file.path));
           });
         }
         return;
-      case FileActionType.download:
-        String? downloadPath = ref.read(fileSettingProvider.select((state) {
+      case FileAction.download:
+        String? downloadPath = ref?.read(fileSettingProvider.select((state) {
           return state.downloadPath;
         }));
         if (downloadPath == null || downloadPath == "") {
@@ -100,10 +146,10 @@ extension FileActionTypeExtension on FileActionType {
           io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
         )
             .then((_) {
-          ref.invalidate(taskProvider(TaskType.running));
+          ref?.invalidate(taskProvider(TaskType.running));
         });
         return;
-      case FileActionType.remove:
+      case FileAction.remove:
         final result = await showAlertDialog<bool>(
           context,
           content: Text("确认删除文件{name}?".tr(
@@ -112,21 +158,9 @@ extension FileActionTypeExtension on FileActionType {
         );
         if (result != null && result) {
           await FileService().remove(file.path, [file.name]).then((_) {
-            ref.invalidate(fileProvider(file.path));
+            ref?.invalidate(fileProvider(file.path));
           });
         }
-        return;
-      default:
-    }
-  }
-
-  Future<void> selectionAction(BuildContext context, WidgetRef ref) async {
-    // final selection = ref.read(fileSelectionProvider);
-    switch (this) {
-      case FileActionType.selectionMove:
-        return;
-      case FileActionType.selectionCopy:
-      default:
         return;
     }
   }
@@ -171,56 +205,359 @@ void showFileDetail(BuildContext context, File file) {
   );
 }
 
-Future<void> showFileAction(
+Future<FileAction?> showFileAction(
   BuildContext context,
-  File file,
-  WidgetRef ref,
-) async {
-  final result = await showListDialog<FileActionType>(context, items: [
-    ListDialogItem(
-      child: ListTile(
-        title: Text(file.name),
-        trailing: TextButton.icon(
-          label: Text("查看详情".tr()),
-          icon: const Icon(Icons.info_outlined),
-          onPressed: () {
-            Navigator.of(context).pop();
-            showFileDetail(context, file);
-          },
-        ),
-      ),
-    ),
-    ListDialogItem(
-      label: "下载".tr(),
-      value: FileActionType.download,
-      icon: Icons.download,
-    ),
-    ListDialogItem(
-      label: "复制".tr(),
-      value: FileActionType.copy,
-      icon: Icons.folder_copy_outlined,
-    ),
-    ListDialogItem(
-      label: "移动".tr(),
-      value: FileActionType.move,
-      icon: Icons.move_up,
-    ),
-    ListDialogItem(
-      label: "重命名".tr(),
-      value: FileActionType.rename,
-      icon: Icons.drive_file_rename_outline,
-    ),
+  File file, {
+  WidgetRef? ref,
+  bool popup = false,
+  Offset? popupOffset,
+}) {
+  if (popup) {
+    return showFilePopupAction(
+      context,
+      file,
+      ref: ref,
+      popupOffset: popupOffset,
+    );
+  }
+
+  ListDialogItem<FileAction> menu(FileAction value) {
+    return ListDialogItem(
+      icon: value.icon,
+      label: value.label,
+      value: value,
+    );
+  }
+
+  return showListDialog<FileAction>(context, items: [
+    menu(FileAction.open),
+    menu(FileAction.detail),
+    if (file.type != "DIR") menu(FileAction.download),
+    menu(FileAction.copy),
+    menu(FileAction.move),
+    menu(FileAction.rename),
     ListDialogItem(
       child: const Divider(height: 4),
     ),
-    ListDialogItem(
-      label: "删除".tr(),
-      value: FileActionType.remove,
-      icon: Icons.delete,
-    ),
+    menu(FileAction.remove),
   ]);
-  if (!context.mounted) return;
-  result?.action(context, file, ref);
+}
+
+Future<FileAction?> showFilePopupAction(
+  BuildContext context,
+  File file, {
+  WidgetRef? ref,
+  Offset? popupOffset,
+}) {
+  PopupMenuItem<FileAction> menu(FileAction value) {
+    return PopupMenuItem<FileAction>(
+      height: 24,
+      value: value,
+      child: ListTile(
+        dense: true,
+        title: Text(value.label),
+        leading: Icon(
+          value.icon,
+          color: Theme.of(context).primaryColor,
+        ),
+      ),
+    );
+  }
+
+  final offset = popupOffset!;
+  return showMenu(
+    context: context,
+    menuPadding: const EdgeInsets.all(0),
+    position: RelativeRect.fromLTRB(
+      offset.dx,
+      offset.dy,
+      MediaQuery.of(context).size.width - offset.dx,
+      MediaQuery.of(context).size.height - offset.dy,
+      // offset.dx + 1,
+      // offset.dy + 1,
+    ),
+    items: [
+      menu(FileAction.open),
+      menu(FileAction.detail),
+      if (file.type != "DIR") menu(FileAction.download),
+      menu(FileAction.copy),
+      menu(FileAction.move),
+      menu(FileAction.rename),
+      PopupMenuItem<FileAction>(
+        height: 4,
+        child: const Divider(height: 4),
+      ),
+      menu(FileAction.remove),
+    ],
+  );
+}
+
+enum FileFloatingAction {
+  camera,
+  photo,
+  file,
+  folder,
+}
+
+extension FileFloatingActionExtension on FileFloatingAction {
+  String get label {
+    final Map<FileFloatingAction, String> labels = {
+      FileFloatingAction.camera: "拍照上传".tr(),
+      FileFloatingAction.photo: "相册上传".tr(),
+      FileFloatingAction.file: "文件上传".tr(),
+      FileFloatingAction.folder: "新建文件夹".tr(),
+    };
+    return labels[this] ?? "unknown";
+  }
+
+  IconData? get icon {
+    final Map<FileFloatingAction, IconData> icons = {
+      FileFloatingAction.camera: Icons.camera_alt,
+      FileFloatingAction.photo: Icons.photo,
+      FileFloatingAction.file: Icons.file_upload_outlined,
+      FileFloatingAction.folder: Icons.create_new_folder,
+    };
+    return icons[this];
+  }
+
+  Future<void> action(
+    BuildContext context,
+    String path, {
+    WidgetRef? ref,
+  }) async {
+    final image_picker.ImagePicker picker = image_picker.ImagePicker();
+
+    Future<void>? future;
+    switch (this) {
+      case FileFloatingAction.camera:
+        image_picker.XFile? image = await picker.pickImage(
+          source: image_picker.ImageSource.camera,
+          imageQuality: 100,
+        );
+        if (image != null) {
+          future = FileService().upload(
+            path,
+            files: [io.File(image.path)],
+          );
+        }
+        break;
+      case FileFloatingAction.photo:
+        List<image_picker.XFile> images = await picker.pickMultiImage(
+          imageQuality: 100,
+        );
+        if (images.isNotEmpty) {
+          future = FileService().upload(
+            path,
+            files: images.map((file) => io.File(file.path)).toList(),
+          );
+        }
+        break;
+      case FileFloatingAction.file:
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          allowMultiple: true,
+        );
+        if (result != null) {
+          future = FileService().upload(
+            path,
+            files: result.paths.map((path) => io.File(path!)).toList(),
+          );
+        }
+        break;
+      case FileFloatingAction.folder:
+        final name = await showEditingDialog(context, "新建目录".tr());
+        if (name != null) {
+          future = FileService().mkdir(path, name);
+        }
+        break;
+    }
+    future?.then((_) {
+      ref?.invalidate(fileProvider(path));
+    });
+  }
+}
+
+Future<FileFloatingAction?> showFileFloatingAction(
+  BuildContext context,
+  String path, {
+  WidgetRef? ref,
+}) async {
+  ListDialogItem<FileFloatingAction> menu(FileFloatingAction value) {
+    return ListDialogItem(
+      icon: value.icon,
+      label: value.label,
+      value: value,
+    );
+  }
+
+  return showListDialog<FileFloatingAction>(context,
+      cancelAction: true,
+      useAlertDialog: true,
+      items: [
+        if (Util.isMobile) menu(FileFloatingAction.camera),
+        if (Util.isMobile) menu(FileFloatingAction.photo),
+        menu(FileFloatingAction.file),
+        menu(FileFloatingAction.folder),
+      ]);
+}
+
+enum FileSelectionAction {
+  move,
+  copy,
+  remove,
+  rename,
+  download,
+}
+
+extension FileSelectionActionExtension on FileSelectionAction {
+  String get label {
+    final Map<FileSelectionAction, String> labels = {
+      FileSelectionAction.copy: "复制".tr(),
+      FileSelectionAction.move: "移动".tr(),
+      FileSelectionAction.rename: "重命名".tr(),
+      FileSelectionAction.remove: "删除".tr(),
+      FileSelectionAction.download: "下载".tr(),
+    };
+    return labels[this] ?? "unknown";
+  }
+
+  IconData? get icon {
+    final Map<FileSelectionAction, IconData> icons = {
+      FileSelectionAction.copy: Icons.folder_copy_outlined,
+      FileSelectionAction.move: Icons.move_up,
+      FileSelectionAction.rename: Icons.drive_file_rename_outline,
+      FileSelectionAction.remove: Icons.delete,
+      FileSelectionAction.download: Icons.download,
+    };
+    return icons[this];
+  }
+
+  Future<void> action(
+    BuildContext context,
+    String path,
+    List<File> selected, {
+    WidgetRef? ref,
+  }) async {
+    switch (this) {
+      case FileSelectionAction.move:
+        final Map<String, dynamic> args = {
+          "path": "/",
+          "title": "移动文件到".tr(),
+          "filter": (File file) => file.type == "DIR",
+        };
+        final result = await Navigator.pushNamed(
+          context,
+          '/file/select',
+          arguments: args,
+        );
+        if (result != null) {
+          FileService()
+              .move(
+            path,
+            result as String,
+            selected.map((i) => i.name).toList(),
+          )
+              .then((_) {
+            ref?.invalidate(fileProvider(path));
+            ref?.read(fileSelectionProvider.notifier).reset();
+          });
+        }
+        return;
+      case FileSelectionAction.copy:
+        final Map<String, dynamic> args = {
+          "path": "/",
+          "title": "复制文件到".tr(),
+          "filter": (File file) => file.type == "DIR",
+        };
+        final result = await Navigator.pushNamed(
+          context,
+          '/file/select',
+          arguments: args,
+        );
+        if (result != null) {
+          FileService()
+              .copy(
+            path,
+            result as String,
+            selected.map((i) => i.name).toList(),
+          )
+              .then((_) {
+            ref?.read(fileSelectionProvider.notifier).reset();
+          });
+        }
+        return;
+      case FileSelectionAction.rename:
+        FileAction.rename.action(context, selected[0], ref: ref).then((_) {
+          ref?.read(fileSelectionProvider.notifier).reset();
+        });
+        return;
+      case FileSelectionAction.remove:
+        final result = await showAlertDialog<bool>(
+          context,
+          content: Text("确认删除{n}个文件?".tr(
+            args: {"n": selected.length},
+          )),
+        );
+        if (result != null && result) {
+          await FileService()
+              .remove(path, selected.map((i) => i.name).toList())
+              .then((_) {
+            ref?.invalidate(fileProvider(path));
+            ref?.read(fileSelectionProvider.notifier).reset();
+          });
+        }
+        return;
+      case FileSelectionAction.download:
+        return;
+    }
+  }
+}
+
+Future<FileSelectionAction?> showFileSelectionPopupAction(
+  BuildContext context,
+  String path,
+  List<File> selected, {
+  WidgetRef? ref,
+  Offset? popupOffset,
+}) async {
+  PopupMenuItem<FileSelectionAction> menu(FileSelectionAction value) {
+    return PopupMenuItem<FileSelectionAction>(
+      height: 24,
+      value: value,
+      child: ListTile(
+        dense: true,
+        title: Text(value.label),
+        leading: Icon(
+          value.icon,
+          color: Theme.of(context).primaryColor,
+        ),
+      ),
+    );
+  }
+
+  final offset = popupOffset!;
+  return showMenu(
+    context: context,
+    menuPadding: const EdgeInsets.all(0),
+    position: RelativeRect.fromLTRB(
+      offset.dx,
+      offset.dy,
+      MediaQuery.of(context).size.width - offset.dx,
+      MediaQuery.of(context).size.height - offset.dy,
+      // offset.dx + 1,
+      // offset.dy + 1,
+    ),
+    items: [
+      menu(FileSelectionAction.download),
+      menu(FileSelectionAction.copy),
+      menu(FileSelectionAction.move),
+      if (selected.length == 1) menu(FileSelectionAction.rename),
+      PopupMenuItem<FileSelectionAction>(
+        height: 4,
+        child: const Divider(height: 4),
+      ),
+      menu(FileSelectionAction.remove),
+    ],
+  );
 }
 
 class FilePopupAction extends ConsumerWidget {
@@ -327,276 +664,6 @@ class FileSortAction extends ConsumerWidget {
             },
           );
         }).toList();
-      },
-    );
-  }
-}
-
-class FileFloatingAction extends ConsumerStatefulWidget {
-  const FileFloatingAction({
-    super.key,
-    required this.path,
-  });
-
-  final String path;
-
-  @override
-  ConsumerState<FileFloatingAction> createState() => _FileFloatingActionState();
-}
-
-class _FileFloatingActionState extends ConsumerState<FileFloatingAction> {
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      shape: const CircleBorder(),
-      child: const Icon(Icons.add_a_photo),
-      onPressed: () async {
-        final result = await showListDialog(
-          context,
-          useAlertDialog: true,
-          items: [
-            if (Util.isMobile)
-              ListDialogItem(
-                label: "拍照上传".tr(),
-                value: "camera",
-                icon: Icons.camera_alt,
-              ),
-            ListDialogItem(
-              label: "相册上传".tr(),
-              value: "photo",
-              icon: Icons.photo,
-            ),
-            ListDialogItem(
-              label: "文件上传".tr(),
-              value: "file",
-              icon: Icons.file_upload_outlined,
-            ),
-            ListDialogItem(
-              label: "新建文件夹".tr(),
-              value: "folder",
-              icon: Icons.create_new_folder,
-            ),
-          ],
-          cancelAction: true,
-        );
-
-        final image_picker.ImagePicker picker = image_picker.ImagePicker();
-
-        Future<void>? future;
-        switch (result) {
-          case "camera":
-            image_picker.XFile? image = await picker.pickImage(
-              source: image_picker.ImageSource.camera,
-              imageQuality: 100,
-            );
-            if (image != null) {
-              future = FileService().upload(
-                widget.path,
-                files: [io.File(image.path)],
-              );
-            }
-            break;
-          case "photo":
-            List<image_picker.XFile> images = await picker.pickMultiImage(
-              imageQuality: 100,
-            );
-            if (images.isNotEmpty) {
-              future = FileService().upload(
-                widget.path,
-                files: images.map((file) => io.File(file.path)).toList(),
-              );
-            }
-            break;
-          case "file":
-            FilePickerResult? result = await FilePicker.platform.pickFiles(
-              allowMultiple: true,
-            );
-            if (result != null) {
-              future = FileService().upload(
-                widget.path,
-                files: result.paths.map((path) => io.File(path!)).toList(),
-              );
-            }
-            break;
-          case "folder":
-            final name = await showEditingDialog(context, "新建目录".tr());
-            if (name != null) {
-              future = FileService().mkdir(widget.path, name);
-            }
-            break;
-        }
-        future?.then((_) {
-          ref.invalidate(fileProvider(widget.path));
-        });
-      },
-    );
-  }
-}
-
-class FileSelectionAction extends ConsumerStatefulWidget {
-  const FileSelectionAction({
-    super.key,
-    required this.path,
-    required this.selected,
-  });
-
-  final String path;
-  final List<File> selected;
-
-  @override
-  ConsumerState<FileSelectionAction> createState() =>
-      _FileSelectionActionState();
-}
-
-class _FileSelectionActionState extends ConsumerState<FileSelectionAction> {
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: constraints.minWidth,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                TextButton(
-                  child: Wrap(
-                    direction: Axis.vertical,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Icon(Icons.folder_copy_outlined),
-                      Text('复制'.tr()),
-                    ],
-                  ),
-                  onPressed: () async {
-                    final Map<String, dynamic> args = {
-                      "path": "/",
-                      "title": "复制文件到".tr(),
-                      "filter": (File file) => file.type == "DIR",
-                    };
-                    final result = await Navigator.pushNamed(
-                      context,
-                      '/file/select',
-                      arguments: args,
-                    );
-                    if (result != null) {
-                      FileService()
-                          .copy(
-                        widget.path,
-                        result as String,
-                        widget.selected.map((i) => i.name).toList(),
-                      )
-                          .then((_) {
-                        ref.read(fileSelectionProvider.notifier).reset();
-                      });
-                    }
-                  },
-                ),
-                TextButton(
-                  child: Wrap(
-                    direction: Axis.vertical,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Icon(Icons.move_up),
-                      Text('移动'.tr()),
-                    ],
-                  ),
-                  onPressed: () async {
-                    final Map<String, dynamic> args = {
-                      "path": "/",
-                      "title": "移动文件到".tr(),
-                      "filter": (File file) => file.type == "DIR",
-                    };
-                    final result = await Navigator.pushNamed(
-                      context,
-                      '/file/select',
-                      arguments: args,
-                    );
-                    if (result != null) {
-                      FileService()
-                          .move(
-                        widget.path,
-                        result as String,
-                        widget.selected.map((i) => i.name).toList(),
-                      )
-                          .then((_) {
-                        ref.invalidate(fileProvider(widget.path));
-                        ref.read(fileSelectionProvider.notifier).reset();
-                      });
-                    }
-                  },
-                ),
-                if (widget.selected.length == 1)
-                  TextButton(
-                    child: Wrap(
-                      direction: Axis.vertical,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Icon(Icons.drive_file_rename_outline),
-                        Text('重命名'.tr()),
-                      ],
-                    ),
-                    onPressed: () {
-                      FileActionType.rename
-                          .action(context, widget.selected[0], ref)
-                          .then((_) {
-                        ref.read(fileSelectionProvider.notifier).reset();
-                      });
-                    },
-                  ),
-                TextButton(
-                  child: Wrap(
-                    direction: Axis.vertical,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Icon(Icons.download_outlined),
-                      Text('下载'.tr()),
-                    ],
-                  ),
-                  onPressed: () async {},
-                ),
-                TextButton(
-                  child: Wrap(
-                    direction: Axis.vertical,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Icon(Icons.delete_outlined),
-                      Text('删除'.tr()),
-                    ],
-                  ),
-                  onPressed: () async {
-                    final result = await showAlertDialog<bool>(
-                      context,
-                      content: Text("确认删除{n}个文件?".tr(
-                        args: {"n": widget.selected.length},
-                      )),
-                    );
-                    if (result != null && result) {
-                      await FileService()
-                          .remove(widget.path,
-                              widget.selected.map((i) => i.name).toList())
-                          .then((_) {
-                        ref.invalidate(fileProvider(widget.path));
-                        ref.read(fileSelectionProvider.notifier).reset();
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
       },
     );
   }

@@ -19,36 +19,34 @@ import 'file_breadcrumb.dart';
 import '../providers/file.dart';
 import '../providers/file_setting.dart';
 
-typedef FileViewTapCallback = void Function(BuildContext, File);
-
 class FileView extends ConsumerStatefulWidget {
   const FileView({
     super.key,
     this.path = "/",
     this.filter,
     this.selection,
-    this.onTap,
-    this.onLongPress,
+    required this.fileBuilder,
   });
 
   final String path;
   final bool Function(File)? filter;
   final Selection<File>? selection;
-  final FileViewTapCallback? onTap;
-  final FileViewTapCallback? onLongPress;
+  final Widget Function(BuildContext, File, Widget) fileBuilder;
 
   @override
   ConsumerState<FileView> createState() => _FileViewState();
 }
 
 class _FileViewState extends ConsumerState<FileView> {
+  bool get _isRoot => widget.path == "/";
+
   @override
   Widget build(BuildContext context) {
     return CustomPaging(
       onLoad: () => ref.read(fileProvider(widget.path).notifier).load(),
       onRefresh: () => ref.read(fileProvider(widget.path).notifier).refresh(),
       slivers: [
-        if (widget.path != "/")
+        if (!_isRoot)
           SliverToBoxAdapter(
             child: ListTile(
               dense: true,
@@ -69,7 +67,7 @@ class _FileViewState extends ConsumerState<FileView> {
       items = items.where(widget.filter!).toList();
     }
     if (items.isEmpty) {
-      if (widget.path == "/") {
+      if (_isRoot) {
         return SliverFillRemaining(
           child: Center(
             child: TextButton.icon(
@@ -119,18 +117,10 @@ class _FileViewState extends ConsumerState<FileView> {
       itemBuilder: (context, index) {
         final row = rows[index];
 
-        return GestureDetector(
-          onTap: widget.onTap == null
-              ? null
-              : () {
-                  widget.onTap?.call(context, row);
-                },
-          onLongPress: widget.onLongPress == null
-              ? null
-              : () {
-                  widget.onLongPress?.call(context, row);
-                },
-          child: ListTile(
+        return widget.fileBuilder(
+          context,
+          row,
+          ListTile(
             leading: FileIcon(file: row, size: 0.8),
             title: _buildName(row),
             subtitle: Wrap(
@@ -150,11 +140,17 @@ class _FileViewState extends ConsumerState<FileView> {
             selected: selection.contains(row),
             trailing: _isSelection(row)
                 ? _buildCheckbox(selection, row)
-                : widget.path != "/"
+                : !_isRoot
                     ? IconButton(
                         icon: const Icon(Icons.more_vert),
-                        onPressed: () {
-                          showFileAction(context, row, ref);
+                        onPressed: () async {
+                          final result = await showFileAction(
+                            context,
+                            row,
+                            ref: ref,
+                          );
+                          if (!context.mounted) return;
+                          result?.action(context, row, ref: ref);
                         },
                       )
                     : null,
@@ -182,8 +178,10 @@ class _FileViewState extends ConsumerState<FileView> {
               right: -4,
               child: _buildCheckbox(selection, row),
             ),
-          InkWell(
-            child: Padding(
+          widget.fileBuilder(
+            context,
+            row,
+            Padding(
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -194,12 +192,6 @@ class _FileViewState extends ConsumerState<FileView> {
                 ],
               ),
             ),
-            onTap: () {
-              widget.onTap?.call(context, row);
-            },
-            onLongPress: () {
-              widget.onLongPress?.call(context, row);
-            },
           ),
         ]);
       },
@@ -232,9 +224,9 @@ class _FileViewState extends ConsumerState<FileView> {
 
   bool _isSelection(File file) {
     if (widget.selection != null && widget.selection!.enabled) {
-      if (widget.onLongPress == null) {
-        return file.type != "DIR";
-      }
+      // if (widget.onLongPress == null) {
+      //   return file.type != "DIR";
+      // }
       return true;
     }
     return false;

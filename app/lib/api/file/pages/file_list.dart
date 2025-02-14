@@ -1,10 +1,9 @@
-import 'package:path/path.dart' as filepath;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/api/task/providers/task.dart';
+import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/common/providers/selection.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
@@ -58,12 +57,41 @@ class _FileListState extends ConsumerState<FileList> {
         path: widget.path,
         child: FileView(
           path: widget.path,
-          onTap: _onTap,
-          onLongPress: !_isRoot ? _onLongPress : null,
+          fileBuilder: (context, file, child) {
+            return InkWell(
+              onTap: () {
+                _onTap(context, file);
+              },
+              onLongPress: _isRoot
+                  ? null
+                  : () {
+                      _onLongPress(context, file);
+                    },
+              onSecondaryTapUp: (!_isRoot && Util.isDesktop)
+                  ? (detail) {
+                      _onSecondaryTapUp(context, file, detail);
+                    }
+                  : null,
+              child: child,
+            );
+          },
         ),
       ),
-      floatingActionButton:
-          !_isRoot ? FileFloatingAction(path: widget.path) : null,
+      floatingActionButton: !_isRoot
+          ? FloatingActionButton(
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add_a_photo),
+              onPressed: () async {
+                final result = await showFileFloatingAction(
+                  context,
+                  widget.path,
+                  ref: ref,
+                );
+                if (!context.mounted) return;
+                result?.action(context, widget.path, ref: ref);
+              },
+            )
+          : null,
     );
   }
 
@@ -108,32 +136,34 @@ class _FileListState extends ConsumerState<FileList> {
   }
 
   _onTap(BuildContext context, File file) async {
-    if (file.type == "DIR") {
-      setState(() {
-        _dragEnable = false;
-      });
-      await Navigator.of(context).pushNamed(
-        '/file/list',
-        arguments: filepath.posix.join(file.path, file.name),
-      );
-      setState(() {
-        _dragEnable = !_isRoot;
-      });
-      return;
-    }
-    Navigator.pushNamed(
-      context,
-      '/file/preview',
-      arguments: {
-        "file": file,
-      },
-    );
+    setState(() {
+      _dragEnable = false;
+    });
+    await FileAction.open.action(context, file, ref: ref);
+    setState(() {
+      _dragEnable = !_isRoot;
+    });
   }
 
-  _onLongPress(BuildContext context, File item) {
+  _onLongPress(BuildContext context, File file) {
     ref.read(fileSelectionProvider.notifier).update((state) {
-      return state.copyWith(enabled: true, selected: [item]);
+      return state.copyWith(enabled: true, selected: [file]);
     });
+  }
+
+  _onSecondaryTapUp(
+    BuildContext context,
+    File file,
+    TapUpDetails detail,
+  ) async {
+    final result = await showFilePopupAction(
+      context,
+      file,
+      ref: ref,
+      popupOffset: detail.globalPosition,
+    );
+    if (!context.mounted) return;
+    result?.action(context, file, ref: ref);
   }
 }
 
@@ -159,15 +189,28 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
       body: FileView(
         path: widget.path,
         selection: widget.selection,
-        onTap: _onTap,
-        onLongPress: _onLongPress,
+        fileBuilder: (context, file, child) {
+          return InkWell(
+            onTap: () {
+              _onTap(context, file);
+            },
+            onLongPress: () {
+              _onLongPress(context, file);
+            },
+            onSecondaryTapUp:
+                (Util.isDesktop && widget.selection.selected.isNotEmpty)
+                    ? (detail) {
+                        _onSecondaryTapUp(context, detail);
+                      }
+                    : null,
+            child: child,
+          );
+        },
       ),
-      bottomNavigationBar: widget.selection.selected.isNotEmpty
-          ? FileSelectionAction(
-              path: widget.path,
-              selected: widget.selection.selected,
-            )
-          : null,
+      bottomNavigationBar:
+          (Util.isMobile && widget.selection.selected.isNotEmpty)
+              ? _buildBottomBar(context)
+              : null,
     );
   }
 
@@ -201,6 +244,51 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
     );
   }
 
+  _buildBottomBar(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.minWidth,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FileSelectionAction.copy,
+                FileSelectionAction.move,
+                if (widget.selection.selected.length == 1)
+                  FileSelectionAction.rename,
+                FileSelectionAction.download,
+                FileSelectionAction.remove,
+              ].map((value) {
+                return TextButton(
+                  child: Wrap(
+                    direction: Axis.vertical,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Icon(value.icon),
+                      Text(value.label),
+                    ],
+                  ),
+                  onPressed: () {
+                    value.action(
+                      context,
+                      widget.path,
+                      widget.selection.selected,
+                      ref: ref,
+                    );
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   _onTap(BuildContext context, File item) {
     ref.read(fileSelectionProvider.notifier).toggle(item);
   }
@@ -211,5 +299,17 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
         return state.copyWith(enabled: true, selected: [item]);
       });
     }
+  }
+
+  _onSecondaryTapUp(BuildContext context, TapUpDetails detail) async {
+    final result = await showFileSelectionPopupAction(
+      context,
+      widget.path,
+      widget.selection.selected,
+      ref: ref,
+      popupOffset: detail.globalPosition,
+    );
+    if (!context.mounted) return;
+    result?.action(context, widget.path, widget.selection.selected, ref: ref);
   }
 }

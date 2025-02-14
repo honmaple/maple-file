@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/rs/xid"
 )
 
 type State int32
@@ -54,6 +54,7 @@ type Task interface {
 	DryRun() bool
 
 	Done() <-chan struct{}
+	Reset(context.Context)
 	Running() bool
 	Context() context.Context
 	Logger() Logger
@@ -171,6 +172,16 @@ func (t *memoryTask) Done() <-chan struct{} {
 	return t.donec
 }
 
+func (t *memoryTask) Reset(ctx context.Context) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.buf.Reset()
+	t.state = STATE_PENDING
+	t.donec = make(chan struct{})
+	t.ctx, t.cancel = context.WithCancel(ctx)
+}
+
 func (t *memoryTask) Running() bool {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -252,12 +263,11 @@ func (t *memoryTask) Run() {
 	t.endTime = time.Now()
 }
 
-func GenerateUUID() string {
-	id, _ := uuid.NewUUID()
-	return id.String()
-}
-
 type taskOption func(task *memoryTask)
+
+func generateId() string {
+	return xid.New().String()
+}
 
 func WithID(id string) taskOption {
 	return func(task *memoryTask) {
@@ -285,7 +295,7 @@ func WithLogger(logger Logger) taskOption {
 
 func NewTask(ctx context.Context, name string, fn func(Task) error, taskOpts ...taskOption) Task {
 	task := &memoryTask{
-		id:       GenerateUUID(),
+		id:       generateId(),
 		state:    STATE_PENDING,
 		donec:    make(chan struct{}),
 		buf:      bytes.NewBuffer(nil),

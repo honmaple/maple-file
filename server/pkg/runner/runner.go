@@ -96,6 +96,8 @@ func (m *runner) Retry(id string) error {
 	if task.Running() {
 		return errors.New("任务还在运行，请先取消任务或者稍后重试")
 	}
+	task.Reset(m.ctx)
+
 	go m.Execute(task)
 	return nil
 }

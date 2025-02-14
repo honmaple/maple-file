@@ -21,6 +21,14 @@ List<HelpLink> features = [
     link: "https://fileapp.honmaple.com/guide/features/preview.html",
   ),
   HelpLink(
+    name: "文件操作".tr(),
+    link: "https://fileapp.honmaple.com/guide/features/action.html",
+  ),
+  HelpLink(
+    name: "文件缓存".tr(),
+    link: "https://fileapp.honmaple.com/guide/features/cache.html",
+  ),
+  HelpLink(
     name: "文件压缩".tr(),
     link: "https://fileapp.honmaple.com/guide/features/compress.html",
   ),

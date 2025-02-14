@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/tree.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
@@ -112,7 +111,7 @@ class _TaskListState extends ConsumerState<TaskList>
                           Icon(
                             Icons.task_outlined,
                             size: 36,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: Theme.of(context).primaryColor,
                           ),
                           Text("暂无任务".tr()),
                         ],
@@ -180,12 +179,13 @@ class _TaskListState extends ConsumerState<TaskList>
       leading: Icon(
         Icons.folder,
         size: 36,
-        color: ColorUtil.backgroundColorWithString(item.name),
+        color: Theme.of(context).primaryColor,
       ),
       title: Text(
         item.name,
         overflow: TextOverflow.ellipsis,
       ),
+      isThreeLine: true,
       subtitle: _buildProgress(context, item),
       trailing: _buildAction(context, item),
       onTap: () async {
@@ -197,7 +197,7 @@ class _TaskListState extends ConsumerState<TaskList>
   _buildAction(BuildContext context, Task item) {
     if (isFailed(item)) {
       return IconButton(
-        icon: Icon(Icons.refresh, color: Theme.of(context).colorScheme.primary),
+        icon: Icon(Icons.refresh, color: Theme.of(context).primaryColor),
         onPressed: () {},
       );
     }
@@ -205,8 +205,10 @@ class _TaskListState extends ConsumerState<TaskList>
       return null;
     }
     return IconButton(
-      icon: Icon(Icons.play_circle_outline,
-          color: Theme.of(context).colorScheme.primary),
+      icon: Icon(
+        Icons.play_circle_outline,
+        color: Theme.of(context).primaryColor,
+      ),
       onPressed: () {},
     );
   }

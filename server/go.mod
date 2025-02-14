@@ -10,7 +10,6 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.23.0
-	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hirochachacha/go-smb2 v1.1.0
@@ -18,6 +17,7 @@ require (
 	github.com/jlaffaye/ftp v0.2.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/pkg/sftp v1.13.6
+	github.com/rs/xid v1.6.0
 	github.com/sirupsen/logrus v1.8.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/viper v1.18.2

@@ -8,22 +8,46 @@ import 'package:maple_file/generated/proto/api/task/task.pb.dart';
 import '../providers/task.dart';
 import '../providers/service.dart';
 
-enum TaskActionType {
+enum TaskAction {
+  detail,
   retry,
   cancel,
   remove,
 }
 
-extension TaskActionTypeExtension on TaskActionType {
+extension on TaskAction {
+  IconData? get icon {
+    final Map<TaskAction, IconData> icons = {
+      TaskAction.detail: Icons.info_outlined,
+      TaskAction.retry: Icons.refresh,
+      TaskAction.cancel: Icons.cancel,
+      TaskAction.remove: Icons.delete,
+    };
+    return icons[this];
+  }
+
+  String get label {
+    final Map<TaskAction, String> labels = {
+      TaskAction.detail: "详情".tr(),
+      TaskAction.retry: "重试".tr(),
+      TaskAction.cancel: "取消".tr(),
+      TaskAction.remove: "删除".tr(),
+    };
+    return labels[this] ?? "unknown";
+  }
+
   Future<void> action(BuildContext context, Task task, {WidgetRef? ref}) async {
     switch (this) {
-      case TaskActionType.retry:
+      case TaskAction.detail:
+        showTaskDetail(context, task);
+        return;
+      case TaskAction.retry:
         TaskService().retryTask([task.id]);
         return;
-      case TaskActionType.cancel:
+      case TaskAction.cancel:
         TaskService().cancelTask([task.id]);
         return;
-      case TaskActionType.remove:
+      case TaskAction.remove:
         TaskService().removeTask([task.id]);
         return;
     }
@@ -51,42 +75,33 @@ Future<void> showTaskAction(
   Task task, {
   WidgetRef? ref,
 }) async {
-  final result = await showListDialog<TaskActionType>(context,
-      useAlertDialog: true,
-      items: [
-        ListDialogItem(
-          child: ListTile(
-            title: Text(task.name),
-            subtitle: Text(task.progressState),
-            trailing: TextButton.icon(
-              label: Text("查看详情".tr()),
-              icon: const Icon(Icons.info_outlined),
-              onPressed: () {
-                Navigator.of(context).pop();
-                showTaskDetail(context, task);
-              },
-            ),
-          ),
-        ),
-        if (isFinished(task))
-          ListDialogItem(
-            icon: Icons.refresh,
-            label: "重试任务".tr(),
-            value: TaskActionType.retry,
-          ),
-        if (isRunning(task))
-          ListDialogItem(
-            icon: Icons.cancel,
-            label: "取消任务".tr(),
-            value: TaskActionType.cancel,
-          ),
-        if (isFinished(task))
-          ListDialogItem(
-            icon: Icons.delete,
-            label: "删除任务".tr(),
-            value: TaskActionType.remove,
-          ),
-      ]);
+  final result =
+      await showListDialog<TaskAction>(context, useAlertDialog: true, items: [
+    if (task.log != "")
+      ListDialogItem(
+        icon: TaskAction.detail.icon,
+        label: TaskAction.detail.label,
+        value: TaskAction.detail,
+      ),
+    if (isFinished(task))
+      ListDialogItem(
+        icon: TaskAction.retry.icon,
+        label: TaskAction.retry.label,
+        value: TaskAction.retry,
+      ),
+    if (isRunning(task))
+      ListDialogItem(
+        icon: TaskAction.cancel.icon,
+        label: TaskAction.cancel.label,
+        value: TaskAction.cancel,
+      ),
+    if (isFinished(task))
+      ListDialogItem(
+        icon: TaskAction.remove.icon,
+        label: TaskAction.remove.label,
+        value: TaskAction.remove,
+      ),
+  ]);
   if (!context.mounted) return;
   result?.action(context, task, ref: ref);
 }

@@ -31,8 +31,6 @@ void main() async {
 
   loadBookmarks(container);
 
-  await container.read(appearanceProvider.notifier).init();
-
   runApp(UncontrolledProviderScope(
     container: container,
     child: MyApp(),

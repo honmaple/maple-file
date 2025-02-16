@@ -4,8 +4,8 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/honmaple/maple-file/releases/tag/v1.0.4" target="_blank">
-    <img src="https://img.shields.io/badge/release-1.0.4-brightgreen.svg">
+  <a href="https://github.com/honmaple/maple-file/releases/tag/v1.0.5" target="_blank">
+    <img src="https://img.shields.io/badge/release-1.0.5-brightgreen.svg">
   </a>
   <a href="https://github.com/honmaple/maple-file/blob/master/LICENSE" target="_blank">
     <img src="https://img.shields.io/badge/license-GPL3.0-blue.svg">
@@ -16,7 +16,7 @@
 
 [home]: https://fileapp.honmaple.com
 [document]: https://fileapp.honmaple.com/guide/introduction.html
-[download]: https://github.com/honmaple/maple-file/releases/tag/v1.0.4
+[download]: https://github.com/honmaple/maple-file/releases/tag/v1.0.5
 
 > 使用 **Flutter** 实现的无服务端多协议云盘文件上传和管理APP
 

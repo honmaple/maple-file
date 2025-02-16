@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
@@ -57,8 +56,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     content: Text("确认删除存储?".tr()));
                 if (result != null && result) {
                   await FileService().deleteRepo(_form.id).then((_) {
-                    ref.invalidate(repoProvider);
-                    ref.invalidate(fileProvider(_form.path));
+                    _handleDone(_form);
                     if (context.mounted) Navigator.of(context).pop();
                   });
                 }
@@ -146,14 +144,14 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                         ? ElevatedButton(
                             child: Text('确认修改'.tr()),
                             onPressed: () async {
-                              final nav = Navigator.of(context);
                               await FileService()
                                   .updateRepo(_form)
                                   .then((resp) {
                                 if (!resp.hasErr) {
-                                  ref.invalidate(repoProvider);
-                                  ref.invalidate(fileProvider(_form.path));
-                                  nav.pop();
+                                  _handleDone(_form);
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                  }
                                 }
                               });
                             },
@@ -161,14 +159,14 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                         : ElevatedButton(
                             child: Text('确认添加'.tr()),
                             onPressed: () async {
-                              final nav = Navigator.of(context);
                               await FileService()
                                   .createRepo(_form)
                                   .then((resp) {
                                 if (!resp.hasErr) {
-                                  ref.invalidate(repoProvider);
-                                  ref.invalidate(fileProvider(_form.path));
-                                  nav.pop();
+                                  _handleDone(_form);
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                  }
                                 }
                               });
                             },
@@ -206,5 +204,14 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
         ),
       ),
     );
+  }
+
+  _handleDone(Repo repo) {
+    ref.invalidate(repoProvider);
+    ref.invalidate(fileProvider(repo.path));
+
+    if (repo.driver == "local") {
+      ref.read(repoProvider.notifier).saveBookmarks();
+    }
   }
 }

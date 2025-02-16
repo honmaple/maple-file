@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'package:maple_file/api/file/widgets/file_action.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +12,7 @@ import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 import '../providers/file.dart';
 
 import 'file_view.dart';
+import 'file_action.dart';
 
 class FileTree extends ConsumerStatefulWidget {
   const FileTree({

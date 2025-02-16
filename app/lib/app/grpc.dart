@@ -30,13 +30,15 @@ Future<Response<T>> doFuture<T>(
   }
   if (showError) {
     App.showSnackBar(Text(err));
+  } else {
+    App.logger.warning(err);
   }
   return Response(error: err);
 }
 
 class GRPC {
   GRPC._internal() {
-    print("init grpc");
+    App.logger.info("init grpc");
   }
 
   static final GRPC _instance = GRPC._internal();

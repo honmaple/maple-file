@@ -5,19 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'service.dart';
 
-class SettingNotifier1 extends FamilyNotifier<dynamic, String> {
+class SettingAsyncNotifier extends FamilyAsyncNotifier<String, String> {
   final _service = SystemService();
 
   @override
-  dynamic build(String arg) async {
-    final value = await _service.getSetting(arg);
-    return jsonDecode(value);
+  FutureOr<String> build(String arg) {
+    return _service.getSetting(arg);
   }
 }
-
-final settingProvider =
-    NotifierProvider.family<SettingNotifier1, dynamic, String>(
-        SettingNotifier1.new);
 
 class SettingNotifier<T> extends Notifier<T> {
   final String key;
@@ -30,19 +25,14 @@ class SettingNotifier<T> extends Notifier<T> {
     required this.key,
     required this.value,
     required this.fromJson,
-  }) {
-    _fetch().then((result) {
-      state = result;
-    });
-  }
+  });
 
   @override
   T build() {
-    return value;
-  }
-
-  Future<T> _fetch() async {
-    final result = await _service.getSetting(key);
+    final result = ref.watch(settingProvider(key)).valueOrNull;
+    if (result == null) {
+      return value;
+    }
     return fromJson(jsonDecode(result));
   }
 
@@ -54,7 +44,15 @@ class SettingNotifier<T> extends Notifier<T> {
     });
     return state;
   }
+
+  Future<void> init() async {
+    await ref.read(settingProvider(key).future);
+  }
 }
+
+final settingProvider =
+    AsyncNotifierProvider.family<SettingAsyncNotifier, String, String>(
+        SettingAsyncNotifier.new);
 
 NotifierProvider<SettingNotifier<T>, T> newSettingNotifier<T>(
   String key,

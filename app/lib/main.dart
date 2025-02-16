@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 
+import 'api/setting/providers/setting_bookmark.dart';
 import 'api/setting/providers/setting_appearance.dart';
 import 'app/app.dart';
 import 'app/i18n.dart';
@@ -13,7 +14,7 @@ import 'api/task/route.dart' as task;
 import 'api/setting/route.dart' as setting;
 
 Future<void> init() async {
-  await App().init();
+  await App.instance.init();
 
   await home.init(App.router);
   await file.init(App.router);
@@ -26,7 +27,16 @@ void main() async {
 
   await init();
 
-  runApp(const ProviderScope(child: MyApp()));
+  final container = ProviderContainer();
+
+  loadBookmarks(container);
+
+  await container.read(appearanceProvider.notifier).init();
+
+  runApp(UncontrolledProviderScope(
+    container: container,
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends ConsumerWidget {

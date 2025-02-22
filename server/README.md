@@ -6,7 +6,7 @@ gomobile bind -ldflags="-w -s" -o ../app/android/app/libs/server.aar -target=and
 
 ## IOS
 ```
-gomobile bind -ldflags="-w -s" -o ../app/ios/Frameworks/server.xcframework -target=ios github.com/honmaple/maple-file/server/cmd/mobile
+gomobile bind -ldflags="-w -s" -o ../app/ios/Frameworks/Libserver.xcframework -target=ios github.com/honmaple/maple-file/server/cmd/mobile
 ```
 
 ## MacOS

@@ -1,5 +1,6 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
+import 'dart:convert';
 import 'package:grpc/grpc.dart';
 import 'package:grpc/service_api.dart' as grpcapi;
 import 'package:ffi/ffi.dart';
@@ -39,7 +40,7 @@ class GrpcService {
       'path': path,
     };
 
-    return await platform.invokeMethod("Start", args);
+    return await platform.invokeMethod("Start", jsonEncode(args));
   }
 
   // https://docs.flutter.dev/platform-integration/macos/c-interop
@@ -53,11 +54,13 @@ class GrpcService {
       libname += ".so";
     }
 
-    final path = await PathUtil.getApplicationPath();
+    final Map<String, dynamic> args = {
+      'path': await PathUtil.getApplicationPath(),
+    };
 
     // ffi.Char
     final lib = LibserverBind(ffi.DynamicLibrary.open(libname));
-    final result = lib.Start(path.toNativeUtf8().cast());
+    final result = lib.Start(jsonEncode(args).toNativeUtf8().cast());
     if (result.r1.address == ffi.nullptr.address) {
       return Future.value(result.r0.cast<Utf8>().toDartString());
     }

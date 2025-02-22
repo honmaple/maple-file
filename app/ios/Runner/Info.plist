@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+    <!-- Permissions -->
+    <key>NSAppTransportSecurity</key>
+    <string>The app needs network access so that the user can manage file from cloud.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>The app needs camera access so that the user can task picture to upload.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>The app needs photo library access so that the user can select photos to upload.</string>
 </dict>
 </plist>

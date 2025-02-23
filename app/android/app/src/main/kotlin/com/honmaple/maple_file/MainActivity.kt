@@ -16,7 +16,7 @@ class MainActivity: FlutterActivity() {
         result ->
       if (call.method.equals("Start")) {
         try {
-            val addr = Server.start(call.argument("path"))
+            val addr = Server.start(call.arguments as String)
             result.success(addr);
         } catch (e: Exception) {
             result.error("GRPC", e.message, null);

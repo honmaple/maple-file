@@ -126,8 +126,6 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: true
-  remove_alpha_ios: true
   image_path: "assets/icon/icon-transparent.png"
   web:
     generate: true
@@ -135,9 +133,12 @@ flutter_launcher_icons:
   windows:
     generate: true
     image_path: "assets/icon/icon-transparent.png"
+  ios: true
+  image_path_ios: "assets/icon/icon-white.png"
+  remove_alpha_ios: true
   macos:
     generate: true
-    image_path: "assets/icon/icon-transparent.png"
+    image_path: "assets/icon/icon-macos.png"
 
 ffigen:
   name: LibserverBind

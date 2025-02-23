@@ -567,9 +567,9 @@ class FilePopupAction extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final view = ref.watch(fileSettingProvider.select((state) => state.view));
     return PopupMenuButton(
-      position: PopupMenuPosition.under,
       icon: const Icon(Icons.more_vert),
-      // iconSize: 18,
+      position: PopupMenuPosition.under,
+      menuPadding: EdgeInsets.zero,
       itemBuilder: (BuildContext bc) {
         return [
           PopupMenuItem(

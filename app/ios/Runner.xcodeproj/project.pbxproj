@@ -12,9 +12,10 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		4FFC8DF6E3E95DE2836F0083 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEA28FA34C1ED5E42D40E722 /* Pods_RunnerTests.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
+		92507EE72D81B45200F11B8C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 92507EE52D81B45200F11B8C /* InfoPlist.strings */; };
 		9293BF222D69B52C004410CE /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9293BF212D69B52C004410CE /* libresolv.tbd */; };
-		9293BF272D69BA04004410CE /* Libserver.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9293BF252D69B959004410CE /* Libserver.xcframework */; };
-		9293BF282D69BA04004410CE /* Libserver.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9293BF252D69B959004410CE /* Libserver.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		92C838672D8151D400848CA5 /* libserver.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92C838652D8151BA00848CA5 /* libserver.xcframework */; };
+		92C838682D8151D400848CA5 /* libserver.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 92C838652D8151BA00848CA5 /* libserver.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -38,7 +39,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9293BF282D69BA04004410CE /* Libserver.xcframework in Embed Frameworks */,
+				92C838682D8151D400848CA5 /* libserver.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -58,8 +59,10 @@
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		92507EE62D81B45200F11B8C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		92507EE82D81B46F00F11B8C /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		9293BF212D69B52C004410CE /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
-		9293BF252D69B959004410CE /* Libserver.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Libserver.xcframework; path = Frameworks/Libserver.xcframework; sourceTree = "<group>"; };
+		92C838652D8151BA00848CA5 /* libserver.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = libserver.xcframework; path = Frameworks/libserver.xcframework; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,7 +91,7 @@
 			files = (
 				9293BF222D69B52C004410CE /* libresolv.tbd in Frameworks */,
 				BC231CC396E1175E4CE19EDF /* Pods_Runner.framework in Frameworks */,
-				9293BF272D69BA04004410CE /* Libserver.xcframework in Frameworks */,
+				92C838672D8151D400848CA5 /* libserver.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +149,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				92507EE52D81B45200F11B8C /* InfoPlist.strings */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -153,7 +157,7 @@
 		9AE7D2504658D6A84CAB5BEB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9293BF252D69B959004410CE /* Libserver.xcframework */,
+				92C838652D8151BA00848CA5 /* libserver.xcframework */,
 				9293BF212D69B52C004410CE /* libresolv.tbd */,
 				0353DE0BE9103E495DBF738B /* Pods_Runner.framework */,
 				CEA28FA34C1ED5E42D40E722 /* Pods_RunnerTests.framework */,
@@ -246,6 +250,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
@@ -274,6 +279,7 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				92507EE72D81B45200F11B8C /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,6 +426,15 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		92507EE52D81B45200F11B8C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				92507EE62D81B45200F11B8C /* en */,
+				92507EE82D81B46F00F11B8C /* zh-Hans */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		97C146FA1CF9000F007C117D /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -444,6 +459,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -571,6 +587,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -632,6 +649,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = AppIcon;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";

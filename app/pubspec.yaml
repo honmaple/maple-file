@@ -96,8 +96,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/icon/icon-white.png
-    - assets/icon/icon-transparent.png
+    - assets/icon/icon.png
+    - assets/icon/icon-macos.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -126,16 +126,17 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 flutter_launcher_icons:
   android: "launcher_icon"
-  image_path: "assets/icon/icon-transparent.png"
+  image_path: "assets/icon/icon.png"
   web:
     generate: true
-    image_path: "assets/icon/icon-transparent.png"
+    image_path: "assets/icon/icon.png"
   windows:
     generate: true
-    image_path: "assets/icon/icon-transparent.png"
+    image_path: "assets/icon/icon.png"
   ios: true
-  image_path_ios: "assets/icon/icon-white.png"
+  image_path_ios: "assets/icon/icon.png"
   remove_alpha_ios: true
+  background_color_ios: "#ffffff"
   macos:
     generate: true
     image_path: "assets/icon/icon-macos.png"

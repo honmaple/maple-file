@@ -28,7 +28,7 @@ class About extends ConsumerWidget {
                 Center(
                   child: Column(
                     children: [
-                      Image.asset("assets/icon/icon-transparent.png",
+                      Image.asset("assets/icon/icon.png",
                           width: 80),
                       Text("红枫云盘 {version}".tr(
                         args: {"version": resp.version},

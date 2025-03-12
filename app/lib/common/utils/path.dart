@@ -3,6 +3,7 @@ import 'dart:io' show Directory, Platform, File;
 import 'package:external_path/external_path.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:path_provider/path_provider.dart';
@@ -12,7 +13,7 @@ class PathUtil {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         final dir = await ExternalPath.getExternalStoragePublicDirectory(
-          ExternalPath.DIRECTORY_DOWNLOADS,
+          ExternalPath.DIRECTORY_DOWNLOAD,
         );
         return dir != "" ? dir : '/storage/emulated/0/Download';
       case TargetPlatform.iOS:

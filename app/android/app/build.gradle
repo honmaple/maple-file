@@ -74,5 +74,5 @@ repositories {
 }
 
 dependencies {
-    implementation(name: 'server', ext: 'aar') // 添加这一行，引入.aar文件
+    implementation(name: 'libserver', ext: 'aar') // 添加这一行，引入.aar文件
 }

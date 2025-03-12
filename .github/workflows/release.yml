@@ -1,6 +1,19 @@
 name: release
 
 on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Build platform"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - ios
+          - macos
+          - android
+          - windows
   release:
     types: [published]
     paths:
@@ -32,6 +45,7 @@ jobs:
           echo "current version is $VERSION"
 
   build-macos-arm64-lib:
+    if: ${{ github.event_name == 'release' || github.event.inputs.platform == 'all' || github.event.inputs.platform == 'macos' }}
     needs:
       - get-version
     runs-on: macos-latest
@@ -57,6 +71,7 @@ jobs:
           path: server/libserver.dylib
 
   build-macos:
+    if: ${{ github.event_name == 'release' || github.event.inputs.platform == 'all' || github.event.inputs.platform == 'macos' }}
     needs:
       - get-version
       - build-macos-arm64-lib
@@ -136,6 +151,7 @@ jobs:
           path: app/build/macos/Build/Products/Release/dist/*.dmg
 
   build-windows:
+    if: ${{ github.event_name == 'release' || github.event.inputs.platform == 'all' || github.event.inputs.platform == 'windows' }}
     needs:
       - get-version
     runs-on: windows-latest
@@ -175,7 +191,60 @@ jobs:
           name: windows-result
           path: app/maple-file-*.zip
 
+  build-ios:
+    if: ${{ github.event_name == 'release' || github.event.inputs.platform == 'all' || github.event.inputs.platform == 'ios' }}
+    needs:
+      - get-version
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: "**/go.sum"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build xcframework
+        run: |
+          mkdir app/ios/Frameworks
+
+          cd server
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go get golang.org/x/mobile/bind
+          gomobile init
+          gomobile bind -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=${{ needs.get-version.outputs.version }}" -o ../app/ios/Frameworks/libserver.xcframework -target=ios github.com/honmaple/maple-file/server/cmd/mobile
+
+      - name: Build ipa
+        env:
+          VERSION: ${{ needs.get-release.outputs.version }}
+        run: |
+          cd app
+          flutter pub get
+          dart run build_runner build
+          flutter build ios --no-codesign
+
+          mkdir Payload
+          cp -r build/ios/iphoneos/Runner.app Payload
+          zip -r -y Payload.zip Payload/Runner.app
+          mv Payload.zip maple-file-${{ needs.get-version.outputs.version }}-ios.ipa
+
+      - name: Upload ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-result
+          path: |
+            app/maple-file-*.ipa
+
   build-android:
+    if: ${{ github.event_name == 'release' || github.event.inputs.platform == 'all' || github.event.inputs.platform == 'android' }}
     needs:
       - get-version
     runs-on: ubuntu-22.04
@@ -219,7 +288,7 @@ jobs:
           go install golang.org/x/mobile/cmd/gomobile@latest
           go get golang.org/x/mobile/bind
           gomobile init
-          gomobile bind -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=${{ needs.get-version.outputs.version }}" -o ../app/android/app/libs/server.aar -target=android -androidapi 21 -javapkg="com.honmaple.maple_file" github.com/honmaple/maple-file/server/cmd/mobile
+          gomobile bind -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=${{ needs.get-version.outputs.version }}" -o ../app/android/app/libs/libserver.aar -target=android -androidapi 21 -javapkg="com.honmaple.maple_file" github.com/honmaple/maple-file/server/cmd/mobile
 
       - name: Build APK
         run: |
@@ -241,9 +310,11 @@ jobs:
             app/build/app/outputs/flutter-apk/maple-file-*.apk
 
   release:
+    if: ${{ github.event_name == 'release' }}
     needs:
       - build-macos
       - build-windows
+      - build-ios
       - build-android
     runs-on: ubuntu-22.04
 
@@ -266,6 +337,12 @@ jobs:
           name: windows-result
           path: windows-result
 
+      - name: Download ipa file
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-result
+          path: ios-result
+
       - name: Download apk file
         uses: actions/download-artifact@v4
         with:
@@ -279,5 +356,6 @@ jobs:
           files: |
             macos-result/*.dmg
             windows-result/*.zip
+            ios-result/*.ipa
             android-result/*.apk
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,12 +1,12 @@
 
 ## Android
 ```
-gomobile bind -ldflags="-w -s" -o ../app/android/app/libs/server.aar -target=android -androidapi 21 -javapkg="com.honmaple.maple_file" github.com/honmaple/maple-file/server/cmd/mobile
+gomobile bind -ldflags="-w -s" -o ../app/android/app/libs/libserver.aar -target=android -androidapi 21 -javapkg="com.honmaple.maple_file" github.com/honmaple/maple-file/server/cmd/mobile
 ```
 
 ## IOS
 ```
-gomobile bind -ldflags="-w -s" -o ../app/ios/Frameworks/Libserver.xcframework -target=ios github.com/honmaple/maple-file/server/cmd/mobile
+gomobile bind -ldflags="-w -s" -o ../app/ios/Frameworks/libserver.xcframework -target=ios github.com/honmaple/maple-file/server/cmd/mobile
 ```
 
 ## MacOS

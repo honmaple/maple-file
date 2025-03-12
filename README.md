@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./app/assets/icon/icon-transparent.png" width="150" />
+  <img src="./app/assets/icon/icon.png" width="150" />
   <h1>红枫云盘</h1>
 </div>
 

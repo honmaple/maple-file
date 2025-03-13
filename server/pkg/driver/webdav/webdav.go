@@ -105,9 +105,6 @@ func New(opt *Option) (driver.FS, error) {
 	if err := driver.VerifyOption(opt); err != nil {
 		return nil, err
 	}
-	// if opt.DirPerm == 0 {
-	//	opt.DirPerm = 755
-	// }
 	opt.DirPerm = 0755
 
 	client := gowebdav.NewAuthClient(opt.Endpoint, gowebdav.NewAutoAuth(opt.Username, opt.Password))

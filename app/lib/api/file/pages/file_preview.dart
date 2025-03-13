@@ -371,10 +371,8 @@ class FileVideoPreview extends StatefulWidget {
   State<FileVideoPreview> createState() => _FileVideoPreviewState();
 }
 
-class _FileVideoPreviewState extends State<FileVideoPreview>
-    with SingleTickerProviderStateMixin {
+class _FileVideoPreviewState extends State<FileVideoPreview> {
   late final VideoPreviewController _controller;
-  late final TabController _tabController;
 
   @override
   void initState() {
@@ -406,14 +404,11 @@ class _FileVideoPreviewState extends State<FileVideoPreview>
       index: index,
       autoPlay: true,
     );
-
-    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -431,64 +426,53 @@ class _FileVideoPreviewState extends State<FileVideoPreview>
           SliverToBoxAdapter(
             child: VideoPreview(controller: _controller),
           ),
-          SliverToBoxAdapter(
-            child: TabBar(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              controller: _tabController,
-              tabs: <Tab>[
-                Tab(text: "简介".tr()),
-                Tab(text: "播放列表".tr()),
-              ],
-            ),
-          ),
           SliverFillRemaining(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        title: Text("文件名称".tr()),
-                        trailing: Text(_controller.currentSource.name),
-                      ),
-                    ],
-                  ),
-                  ListView.separated(
-                    separatorBuilder: (context, index) {
-                      return Divider(
-                        height: 0.1,
-                        color: Colors.grey[300],
-                      );
-                    },
-                    itemCount: _controller.playlist.length,
-                    itemBuilder: (context, index) {
-                      final source = _controller.playlist[index];
-                      final selected = _controller.currentSource == source;
-                      return ListTile(
-                        leading: Icon(selected
-                            ? Icons.pause_circle_outlined
-                            : Icons.play_circle_outlined),
-                        title: Text(
-                          source.name,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        selected: selected,
-                        onTap: () {
-                          _controller.play(source);
-                          setState(() {});
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+            child: _controller.playlist.isEmpty
+                ? Center(
+                    child: Text("播放列表为空".tr()),
+                  )
+                : buildPlaylist(context),
           ),
         ],
       ),
+    );
+  }
+
+  buildPlaylist(BuildContext context) {
+    return ExpansionTile(
+      initiallyExpanded: true,
+      leading: Icon(Icons.playlist_play),
+      title: Text("播放列表".tr()),
+      children: [
+        ListView.separated(
+          shrinkWrap: true,
+          separatorBuilder: (context, index) {
+            return Divider(
+              height: 0.1,
+              color: Colors.grey[300],
+            );
+          },
+          itemCount: _controller.playlist.length,
+          itemBuilder: (context, index) {
+            final source = _controller.playlist[index];
+            final selected = _controller.currentSource == source;
+            return ListTile(
+              leading: Icon(selected
+                  ? Icons.pause_circle_outlined
+                  : Icons.play_circle_outlined),
+              title: Text(
+                source.name,
+                overflow: TextOverflow.ellipsis,
+              ),
+              selected: selected,
+              onTap: () {
+                _controller.play(source);
+                setState(() {});
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 }

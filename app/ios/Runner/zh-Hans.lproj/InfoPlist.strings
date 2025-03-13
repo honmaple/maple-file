@@ -1,8 +1,4 @@
-/*
-  InfoPlist.strings
-  Runner
-
-  Created by jianglin on 2025/3/12.
-
-*/
 "CFBundleDisplayName" = "红枫云盘";
+"NSAppTransportSecurity" = "应用需要网络访问权限才能管理你的云盘文件";
+"NSCameraUsageDescription" = "应用需要相机权限才能拍摄并上传的照片到云盘";
+"NSPhotoLibraryUsageDescription" = "应用需要照片权限才能上传你的照片到云盘";

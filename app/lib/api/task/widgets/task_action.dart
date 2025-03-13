@@ -57,15 +57,18 @@ extension on TaskAction {
 void showTaskDetail(BuildContext context, Task task) {
   showListDialog2(
     context,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(title: Text("执行日志".tr())),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Text(task.log),
-        ),
-      ],
+    child: Scaffold(
+      appBar: AppBar(
+        title: Text("执行日志".tr()),
+      ),
+      body: ListView(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(task.log),
+          ),
+        ],
+      ),
     ),
   );
 }

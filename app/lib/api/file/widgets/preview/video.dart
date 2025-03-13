@@ -50,6 +50,7 @@ class VideoPreviewController extends ChangeNotifier {
       aspectRatio: 16 / 9,
       autoPlay: _autoPlay,
       looping: true,
+      showOptions: false,
     );
     return _chewieController!;
   }

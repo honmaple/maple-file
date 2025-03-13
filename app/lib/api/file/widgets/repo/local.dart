@@ -26,9 +26,7 @@ class _LocalState extends State<Local> {
   void initState() {
     super.initState();
 
-    _option = widget.form.option == ""
-        ? {"dir_perm": 0755}
-        : jsonDecode(widget.form.option);
+    _option = widget.form.option == "" ? {} : jsonDecode(widget.form.option);
   }
 
   @override
@@ -47,19 +45,6 @@ class _LocalState extends State<Local> {
                 onTap: (result) {
                   setState(() {
                     _option["path"] = result;
-                  });
-
-                  widget.form.option = jsonEncode(_option);
-                },
-              ),
-              CustomFormField(
-                type: CustomFormFieldType.number,
-                label: "目录权限".tr(),
-                value: "${_option['dir_perm'] ?? 0755}",
-                isRequired: true,
-                onTap: (result) {
-                  setState(() {
-                    _option["dir_perm"] = int.parse(result);
                   });
 
                   widget.form.option = jsonEncode(_option);

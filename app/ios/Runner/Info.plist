@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
+  <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -24,34 +26,32 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<string>The app needs network access so that the user can manage file from cloud.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>The app needs camera access so that the user can task picture to upload.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>The app needs photo library access so that the user can select photos to upload.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
+	  <string>UIInterfaceOrientationPortrait</string>
+	  <string>UIInterfaceOrientationLandscapeLeft</string>
+	  <string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
+	  <string>UIInterfaceOrientationPortrait</string>
+	  <string>UIInterfaceOrientationPortraitUpsideDown</string>
+	  <string>UIInterfaceOrientationLandscapeLeft</string>
+	  <string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-
-    <!-- Permissions -->
-    <key>NSAppTransportSecurity</key>
-    <string>The app needs network access so that the user can manage file from cloud.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>The app needs camera access so that the user can task picture to upload.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>The app needs photo library access so that the user can select photos to upload.</string>
-</dict>
+	<key>UIStatusBarHidden</key>
+	<false/>
+  </dict>
 </plist>

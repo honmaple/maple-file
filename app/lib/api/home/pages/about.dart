@@ -28,16 +28,15 @@ class About extends ConsumerWidget {
                 Center(
                   child: Column(
                     children: [
-                      Image.asset("assets/icon/icon.png",
-                          width: 80),
+                      Image.asset("assets/icon/icon.png", width: 80),
                       Text("红枫云盘 {version}".tr(
                         args: {"version": resp.version},
                       )),
-                      if (resp.description != "")
-                        Text(
-                          resp.description,
-                          textAlign: TextAlign.center,
-                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "无服务端的多协议云盘文件上传和管理".tr(),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 16)
                     ],
                   ),

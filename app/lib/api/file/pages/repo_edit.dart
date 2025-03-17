@@ -209,9 +209,5 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
   _handleDone(Repo repo) {
     ref.invalidate(repoProvider);
     ref.invalidate(fileProvider(repo.path));
-
-    if (repo.driver == "local") {
-      ref.read(repoProvider.notifier).saveBookmarks();
-    }
   }
 }

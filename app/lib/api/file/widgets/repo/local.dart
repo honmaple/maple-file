@@ -1,7 +1,9 @@
+import 'dart:io' as io;
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import "package:macos_secure_bookmarks/macos_secure_bookmarks.dart";
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
@@ -43,11 +45,7 @@ class _LocalState extends State<Local> {
                 value: _option["path"],
                 isRequired: true,
                 onTap: (result) {
-                  setState(() {
-                    _option["path"] = result;
-                  });
-
-                  widget.form.option = jsonEncode(_option);
+                  _handlePath(result);
                 },
               ),
             ],
@@ -95,11 +93,7 @@ class _LocalState extends State<Local> {
                 value: _option["path"] ?? "",
               );
               if (result != null) {
-                setState(() {
-                  _option["path"] = result;
-                });
-
-                widget.form.option = jsonEncode(_option);
+                _handlePath(result);
               }
             },
           ),
@@ -107,5 +101,18 @@ class _LocalState extends State<Local> {
         const SizedBox(height: 4),
       ],
     );
+  }
+
+  _handlePath(String path) async {
+    _option["path"] = path;
+    if (Util.isMacOS) {
+      final secureBookmarks = SecureBookmarks();
+      _option["bookmark"] = await secureBookmarks.bookmark(
+        io.Directory(path),
+      );
+    }
+    setState(() {});
+
+    widget.form.option = jsonEncode(_option);
   }
 }

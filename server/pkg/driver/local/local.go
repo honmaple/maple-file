@@ -16,8 +16,10 @@ import (
 
 type Option struct {
 	base.Option
-	Path    string `json:"path" validate:"required"`
-	DirPerm uint32 `json:"-"`
+	Path string `json:"path" validate:"required"`
+	// only for macos to avoid operation not permitted
+	Bookmark string `json:"-"`
+	DirPerm  uint32 `json:"-"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {

@@ -189,7 +189,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                             ),
                             const TextSpan(text: " "),
                             TextSpan(
-                              text: "删除或者修改存储可能会导致正在进行中的任务中断，请确认任务完成后再操作",
+                              text: "删除或者修改存储可能会导致正在进行中的任务中断，请确认任务完成后再操作".tr(),
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],

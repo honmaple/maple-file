@@ -367,7 +367,7 @@ class _CustomFileTypeState extends State<CustomFileType>
                   decoration: InputDecoration(
                     border:
                         const OutlineInputBorder(borderSide: BorderSide.none),
-                    hintText: '输入文件类型'.tr(),
+                    hintText: '文件类型'.tr(),
                     hintStyle: const TextStyle(
                       fontSize: 12,
                     ),

@@ -106,10 +106,6 @@ func (d *Alist) Rename(ctx context.Context, path, newName string) error {
 }
 
 func (d *Alist) Move(ctx context.Context, src, dst string) error {
-	if filepath.Dir(dst) == "/" {
-		return driver.ErrNotSupport
-	}
-
 	_, err := d.requestWithData(ctx, http.MethodPost, "/api/fs/move", map[string]any{
 		"src_dir": filepath.Dir(src),
 		"dst_dir": dst,
@@ -119,10 +115,6 @@ func (d *Alist) Move(ctx context.Context, src, dst string) error {
 }
 
 func (d *Alist) Copy(ctx context.Context, src, dst string) error {
-	if filepath.Dir(dst) == "/" {
-		return driver.ErrNotSupport
-	}
-
 	_, err := d.requestWithData(ctx, http.MethodPost, "/api/fs/copy", map[string]any{
 		"src_dir": filepath.Dir(src),
 		"dst_dir": dst,
@@ -140,10 +132,6 @@ func (d *Alist) Remove(ctx context.Context, path string) error {
 }
 
 func (d *Alist) MakeDir(ctx context.Context, path string) error {
-	if filepath.Dir(path) == "/" {
-		return driver.ErrNotSupport
-	}
-
 	_, err := d.requestWithData(ctx, http.MethodPost, "/api/fs/mkdir", map[string]any{
 		"path": path,
 	})
@@ -189,10 +177,6 @@ func (d *Alist) Open(path string) (driver.FileReader, error) {
 }
 
 func (d *Alist) Create(path string) (driver.FileWriter, error) {
-	if filepath.Dir(path) == "/" {
-		return nil, driver.ErrNotSupport
-	}
-
 	r, w := util.Pipe()
 	go func() {
 		resp, err := d.request(context.Background(), http.MethodPut, "/api/fs/put", httputil.WithBody(r), httputil.WithNeverTimeout(), httputil.WithRequest(func(req *http.Request) {

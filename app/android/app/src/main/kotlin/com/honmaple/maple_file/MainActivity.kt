@@ -7,23 +7,30 @@ import io.flutter.plugin.common.MethodChannel
 import com.honmaple.maple_file.server.Server
 
 class MainActivity: FlutterActivity() {
-  private val CHANNEL = "honmaple.com/maple_file"
+    private val CHANNEL = "honmaple.com/maple_file"
 
-  override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
-    super.configureFlutterEngine(flutterEngine)
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
-        call,
-        result ->
-      if (call.method.equals("Start")) {
-        try {
-            val addr = Server.start(call.arguments as String)
-            result.success(addr);
-        } catch (e: Exception) {
-            result.error("GRPC", e.message, null);
+    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+            call,
+            result ->
+            when (call.method) {
+                "Start" -> {
+                    try {
+                        val addr = Server.start(call.arguments as String)
+                        result.success(addr);
+                    } catch (e: Exception) {
+                        result.error("GRPC", e.message, null);
+                    }
+                }
+                "Stop" -> {
+                    Server.stop()
+                    result.success(null)
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
         }
-      } else {
-        result.notImplemented()
-      }
     }
-  }
 }

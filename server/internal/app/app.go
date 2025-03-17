@@ -2,10 +2,12 @@ package app
 
 import (
 	"context"
-	"io/fs"
+	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/net/http2"
@@ -13,8 +15,8 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 
 	"github.com/honmaple/maple-file/server/internal/app/config"
 	"github.com/honmaple/maple-file/server/pkg/runner"
@@ -53,52 +55,40 @@ func Listen(addr string) (net.Listener, error) {
 	}
 }
 
-func (app *App) Start(listener net.Listener, webFS fs.FS) error {
-	conf := app.Config
-
+func (app *App) NewServer(listener net.Listener) (*Server, error) {
 	e := echo.New()
 
-	gsrv := grpc.NewServer(
+	srv := grpc.NewServer(
 		grpc.UnaryInterceptor(unaryInterceptor),
 		grpc.StreamInterceptor(streamInterceptor),
 	)
-	defer gsrv.Stop()
 
 	mux := runtime.NewServeMux()
 	for _, creator := range creators {
-		srv, err := creator(app)
+		s, err := creator(app)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		srv.Register(gsrv)
-		srv.RegisterGateway(app.ctx, mux, e)
+		s.Register(srv)
+		s.RegisterGateway(app.ctx, mux, e)
 	}
 
-	if webFS != nil {
-		e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(webFS))))
-
-		options := []grpcweb.Option{
-			grpcweb.WithCorsForRegisteredEndpointsOnly(false),
-			grpcweb.WithOriginFunc(func(_ string) bool {
-				return true
-			}),
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			srv.ServeHTTP(w, r)
+		} else {
+			mux.ServeHTTP(w, r)
 		}
-		e.Any("/api.*", echo.WrapHandler(grpcweb.WrapServer(gsrv, options...)))
-	} else {
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-				gsrv.ServeHTTP(w, r)
-			} else {
-				mux.ServeHTTP(w, r)
-			}
-		})
-		e.Any("/*", echo.WrapHandler(handler))
-	}
-
+	})
+	e.Any("/*", echo.WrapHandler(handler))
 	e.Listener = listener
 
-	conf.L.Println("http server listen:", listener.Addr().String())
-	return http.Serve(listener, h2c.NewHandler(e, &http2.Server{}))
+	return &Server{
+		app:      app,
+		grpc:     srv,
+		server:   &http.Server{Handler: h2c.NewHandler(e, &http2.Server{})},
+		listener: listener,
+	}, nil
 }
 
 func (app *App) Init() error {
@@ -107,6 +97,7 @@ func (app *App) Init() error {
 		return err
 	}
 	app.DB = db
+	app.Logger = config.NewLogger(app.Config)
 	app.Runner = runner.New(app.ctx, 20)
 	return nil
 }
@@ -120,6 +111,53 @@ func New() *App {
 	}
 }
 
-var (
-	defaultApp = New()
-)
+type Server struct {
+	app      *App
+	grpc     *grpc.Server
+	server   *http.Server
+	listener net.Listener
+}
+
+func (srv *Server) Addr() string {
+	return srv.listener.Addr().String()
+}
+
+func (srv *Server) Start() error {
+	srv.app.Logger.Println("http server listen:", srv.Addr())
+
+	return srv.server.Serve(srv.listener)
+}
+
+func (srv *Server) Shutdown() error {
+	srv.app.Logger.Println("http server shutdown...")
+
+	defer srv.grpc.Stop()
+	return srv.server.Shutdown(context.TODO())
+}
+
+func NewServer(cfg string) (*Server, error) {
+	cf := viper.New()
+	cf.SetConfigType("json")
+	if err := cf.ReadConfig(strings.NewReader(cfg)); err != nil {
+		return nil, err
+	}
+	path := cf.GetString("path")
+	if path == "" {
+		return nil, errors.New("app path is required")
+	}
+
+	app := New()
+	app.Config.Set(config.ServerAddr, "tcp://127.0.0.1:0")
+	app.Config.Set(config.LoggerFile, filepath.Join(path, "server.log"))
+	app.Config.Set(config.DatabaseDSN, fmt.Sprintf("sqlite://%s", filepath.Join(path, "server.db")))
+
+	if err := app.Init(); err != nil {
+		return nil, err
+	}
+
+	listener, err := Listen(app.Config.GetString(config.ServerAddr))
+	if err != nil {
+		return nil, err
+	}
+	return app.NewServer(listener)
+}

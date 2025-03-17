@@ -12,11 +12,9 @@ import 'package:maple_file/api/setting/providers/setting_bookmark.dart';
 import 'service.dart';
 
 class RepoNotifier extends AsyncNotifier<List<Repo>> {
-  final _service = FileService();
-
   @override
   FutureOr<List<Repo>> build() async {
-    return await _service.listRepos();
+    return await FileService.instance.listRepos();
   }
 
   Future<void> saveBookmarks() async {

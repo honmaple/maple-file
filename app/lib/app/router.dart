@@ -13,7 +13,7 @@ class CustomRouter {
     Map<String, WidgetBuilder>? routes,
     List<RouterMiddleware>? middlewares,
   }) {
-    this.routes = routes ?? Map<String, WidgetBuilder>();
+    this.routes = routes ?? {};
     this.middlewares = middlewares ?? <RouterMiddleware>[];
   }
 
@@ -58,7 +58,7 @@ class CustomRouter {
     };
 
     replace.forEach((k, v) {
-      if (v != null) newRoutes[k] = v!;
+      if (v != null) newRoutes[k] = v;
     });
 
     final newRouter = CustomRouter(

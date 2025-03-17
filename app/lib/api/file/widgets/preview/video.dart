@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:maple_file/app/i18n.dart';
+
 import 'source.dart';
 
 class VideoPreviewController extends ChangeNotifier {
@@ -48,7 +50,7 @@ class VideoPreviewController extends ChangeNotifier {
     _chewieController ??= ChewieController(
       videoPlayerController: _controller,
       aspectRatio: 16 / 9,
-      autoPlay: _autoPlay,
+      autoPlay: false,
       looping: true,
       showOptions: false,
     );
@@ -171,8 +173,8 @@ class VideoPreviewController extends ChangeNotifier {
 
   @override
   void dispose() {
-    _controller.dispose();
-    _chewieController?.dispose();
+    // _controller.dispose();
+    // _chewieController?.dispose();
 
     super.dispose();
   }
@@ -193,6 +195,8 @@ class VideoPreview extends StatefulWidget {
 class _VideoPreviewState extends State<VideoPreview> {
   late final VideoPreviewController _controller;
 
+  String? _error;
+
   @override
   void initState() {
     super.initState();
@@ -201,23 +205,29 @@ class _VideoPreviewState extends State<VideoPreview> {
     _controller.addListener(() {
       setState(() {});
     });
-    _controller.player.initialize().then((_) {
-      setState(() {});
-    });
+
+    _init();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  _init() async {
+    try {
+      await _controller.player.initialize();
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 16 / 9,
-      child: Chewie(
-        controller: _controller.chewie,
-      ),
+      child: (_error == null)
+          ? Chewie(
+              controller: _controller.chewie,
+            )
+          : Center(child: Text("不支持的格式".tr())),
     );
   }
 }

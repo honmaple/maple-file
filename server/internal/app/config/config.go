@@ -13,7 +13,6 @@ import (
 type Config struct {
 	mu sync.RWMutex
 	cf *viper.Viper
-	L  *Logger
 }
 
 func fileExists(path string) bool {
@@ -36,7 +35,6 @@ func (conf *Config) LoadFromFile(file string) error {
 		conf.cf.SetConfigFile(file)
 		return conf.cf.ReadConfig(strings.NewReader(os.ExpandEnv(string(content))))
 	}
-	conf.L.Errorf(err.Error())
 	return nil
 }
 
@@ -208,7 +206,7 @@ func (conf *Config) Clone() *Config {
 	for _, key := range conf.cf.AllKeys() {
 		newcf.Set(key, conf.cf.Get(key))
 	}
-	return &Config{cf: newcf, L: conf.L}
+	return &Config{cf: newcf}
 }
 
 func New() *Config {
@@ -223,7 +221,5 @@ func New() *Config {
 			conf.SetDefault(k, v)
 		}
 	}
-
-	conf.L = NewLogger(conf)
 	return conf
 }

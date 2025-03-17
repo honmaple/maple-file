@@ -205,7 +205,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
     if (result != null) {
       final name = _generateName();
       final path = await PathUtil.getDatabasePath();
-      FileService().upload(result as String, files: [
+      FileService.instance.upload(result as String, files: [
         io.File(path)
       ], newNames: {
         path: name,
@@ -257,7 +257,7 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
     if (result != null) {
       final path = await PathUtil.getDatabasePath();
 
-      FileService()
+      FileService.instance
           .download(result as String, io.File(path), override: true)
           .then((_) {
         App.showSnackBar(Text("恢复成功，请重启应用".tr()));

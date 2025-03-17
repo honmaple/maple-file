@@ -29,17 +29,17 @@ class App {
 
   App._internal();
 
-  factory App() => _instance;
-  static final App _instance = App._internal();
   static App get instance => _instance;
+  static final App _instance = App._internal();
+  factory App() => _instance;
 
   Future<void> init() async {
     await initLogger();
-
-    await GRPC().init();
-
-    await initWindow();
-    await initPermission();
+    await Future.wait([
+      initGrpc(),
+      initWindow(),
+      initPermission(),
+    ]);
   }
 
   static late final Logger logger;
@@ -79,6 +79,10 @@ class App {
         await windowManager.focus();
       });
     }
+  }
+
+  Future<void> initGrpc() async {
+    await GRPC.instance.init();
   }
 
   Future<void> initPermission() async {}

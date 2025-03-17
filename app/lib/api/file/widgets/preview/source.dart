@@ -50,6 +50,6 @@ class PreviewSource {
 
   PreviewSource.remote(String path)
       : name = filepath.posix.basename(path),
-        source = GRPC().previewURL(path),
+        source = GRPC.instance.previewURL(path),
         sourceType = SourceType.network;
 }

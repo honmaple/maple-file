@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:grpc/grpc.dart';
@@ -37,29 +38,51 @@ Future<Response<T>> doFuture<T>(
 }
 
 class GRPC {
-  GRPC._internal() {
-    App.logger.info("init grpc");
-  }
-
+  static GRPC get instance => _instance;
   static final GRPC _instance = GRPC._internal();
 
   factory GRPC() => _instance;
 
-  static GRPC get instance => _instance;
-
   late GrpcService _service;
 
-  Future<void> init() async {
+  GRPC._internal() {
+    App.logger.info("init grpc");
+
     _service = GrpcService();
-    await _service.init();
   }
 
-  String get addr {
-    return _service.addr;
+  String get addr => _service.addr;
+  grpcapi.ClientChannel get client => _service.client;
+
+  DateTime connectTime = DateTime.now();
+
+  Future<void> init() async {
+    await _service.start();
+    connectTime = DateTime.now();
   }
 
-  grpcapi.ClientChannel get client {
-    return _service.client;
+  Future<bool> check() async {
+    try {
+      final addrs = addr.split(":");
+      final socket = await Socket.connect(addrs[0], int.parse(addrs[1]));
+      socket.destroy();
+      return true;
+    } catch (e) {
+      App.logger.warning("connect $addr failed: $e");
+      return false;
+    }
+  }
+
+  Future<void> checkAlive() async {
+    final result = await check();
+    if (result) {
+      return;
+    }
+
+    App.logger.info("reboot server");
+
+    await _service.restart();
+    connectTime = DateTime.now();
   }
 
   String previewURL(String path) {

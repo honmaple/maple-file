@@ -55,7 +55,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                 final result = await showAlertDialog<bool>(context,
                     content: Text("确认删除存储?".tr()));
                 if (result != null && result) {
-                  await FileService().deleteRepo(_form.id).then((_) {
+                  await FileService.instance.deleteRepo(_form.id).then((_) {
                     _handleDone(_form);
                     if (context.mounted) Navigator.of(context).pop();
                   });
@@ -133,7 +133,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                     child: ElevatedButton(
                       child: Text('测试连接'.tr()),
                       onPressed: () async {
-                        await FileService().testRepo(_form);
+                        await FileService.instance.testRepo(_form);
                       },
                     ),
                   ),
@@ -144,7 +144,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                         ? ElevatedButton(
                             child: Text('确认修改'.tr()),
                             onPressed: () async {
-                              await FileService()
+                              await FileService.instance
                                   .updateRepo(_form)
                                   .then((resp) {
                                 if (!resp.hasErr) {
@@ -159,7 +159,7 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
                         : ElevatedButton(
                             child: Text('确认添加'.tr()),
                             onPressed: () async {
-                              await FileService()
+                              await FileService.instance
                                   .createRepo(_form)
                                   .then((resp) {
                                 if (!resp.hasErr) {

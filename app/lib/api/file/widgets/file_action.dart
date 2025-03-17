@@ -92,7 +92,7 @@ extension FileActionExtension on FileAction {
           arguments: args,
         );
         if (result != null) {
-          await FileService().move(
+          await FileService.instance.move(
             file.path,
             result as String,
             [file.name],
@@ -110,7 +110,7 @@ extension FileActionExtension on FileAction {
           arguments: args,
         );
         if (result != null) {
-          await FileService()
+          await FileService.instance
               .copy(file.path, result as String, [file.name]).then((_) {
             ref?.invalidate(fileProvider(file.path));
           });
@@ -128,7 +128,7 @@ extension FileActionExtension on FileAction {
           ),
         );
         if (result != null) {
-          await FileService().rename(file.path, file.name, result).then((_) {
+          await FileService.instance.rename(file.path, file.name, result).then((_) {
             ref?.invalidate(fileProvider(file.path));
           });
         }
@@ -140,7 +140,7 @@ extension FileActionExtension on FileAction {
         if (downloadPath == null || downloadPath == "") {
           downloadPath = await PathUtil.getDownloadsPath();
         }
-        await FileService()
+        await FileService.instance
             .download(
           filepath.posix.join(file.path, file.name),
           io.File(PathUtil.autoRename(filepath.join(downloadPath, file.name))),
@@ -157,7 +157,7 @@ extension FileActionExtension on FileAction {
           )),
         );
         if (result != null && result) {
-          await FileService().remove(file.path, [file.name]).then((_) {
+          await FileService.instance.remove(file.path, [file.name]).then((_) {
             ref?.invalidate(fileProvider(file.path));
           });
         }
@@ -335,7 +335,7 @@ extension FileFloatingActionExtension on FileFloatingAction {
           imageQuality: 100,
         );
         if (image != null) {
-          future = FileService().upload(
+          future = FileService.instance.upload(
             path,
             files: [io.File(image.path)],
           );
@@ -346,7 +346,7 @@ extension FileFloatingActionExtension on FileFloatingAction {
           imageQuality: 100,
         );
         if (images.isNotEmpty) {
-          future = FileService().upload(
+          future = FileService.instance.upload(
             path,
             files: images.map((file) => io.File(file.path)).toList(),
           );
@@ -357,7 +357,7 @@ extension FileFloatingActionExtension on FileFloatingAction {
           allowMultiple: true,
         );
         if (result != null) {
-          future = FileService().upload(
+          future = FileService.instance.upload(
             path,
             files: result.paths.map((path) => io.File(path!)).toList(),
           );
@@ -366,7 +366,7 @@ extension FileFloatingActionExtension on FileFloatingAction {
       case FileFloatingAction.folder:
         final name = await showEditingDialog(context, "新建目录".tr());
         if (name != null) {
-          future = FileService().mkdir(path, name);
+          future = FileService.instance.mkdir(path, name);
         }
         break;
     }
@@ -450,7 +450,7 @@ extension FileSelectionActionExtension on FileSelectionAction {
           arguments: args,
         );
         if (result != null) {
-          FileService()
+          FileService.instance
               .move(
             path,
             result as String,
@@ -474,7 +474,7 @@ extension FileSelectionActionExtension on FileSelectionAction {
           arguments: args,
         );
         if (result != null) {
-          FileService()
+          FileService.instance
               .copy(
             path,
             result as String,
@@ -498,7 +498,7 @@ extension FileSelectionActionExtension on FileSelectionAction {
           )),
         );
         if (result != null && result) {
-          await FileService()
+          await FileService.instance
               .remove(path, selected.map((i) => i.name).toList())
               .then((_) {
             ref?.invalidate(fileProvider(path));

@@ -21,10 +21,10 @@ class LibserverBind {
       : _lookup = lookup;
 
   Start_return Start(
-    ffi.Pointer<ffi.Char> pathPtr,
+    ffi.Pointer<ffi.Char> cfgPtr,
   ) {
     return _Start(
-      pathPtr,
+      cfgPtr,
     );
   }
 
@@ -33,6 +33,14 @@ class LibserverBind {
           'Start');
   late final _Start =
       _StartPtr.asFunction<Start_return Function(ffi.Pointer<ffi.Char>)>();
+
+  void Stop() {
+    return _Stop();
+  }
+
+  late final _StopPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function()>>('Stop');
+  late final _Stop = _StopPtr.asFunction<void Function()>();
 }
 
 final class __mbstate_t extends ffi.Union {

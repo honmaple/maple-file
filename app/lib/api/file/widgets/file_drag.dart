@@ -90,7 +90,7 @@ class _FileDragState extends ConsumerState<FileDrag> {
       return io.File(file.path);
     }).toList();
 
-    FileService().upload(widget.path, files: files, dirs: dirs).then((_) {
+    FileService.instance.upload(widget.path, files: files, dirs: dirs).then((_) {
       ref.invalidate(fileProvider(widget.path));
     });
   }

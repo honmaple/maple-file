@@ -9,26 +9,34 @@ import 'package:maple_file/generated/proto/api/task/task.pb.dart';
 import 'package:maple_file/generated/proto/api/task/persist.pb.dart';
 
 class TaskService {
+  static TaskService get instance => _instance;
   static final TaskService _instance = TaskService._internal();
-
   factory TaskService() => _instance;
 
-  late final TaskServiceClient _client;
+  late TaskServiceClient _client;
+  late DateTime _clientTime;
 
   TaskService._internal() {
-    _client = TaskServiceClient(
-      GRPC().client,
-      // interceptors: [AccountInterceptor()],
-    );
+    _setClient();
   }
 
   TaskServiceClient get client {
+    if (GRPC.instance.connectTime.isAfter(_clientTime)) {
+      _setClient();
+    }
     return _client;
+  }
+
+  void _setClient() {
+    _client = TaskServiceClient(
+      GRPC.instance.client,
+    );
+    _clientTime = GRPC.instance.connectTime;
   }
 
   Future<List<Task>> listTasks({Map<String, String>? filterMap}) async {
     ListTasksRequest request = ListTasksRequest();
-    ListTasksResponse response = await _client.listTasks(request);
+    ListTasksResponse response = await client.listTasks(request);
     return response.results;
   }
 
@@ -37,7 +45,7 @@ class TaskService {
       RemoveTaskRequest request = RemoveTaskRequest(
         tasks: tasks,
       );
-      return _client.removeTask(request);
+      return client.removeTask(request);
     });
   }
 
@@ -46,7 +54,7 @@ class TaskService {
       CancelTaskRequest request = CancelTaskRequest(
         tasks: tasks,
       );
-      return _client.cancelTask(request);
+      return client.cancelTask(request);
     });
   }
 
@@ -55,7 +63,7 @@ class TaskService {
       RetryTaskRequest request = RetryTaskRequest(
         tasks: tasks,
       );
-      return _client.retryTask(request);
+      return client.retryTask(request);
     });
   }
 
@@ -64,7 +72,7 @@ class TaskService {
     final result = await doFuture(() async {
       ListPersistTasksRequest request = ListPersistTasksRequest();
       ListPersistTasksResponse response =
-          await _client.listPersistTasks(request);
+          await client.listPersistTasks(request);
       return response.results;
     });
     return result.data ?? <PersistTask>[];
@@ -75,7 +83,7 @@ class TaskService {
       CreatePersistTaskRequest request =
           CreatePersistTaskRequest(payload: payload);
       CreatePersistTaskResponse response =
-          await _client.createPersistTask(request);
+          await client.createPersistTask(request);
       return response.result;
     });
   }
@@ -85,7 +93,7 @@ class TaskService {
       UpdatePersistTaskRequest request =
           UpdatePersistTaskRequest(payload: payload);
       UpdatePersistTaskResponse response =
-          await _client.updatePersistTask(request);
+          await client.updatePersistTask(request);
       return response.result;
     });
   }
@@ -93,7 +101,7 @@ class TaskService {
   Future<void> deletePersistTask(int id) {
     return doFuture(() {
       DeletePersistTaskRequest request = DeletePersistTaskRequest(id: id);
-      return _client.deletePersistTask(request);
+      return client.deletePersistTask(request);
     });
   }
 
@@ -101,7 +109,7 @@ class TaskService {
     return doFuture(() {
       TestPersistTaskRequest request = TestPersistTaskRequest(payload: payload);
 
-      return _client.testPersistTask(request);
+      return client.testPersistTask(request);
     });
   }
 
@@ -109,7 +117,7 @@ class TaskService {
     return doFuture(() {
       ExecutePersistTaskRequest request = ExecutePersistTaskRequest(id: id);
 
-      return _client.executePersistTask(request);
+      return client.executePersistTask(request);
     }).then((_) {
       App.showSnackBar(const Text("执行成功，请转至任务列表查看"));
     });

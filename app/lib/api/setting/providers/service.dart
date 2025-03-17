@@ -6,27 +6,35 @@ import 'package:maple_file/generated/proto/api/setting/setting.pb.dart';
 import 'package:maple_file/generated/proto/api/setting/service.pbgrpc.dart';
 
 class SystemService {
+  static SystemService get instance => _instance;
   static final SystemService _instance = SystemService._internal();
-
   factory SystemService() => _instance;
 
-  late final SystemServiceClient _client;
+  late SystemServiceClient _client;
+  late DateTime _clientTime;
 
   SystemService._internal() {
-    _client = SystemServiceClient(
-      GRPC().client,
-      // interceptors: [AccountInterceptor()],
-    );
+    _setClient();
   }
 
   SystemServiceClient get client {
+    if (GRPC.instance.connectTime.isAfter(_clientTime)) {
+      _setClient();
+    }
     return _client;
+  }
+
+  void _setClient() {
+    _client = SystemServiceClient(
+      GRPC.instance.client,
+    );
+    _clientTime = GRPC.instance.connectTime;
   }
 
   Future<Info> info() async {
     final result = await doFuture(() async {
       InfoRequest request = InfoRequest();
-      InfoResponse response = await _client.info(request);
+      InfoResponse response = await client.info(request);
       return response.result;
     });
     return result.data ??
@@ -40,7 +48,7 @@ class SystemService {
 
   Future<String> getSetting(String key) async {
     GetSettingRequest request = GetSettingRequest(key: key);
-    GetSettingResponse response = await _client.getSetting(request);
+    GetSettingResponse response = await client.getSetting(request);
     return response.result.value;
   }
 
@@ -50,7 +58,7 @@ class SystemService {
         key: key,
         value: jsonEncode(value),
       );
-      await _client.updateSetting(request);
+      await client.updateSetting(request);
     });
   }
 }

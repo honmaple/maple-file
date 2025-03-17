@@ -11,15 +11,13 @@ import 'file_setting.dart';
 
 class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
     with PaginationNotifierMixin<File> {
-  final _service = FileService();
-
   @override
   FutureOr<List<File>> build(String arg) async {
     final size = ref.watch(fileSettingProvider.select((state) {
       return state.paginationSize;
     }));
 
-    final results = await _service.list(
+    final results = await FileService.instance.list(
       filter: {
         "path": arg,
         "page_size": "$size",
@@ -68,7 +66,7 @@ class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
     if (size == 0) {
       return <File>[];
     }
-    final results = await _service.list(
+    final results = await FileService.instance.list(
       filter: {"path": arg, "page": "$page", "page_size": "$size"},
     );
     return results;

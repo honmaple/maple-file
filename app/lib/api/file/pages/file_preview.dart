@@ -334,7 +334,7 @@ class _FileAudioPreviewState extends State<FileAudioPreview>
     _controller = AudioPreviewController(
       currentFiles.map((file) {
         final remotePath = filepath.posix.join(file.path, file.name);
-        return PreviewSource.network(GRPC().previewURL(remotePath));
+        return PreviewSource.network(GRPC.instance.previewURL(remotePath));
       }).toList(),
       index: index,
       autoPlay: true,
@@ -399,7 +399,7 @@ class _FileVideoPreviewState extends State<FileVideoPreview> {
     _controller = VideoPreviewController(
       currentFiles.map((file) {
         final remotePath = filepath.posix.join(file.path, file.name);
-        return PreviewSource.network(GRPC().previewURL(remotePath));
+        return PreviewSource.network(GRPC.instance.previewURL(remotePath));
       }).toList(),
       index: index,
       autoPlay: true,

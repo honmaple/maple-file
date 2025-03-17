@@ -14,27 +14,35 @@ import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 import 'package:maple_file/generated/proto/api/file/service.pbgrpc.dart';
 
 class FileService {
+  static FileService get instance => _instance;
   static final FileService _instance = FileService._internal();
-
   factory FileService() => _instance;
 
-  late final FileServiceClient _client;
+  late FileServiceClient _client;
+  late DateTime _clientTime;
 
   FileService._internal() {
-    _client = FileServiceClient(
-      GRPC().client,
-      // interceptors: [AccountInterceptor()],
-    );
+    _setClient();
   }
 
   FileServiceClient get client {
+    if (GRPC.instance.connectTime.isAfter(_clientTime)) {
+      _setClient();
+    }
     return _client;
+  }
+
+  void _setClient() {
+    _client = FileServiceClient(
+      GRPC.instance.client,
+    );
+    _clientTime = GRPC.instance.connectTime;
   }
 
   Future<List<File>> list({Map<String, String>? filter}) async {
     final result = await doFuture(() async {
       ListFilesRequest request = ListFilesRequest(filter: filter);
-      ListFilesResponse response = await _client.list(request);
+      ListFilesResponse response = await client.list(request);
       return response.results;
     });
     return result.data ?? <File>[];
@@ -51,7 +59,7 @@ class FileService {
         newPath: newPath,
         names: names,
       );
-      return _client.move(request);
+      return client.move(request);
     });
   }
 
@@ -66,7 +74,7 @@ class FileService {
         newPath: newPath,
         names: names,
       );
-      return _client.copy(request);
+      return client.copy(request);
     });
   }
 
@@ -81,7 +89,7 @@ class FileService {
         name: name,
         newName: newName,
       );
-      return _client.rename(request);
+      return client.rename(request);
     });
   }
 
@@ -94,7 +102,7 @@ class FileService {
         path: path,
         name: name,
       );
-      return _client.mkdir(request);
+      return client.mkdir(request);
     });
   }
 
@@ -107,7 +115,7 @@ class FileService {
         path: path,
         names: names,
       );
-      return _client.remove(request);
+      return client.remove(request);
     });
   }
 
@@ -164,7 +172,7 @@ class FileService {
   }) async {
     final root = filepath.dirname(dir.path);
 
-    await _client.mkdir(MkdirFileRequest(
+    await client.mkdir(MkdirFileRequest(
       path: path,
       name: filepath.basename(dir.path),
     ));
@@ -184,14 +192,14 @@ class FileService {
       final uploadPath = filepath.posix.join(path, realPath);
 
       if (entity is io.Directory) {
-        await _client.mkdir(MkdirFileRequest(
+        await client.mkdir(MkdirFileRequest(
           path: uploadPath,
           name: filepath.basename(entity.path),
         ));
         continue;
       }
 
-      final response = await _client.upload(_upload(
+      final response = await client.upload(_upload(
         uploadPath,
         entity as io.File,
       ));
@@ -227,7 +235,7 @@ class FileService {
       List<File> results = <File>[];
 
       for (final file in files ?? []) {
-        final response = await _client.upload(_upload(
+        final response = await client.upload(_upload(
           path,
           file,
           newName: newNames == null ? null : newNames[file.path],
@@ -248,7 +256,7 @@ class FileService {
     final result = await doFuture(() async {
       PreviewFileRequest request = PreviewFileRequest(path: path);
 
-      final response = _client.preview(request);
+      final response = client.preview(request);
 
       List<List<int>> chunks = <List<int>>[];
       int contentLength = 0;
@@ -276,11 +284,11 @@ class FileService {
   }) {
     return doFuture(() async {
       if (file.existsSync() && !override) {
-        App.showSnackBar(const Text("文件已存在"));
+        App.showSnackBar(Text("文件已存在".tr()));
         return;
       }
 
-      final response = _client.download(
+      final response = client.download(
         DownloadFileRequest(path: path),
       );
 
@@ -296,7 +304,7 @@ class FileService {
   Future<List<Repo>> listRepos({Map<String, String>? filterMap}) async {
     final result = await doFuture(() async {
       ListReposRequest request = ListReposRequest();
-      ListReposResponse response = await _client.listRepos(request);
+      ListReposResponse response = await client.listRepos(request);
       return response.results;
     });
     return result.data ?? <Repo>[];
@@ -307,7 +315,7 @@ class FileService {
       TestRepoRequest request = TestRepoRequest();
       request.payload = payload;
 
-      return _client.testRepo(request).then((response) {
+      return client.testRepo(request).then((response) {
         App.showSnackBar(const Text("连接成功"));
       });
     });
@@ -316,7 +324,7 @@ class FileService {
   Future<Response<Repo>> createRepo(Repo payload) {
     return doFuture(() async {
       CreateRepoRequest request = CreateRepoRequest(payload: payload);
-      CreateRepoResponse response = await _client.createRepo(request);
+      CreateRepoResponse response = await client.createRepo(request);
       return response.result;
     });
   }
@@ -324,7 +332,7 @@ class FileService {
   Future<Response<Repo>> updateRepo(Repo payload) {
     return doFuture(() async {
       UpdateRepoRequest request = UpdateRepoRequest(payload: payload);
-      UpdateRepoResponse response = await _client.updateRepo(request);
+      UpdateRepoResponse response = await client.updateRepo(request);
       return response.result;
     });
   }
@@ -332,7 +340,7 @@ class FileService {
   Future<void> deleteRepo(int id) {
     return doFuture(() {
       DeleteRepoRequest request = DeleteRepoRequest(id: id);
-      return _client.deleteRepo(request);
+      return client.deleteRepo(request);
     });
   }
 }

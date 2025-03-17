@@ -24,6 +24,9 @@ import Libserver
                 } else {
                     result(FlutterError(code: "GRPC", message: error.debugDescription, details: nil))
                 }
+            case "Stop":
+                ServerStop()
+                result(nil);
             default:
                 result(FlutterMethodNotImplemented)
             }

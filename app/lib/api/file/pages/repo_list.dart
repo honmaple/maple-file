@@ -45,7 +45,7 @@ class _RepoListState extends ConsumerState<RepoList> {
                             trailing: Switch(
                               value: item.status,
                               onChanged: (result) async {
-                                await FileService()
+                                await FileService.instance
                                     .updateRepo(item.copyWith((r) {
                                   r.status = result;
                                 })).then((_) {

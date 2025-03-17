@@ -90,14 +90,14 @@ class _FileSelectState extends ConsumerState<FileSelect> {
       actions: [
         if (widget.path != "/" && widget.selectDir)
           TextButton(
-            child: Text("新建".tr()),
+            child: Text("新建文件夹".tr()),
             onPressed: () async {
               final result = await showEditingDialog(
                 context,
                 "新建文件夹".tr(),
               );
               if (result != null) {
-                FileService().mkdir(widget.path, result).then((_) {
+                FileService.instance.mkdir(widget.path, result).then((_) {
                   ref.invalidate(fileProvider(widget.path));
                 });
               }

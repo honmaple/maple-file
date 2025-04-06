@@ -12,22 +12,22 @@ import 'source.dart';
 
 class AudioPreviewController extends ChangeNotifier {
   final AudioPlayer _player;
+  final List<PreviewSource> _playlist;
 
   int _index = 0;
-  PreviewRepeat _repeat;
-  List<PreviewSource> _playlist;
+  PreviewLoopMode _loopMode;
 
   AudioPreviewController(
     List<PreviewSource> playlist, {
-    PreviewRepeat? repeat,
     int index = 0,
+    PreviewLoopMode loopMode = PreviewLoopMode.list,
     bool autoPlay = false,
   })  : assert(playlist.isNotEmpty, "playlist is empty"),
         assert(index < playlist.length && index >= 0, "playlist index error"),
         _index = index,
-        _repeat = repeat ?? PreviewRepeat.list,
-        _playlist = playlist,
-        _player = AudioPlayer() {
+        _loopMode = loopMode,
+        _player = AudioPlayer(),
+        _playlist = playlist {
     if (autoPlay) {
       play(currentSource);
     }
@@ -41,8 +41,8 @@ class AudioPreviewController extends ChangeNotifier {
     return _playlist;
   }
 
-  PreviewRepeat get currentRepeat {
-    return _repeat;
+  PreviewLoopMode get currentLoopMode {
+    return _loopMode;
   }
 
   PlayerState get currentState {
@@ -80,12 +80,13 @@ class AudioPreviewController extends ChangeNotifier {
   }
 
   void prev() {
-    switch (_repeat) {
-      case PreviewRepeat.one:
-      case PreviewRepeat.list:
+    switch (_loopMode) {
+      case PreviewLoopMode.off:
+      case PreviewLoopMode.one:
+      case PreviewLoopMode.list:
         _index--;
         break;
-      case PreviewRepeat.random:
+      case PreviewLoopMode.random:
         _index = _randomIndex;
         break;
     }
@@ -100,12 +101,13 @@ class AudioPreviewController extends ChangeNotifier {
   }
 
   void next() {
-    switch (_repeat) {
-      case PreviewRepeat.one:
-      case PreviewRepeat.list:
+    switch (_loopMode) {
+      case PreviewLoopMode.off:
+      case PreviewLoopMode.one:
+      case PreviewLoopMode.list:
         _index++;
         break;
-      case PreviewRepeat.random:
+      case PreviewLoopMode.random:
         _index = _randomIndex;
         break;
     }
@@ -174,27 +176,31 @@ class AudioPreviewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setRepeat(PreviewRepeat repeat) {
-    _repeat = repeat;
+  void setLoopMode(PreviewLoopMode loopMode) {
+    _loopMode = loopMode;
     notifyListeners();
   }
 
-  void toggleRepeat() {
-    switch (_repeat) {
-      case PreviewRepeat.one:
-        setRepeat(PreviewRepeat.list);
+  void toggleLoopMode() {
+    switch (_loopMode) {
+      case PreviewLoopMode.off:
+        setLoopMode(PreviewLoopMode.one);
         break;
-      case PreviewRepeat.list:
-        setRepeat(PreviewRepeat.random);
+      case PreviewLoopMode.one:
+        setLoopMode(PreviewLoopMode.list);
         break;
-      case PreviewRepeat.random:
-        setRepeat(PreviewRepeat.one);
+      case PreviewLoopMode.list:
+        setLoopMode(PreviewLoopMode.random);
+        break;
+      case PreviewLoopMode.random:
+        setLoopMode(PreviewLoopMode.off);
         break;
     }
   }
 
   @override
   void dispose() {
+    _player.release();
     _player.dispose();
 
     super.dispose();
@@ -214,13 +220,12 @@ class AudioPreview extends StatefulWidget {
 }
 
 class _AudioPreviewState extends State<AudioPreview> {
-  late final AudioPreviewController _controller;
+  AudioPreviewController get _controller => widget.controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = widget.controller;
     _controller.addListener(() {
       setState(() {});
     });
@@ -259,56 +264,60 @@ class _AudioPreviewState extends State<AudioPreview> {
               AudioPreviewSliver(
                 player: _controller.player,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      _controller.toggleRepeat();
-                    },
-                    iconSize: 32,
-                    icon: _buildRepeatIcon(),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _controller.prev();
-                    },
-                    iconSize: 32,
-                    icon: const Icon(Icons.skip_previous),
-                  ),
-                  IconButton(
-                    onPressed: () async {
-                      await _controller.toggle();
-                    },
-                    iconSize: 42,
-                    icon: _buildPlayIcon(),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      _controller.next();
-                    },
-                    iconSize: 32,
-                    icon: const Icon(Icons.skip_next),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      showListDialog2(
-                        context,
-                        height: MediaQuery.sizeOf(context).height * 0.618,
-                        child: AudioPreviewPlaylist(controller: _controller),
-                      );
-                    },
-                    iconSize: 32,
-                    icon: const Icon(Icons.format_list_bulleted),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+              buildControlButton(context),
+              const SizedBox(height: 32),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  buildControlButton(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        IconButton(
+          onPressed: () {
+            _controller.toggleLoopMode();
+          },
+          iconSize: 32,
+          icon: _buildLoopModeIcon(),
+        ),
+        IconButton(
+          onPressed: () {
+            _controller.prev();
+          },
+          iconSize: 32,
+          icon: const Icon(Icons.skip_previous),
+        ),
+        IconButton(
+          onPressed: () {
+            _controller.toggle();
+          },
+          iconSize: 42,
+          icon: _buildPlayIcon(),
+        ),
+        IconButton(
+          onPressed: () {
+            _controller.next();
+          },
+          iconSize: 32,
+          icon: const Icon(Icons.skip_next),
+        ),
+        IconButton(
+          onPressed: () {
+            showListDialog2(
+              context,
+              height: MediaQuery.sizeOf(context).height * 0.618,
+              child: AudioPreviewPlaylist(controller: _controller),
+            );
+          },
+          iconSize: 32,
+          icon: const Icon(Icons.format_list_bulleted),
+        ),
+      ],
     );
   }
 
@@ -320,13 +329,15 @@ class _AudioPreviewState extends State<AudioPreview> {
     return const Icon(Icons.pause_circle_outlined);
   }
 
-  Widget _buildRepeatIcon() {
-    switch (_controller.currentRepeat) {
-      case PreviewRepeat.one:
+  Widget _buildLoopModeIcon() {
+    switch (_controller.currentLoopMode) {
+      case PreviewLoopMode.off:
+        return const Icon(Icons.music_off);
+      case PreviewLoopMode.one:
         return const Icon(Icons.repeat_one);
-      case PreviewRepeat.list:
+      case PreviewLoopMode.list:
         return const Icon(Icons.repeat);
-      case PreviewRepeat.random:
+      case PreviewLoopMode.random:
         return const Icon(Icons.shuffle);
     }
   }
@@ -409,55 +420,31 @@ class AudioPreviewSliver extends StatefulWidget {
 }
 
 class _AudioPreviewSliverState extends State<AudioPreviewSliver> {
-  Duration? _duration;
-  Duration? _position;
-
-  StreamSubscription? _durationSubscription;
-  StreamSubscription? _positionSubscription;
-  StreamSubscription? _playerCompleteSubscription;
-
-  String get _durationText => _duration?.toString().split('.').first ?? '';
-
-  String get _positionText => _position?.toString().split('.').first ?? '';
-
-  AudioPlayer get player => widget.player;
-
-  @override
-  void initState() {
-    super.initState();
-    // Use initial values from player
-    player.getDuration().then(
-          (value) => setState(() {
-            _duration = value;
-          }),
-        );
-    player.getCurrentPosition().then(
-          (value) => setState(() {
-            _position = value;
-          }),
-        );
-    _initStreams();
-  }
-
-  @override
-  void setState(VoidCallback fn) {
-    // Subscriptions only can be closed asynchronously,
-    // therefore events can occur after widget has been disposed.
-    if (mounted) {
-      super.setState(fn);
-    }
-  }
-
-  @override
-  void dispose() {
-    _durationSubscription?.cancel();
-    _positionSubscription?.cancel();
-    _playerCompleteSubscription?.cancel();
-    super.dispose();
-  }
+  AudioPlayer get _player => widget.player;
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<Duration>(
+      stream: _player.onPositionChanged,
+      builder: (context, snapshot) {
+        final position = snapshot.data;
+        return StreamBuilder<Duration>(
+          stream: _player.onDurationChanged,
+          builder: (context, snapshot) {
+            final duration = snapshot.data;
+            return buildSlider(
+              position ?? Duration.zero,
+              duration ?? Duration.zero,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  buildSlider(Duration position, Duration duration) {
+    final durationText = duration.toString().split('.').first;
+    final positionText = position.toString().split('.').first;
     return ListTile(
       dense: true,
       title: SliderTheme(
@@ -466,46 +453,21 @@ class _AudioPreviewSliverState extends State<AudioPreviewSliver> {
         ),
         child: Slider(
           onChanged: (value) {
-            final duration = _duration;
-            if (duration == null) {
-              return;
-            }
-            final position = value * duration.inMilliseconds;
-            player.seek(Duration(milliseconds: position.round()));
+            _player.seek(Duration(
+              milliseconds: (value * duration.inMilliseconds).round(),
+            ));
           },
-          value: (_position != null &&
-                  _duration != null &&
-                  _position!.inMilliseconds > 0 &&
-                  _position!.inMilliseconds < _duration!.inMilliseconds)
-              ? _position!.inMilliseconds / _duration!.inMilliseconds
+          value: (position.inMilliseconds > 0 &&
+                  position.inMilliseconds < duration.inMilliseconds)
+              ? position.inMilliseconds / duration.inMilliseconds
               : 0.0,
         ),
       ),
       trailing: Text(
-        _position != null
-            ? '$_positionText / $_durationText'
-            : _duration != null
-                ? _durationText
-                : '00:00',
+        '$positionText / $durationText',
         style: const TextStyle(fontSize: 12.0),
       ),
     );
-  }
-
-  void _initStreams() {
-    _durationSubscription = player.onDurationChanged.listen((duration) {
-      setState(() => _duration = duration);
-    });
-
-    _positionSubscription = player.onPositionChanged.listen(
-      (p) => setState(() => _position = p),
-    );
-
-    _playerCompleteSubscription = player.onPlayerComplete.listen((event) {
-      setState(() {
-        _position = Duration.zero;
-      });
-    });
   }
 }
 

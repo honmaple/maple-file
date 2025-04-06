@@ -9,7 +9,8 @@ enum SourceType {
   network,
 }
 
-enum PreviewRepeat {
+enum PreviewLoopMode {
+  off,
   one,
   list,
   random,

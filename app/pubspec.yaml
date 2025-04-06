@@ -55,6 +55,7 @@ dependencies:
   chewie: ^1.10.0
   video_player: ^2.9.1
   video_player_platform_interface: ^6.2.2
+  fijkplayer: ^0.11.0
   audioplayers: ^6.1.0
   file_picker: ^8.1.2
   external_path: ^2.0.1

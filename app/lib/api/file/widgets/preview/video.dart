@@ -1,68 +1,42 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:chewie/chewie.dart';
-import 'package:video_player/video_player.dart';
-
-import 'package:maple_file/app/i18n.dart';
+import 'package:fijkplayer/fijkplayer.dart';
 
 import 'source.dart';
 
 class VideoPreviewController extends ChangeNotifier {
-  VideoPlayerController _controller;
-  ChewieController? _chewieController;
+  final FijkPlayer _player;
+  final List<PreviewSource> _playlist;
 
   int _index = 0;
-  PreviewRepeat _repeat;
-  List<PreviewSource> _playlist;
-
-  final bool _autoPlay;
+  PreviewLoopMode _loopMode;
 
   VideoPreviewController(
     List<PreviewSource> playlist, {
-    PreviewRepeat? repeat,
     int index = 0,
+    PreviewLoopMode loopMode = PreviewLoopMode.list,
     bool autoPlay = false,
   })  : assert(playlist.isNotEmpty, "playlist is empty"),
         assert(index < playlist.length && index >= 0, "playlist index error"),
         _index = index,
-        _repeat = repeat ?? PreviewRepeat.list,
-        _autoPlay = autoPlay,
-        _playlist = playlist,
-        _controller = _getController(playlist[index]);
-
-  static VideoPlayerController _getController(PreviewSource s) {
-    switch (s.sourceType) {
-      case SourceType.file:
-        return VideoPlayerController.file(File(s.source));
-      case SourceType.asset:
-        return VideoPlayerController.asset(s.source);
-      case SourceType.network:
-        return VideoPlayerController.networkUrl(Uri.parse(s.source));
+        _loopMode = loopMode,
+        _player = FijkPlayer(),
+        _playlist = playlist {
+    if (autoPlay) {
+      play(currentSource);
     }
   }
 
-  VideoPlayerController get player {
-    return _controller;
-  }
-
-  ChewieController get chewie {
-    _chewieController ??= ChewieController(
-      videoPlayerController: _controller,
-      aspectRatio: 16 / 9,
-      autoPlay: false,
-      looping: true,
-      showOptions: false,
-    );
-    return _chewieController!;
+  FijkPlayer get player {
+    return _player;
   }
 
   List<PreviewSource> get playlist {
     return _playlist;
   }
 
-  PreviewRepeat get currentRepeat {
-    return _repeat;
+  PreviewLoopMode get currentLoopMode {
+    return _loopMode;
   }
 
   PreviewSource get currentSource {
@@ -83,13 +57,14 @@ class VideoPreviewController extends ChangeNotifier {
     return index;
   }
 
-  void prev() {
-    switch (_repeat) {
-      case PreviewRepeat.one:
-      case PreviewRepeat.list:
+  Future<void> prev() {
+    switch (_loopMode) {
+      case PreviewLoopMode.off:
+      case PreviewLoopMode.one:
+      case PreviewLoopMode.list:
         _index--;
         break;
-      case PreviewRepeat.random:
+      case PreviewLoopMode.random:
         _index = _randomIndex;
         break;
     }
@@ -98,16 +73,17 @@ class VideoPreviewController extends ChangeNotifier {
       _index = _playlist.length - 1;
     }
 
-    play(currentSource);
+    return play(currentSource);
   }
 
-  void next() {
-    switch (_repeat) {
-      case PreviewRepeat.one:
-      case PreviewRepeat.list:
+  Future<void> next() {
+    switch (_loopMode) {
+      case PreviewLoopMode.off:
+      case PreviewLoopMode.one:
+      case PreviewLoopMode.list:
         _index++;
         break;
-      case PreviewRepeat.random:
+      case PreviewLoopMode.random:
         _index = _randomIndex;
         break;
     }
@@ -116,7 +92,7 @@ class VideoPreviewController extends ChangeNotifier {
       _index = 0;
     }
 
-    play(currentSource);
+    return play(currentSource);
   }
 
   Future<void> play(PreviewSource source) async {
@@ -135,47 +111,52 @@ class VideoPreviewController extends ChangeNotifier {
   }
 
   Future<void> pause() async {
-    await _controller.pause();
+    await _player.pause();
   }
 
   Future<void> resume() async {
-    await _controller.play();
+    await _player.start();
   }
 
-  void setSource(PreviewSource s) {
-    _controller.pause();
-    _controller.seekTo(const Duration(seconds: 0));
-    _controller.dispose();
-    _chewieController?.dispose();
-    _chewieController = null;
+  Future<void> setSource(PreviewSource s) async {
+    await player.reset();
 
-    _controller = _getController(s);
+    switch (s.sourceType) {
+      case SourceType.file:
+        return _player.setDataSource("file://${s.source}", autoPlay: true);
+      case SourceType.asset:
+        return _player.setDataSource("asset:///${s.source}", autoPlay: true);
+      case SourceType.network:
+        return _player.setDataSource(s.source, autoPlay: true);
+    }
   }
 
-  void setRepeat(PreviewRepeat repeat) {
-    _repeat = repeat;
+  void setLoopMode(PreviewLoopMode loopMode) {
+    _loopMode = loopMode;
     notifyListeners();
   }
 
-  void toggleRepeat() {
-    switch (_repeat) {
-      case PreviewRepeat.one:
-        setRepeat(PreviewRepeat.list);
+  void toggleLoopMode() {
+    switch (_loopMode) {
+      case PreviewLoopMode.off:
+        setLoopMode(PreviewLoopMode.one);
         break;
-      case PreviewRepeat.list:
-        setRepeat(PreviewRepeat.random);
+      case PreviewLoopMode.one:
+        setLoopMode(PreviewLoopMode.list);
         break;
-      case PreviewRepeat.random:
-        setRepeat(PreviewRepeat.one);
+      case PreviewLoopMode.list:
+        setLoopMode(PreviewLoopMode.random);
+        break;
+      case PreviewLoopMode.random:
+        setLoopMode(PreviewLoopMode.off);
         break;
     }
   }
 
   @override
   void dispose() {
-    // _controller.dispose();
-    // _chewieController?.dispose();
-
+    _player.release();
+    // _player.dispose();
     super.dispose();
   }
 }
@@ -193,41 +174,25 @@ class VideoPreview extends StatefulWidget {
 }
 
 class _VideoPreviewState extends State<VideoPreview> {
-  late final VideoPreviewController _controller;
-
-  String? _error;
+  VideoPreviewController get _controller => widget.controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = widget.controller;
     _controller.addListener(() {
       setState(() {});
     });
-
-    _init();
-  }
-
-  _init() async {
-    try {
-      await _controller.player.initialize();
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-    }
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 16 / 9,
-      child: (_error == null)
-          ? Chewie(
-              controller: _controller.chewie,
-            )
-          : Center(child: Text("不支持的格式".tr())),
+      child: FijkView(
+        fit: FijkFit.cover,
+        player: _controller.player,
+      ),
     );
   }
 }

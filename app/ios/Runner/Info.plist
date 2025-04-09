@@ -24,8 +24,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-    <key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -40,6 +40,8 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIStatusBarHidden</key>
+	<false/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 	  <string>UIInterfaceOrientationPortrait</string>
@@ -53,7 +55,5 @@
 	  <string>UIInterfaceOrientationLandscapeLeft</string>
 	  <string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UIStatusBarHidden</key>
-	<false/>
   </dict>
 </plist>

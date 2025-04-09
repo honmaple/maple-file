@@ -14,6 +14,8 @@ import "sftp.dart";
 import "smb.dart";
 import "upyun.dart";
 import "webdav.dart";
+import "github.dart";
+import "github_release.dart";
 
 enum DriverType {
   s3,
@@ -25,6 +27,8 @@ enum DriverType {
   upyun,
   webdav,
   mirror,
+  github,
+  githubRelease,
 }
 
 extension DriverTypeTypeExtension on DriverType {
@@ -39,6 +43,8 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.upyun: "又拍云".tr(),
       DriverType.webdav: "Webdav",
       DriverType.mirror: "Mirror",
+      DriverType.github: "Github",
+      DriverType.githubRelease: "Github Release",
     };
     return labels[this] ?? "unknown";
   }
@@ -100,6 +106,10 @@ class _DriverFormState extends State<DriverForm> {
         return Webdav(form: widget.form);
       case "mirror":
         return Mirror(form: widget.form);
+      case "github":
+        return Github(form: widget.form);
+      case "githubRelease":
+        return GithubRelease(form: widget.form);
       default:
         return const SizedBox.shrink();
     }

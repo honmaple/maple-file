@@ -94,6 +94,8 @@ class DesktopVideoPreviewController extends VideoPreviewController {
   ChewieController? _chewieController;
   PreviewSourceImpl? _source;
 
+  bool _initialized = false;
+
   DesktopVideoPreviewController({
     PreviewSourceImpl? source,
     bool autoPlay = false,
@@ -138,9 +140,11 @@ class DesktopVideoPreviewController extends VideoPreviewController {
   Future<void> setSource(PreviewSourceImpl s, {bool autoPlay = false}) async {
     _source = s;
 
-    _controller.pause();
-    _controller.seekTo(const Duration(seconds: 0));
-    _controller.dispose();
+    if (_initialized) {
+      _controller.pause();
+      _controller.seekTo(const Duration(seconds: 0));
+      _controller.dispose();
+    }
     _chewieController?.dispose();
     _chewieController = null;
 
@@ -157,6 +161,9 @@ class DesktopVideoPreviewController extends VideoPreviewController {
       case SourceType.network:
         _controller = VideoPlayerController.networkUrl(Uri.parse(s.path));
     }
+
+    _initialized = true;
+
     if (autoPlay) {
       await _controller.initialize();
       await _controller.play();

@@ -7,37 +7,12 @@ import 'package:http/http.dart' as http;
 import 'source.dart';
 
 class TextPreview extends StatefulWidget {
-  final PreviewSource source;
+  final PreviewSourceImpl source;
 
   const TextPreview({
     super.key,
     required this.source,
   });
-
-  TextPreview.file(
-    io.File file, {
-    super.key,
-  }) : source = PreviewSource.file(file);
-
-  TextPreview.asset(
-    String path, {
-    super.key,
-  }) : source = PreviewSource.asset(path);
-
-  TextPreview.network(
-    String url, {
-    super.key,
-  }) : source = PreviewSource.network(url);
-
-  TextPreview.local(
-    String path, {
-    super.key,
-  }) : source = PreviewSource.local(path);
-
-  TextPreview.remote(
-    String path, {
-    super.key,
-  }) : source = PreviewSource.remote(path);
 
   @override
   State<TextPreview> createState() => _TextPreviewState();
@@ -86,14 +61,14 @@ class _TextPreviewState extends State<TextPreview> {
   }
 
   Future<String> _getText() async {
-    switch (widget.source.sourceType) {
+    switch (widget.source.type) {
       case SourceType.file:
-        return io.File(widget.source.source).readAsString();
+        return io.File(widget.source.path).readAsString();
       case SourceType.asset:
-        return rootBundle.loadString(widget.source.source);
+        return rootBundle.loadString(widget.source.path);
       case SourceType.network:
         try {
-          final response = await http.get(Uri.parse(widget.source.source));
+          final response = await http.get(Uri.parse(widget.source.path));
           if (response.statusCode == 200) {
             return utf8.decode(response.bodyBytes);
           }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:window_manager/window_manager.dart';
 // import 'package:permission_handler/permission_handler.dart';
+import 'package:fvp/fvp.dart' as fvp;
 
 import '../common/utils/util.dart';
 
@@ -37,6 +38,7 @@ class App {
     await initLogger();
     await Future.wait([
       initGrpc(),
+      initMedia(),
       initWindow(),
       initPermission(),
     ]);
@@ -83,6 +85,12 @@ class App {
 
   Future<void> initGrpc() async {
     await GRPC.instance.init();
+  }
+
+  Future<void> initMedia() async {
+    if (Util.isDesktop) {
+      fvp.registerWith();
+    }
   }
 
   Future<void> initPermission() async {}

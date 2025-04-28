@@ -7,7 +7,6 @@ import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/path.dart';
-import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
 import '../widgets/preview/text.dart';
@@ -18,6 +17,61 @@ import '../widgets/preview/source.dart';
 import '../widgets/file_action.dart';
 
 import '../providers/file.dart';
+
+class FileSource extends PreviewSource {
+  final File file;
+
+  FileSource({
+    required this.file,
+  }) : super(
+          type: SourceType.network,
+          name: file.name,
+          path: GRPC.instance.previewURL(filepath.posix.join(
+            file.path,
+            file.name,
+          )),
+        );
+}
+
+abstract class _FilePreviewBase extends ConsumerStatefulWidget {
+  final File file;
+  final List<File>? files;
+
+  const _FilePreviewBase({super.key, required this.file, this.files});
+}
+
+mixin _FilePreviewBaseStateMixin<C extends _FilePreviewBase> on State<C> {
+  File get _file => _sources[_index].file;
+
+  late final List<FileSource> _sources;
+  int _index = 0;
+
+  bool filter(File file);
+
+  @override
+  void initState() {
+    super.initState();
+
+    List<File> currentFiles = [];
+    if (widget.files != null) {
+      currentFiles = widget.files!.where(filter).toList();
+    }
+
+    if (currentFiles.isEmpty) {
+      currentFiles = [widget.file];
+    }
+
+    int index = currentFiles.indexWhere((file) {
+      return file.type == widget.file.type && file.name == widget.file.name;
+    });
+    if (index < 0) {
+      index = 0;
+    }
+
+    _index = index;
+    _sources = currentFiles.map((file) => FileSource(file: file)).toList();
+  }
+}
 
 class FilePreview extends ConsumerStatefulWidget {
   final File file;
@@ -36,6 +90,24 @@ class FilePreview extends ConsumerStatefulWidget {
 }
 
 class _FilePreviewState extends ConsumerState<FilePreview> {
+  (List<FileSource>, int) getFiles(List<File> allFiles) {
+    List<File> files = allFiles.where((file) {
+      return PathUtil.isVideo(file.name, type: file.type);
+    }).toList();
+
+    if (files.isEmpty) {
+      files = [widget.file];
+    }
+
+    int index = files.indexWhere((file) {
+      return file.type == widget.file.type && file.name == widget.file.name;
+    });
+    if (index < 0) {
+      index = 0;
+    }
+    return (files.map((file) => FileSource(file: file)).toList(), index);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (PathUtil.isVideo(widget.file.name, type: widget.file.type)) {
@@ -82,7 +154,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
     final remotePath = filepath.posix.join(file.path, file.name);
 
     if (PathUtil.isText(file.name, type: file.type)) {
-      return TextPreview.remote(remotePath);
+      return TextPreview(source: PreviewSource.remote(remotePath));
     }
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -139,212 +211,69 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
   }
 }
 
-class FileImagePreview extends ConsumerStatefulWidget {
-  final File file;
-  final List<File>? files;
-
-  const FileImagePreview({super.key, required this.file, this.files});
+class FileImagePreview extends _FilePreviewBase {
+  const FileImagePreview({super.key, required super.file, super.files});
 
   @override
   ConsumerState<FileImagePreview> createState() => _FileImagePreviewState();
 }
 
-class _FileImagePreviewState extends ConsumerState<FileImagePreview> {
-  late final PageController _pageController;
-
-  int _currentIndex = 0;
-  List<File> _currentFiles = [];
-
-  bool _fullscreen = false;
-
+class _FileImagePreviewState extends ConsumerState<FileImagePreview>
+    with _FilePreviewBaseStateMixin<FileImagePreview> {
   @override
-  void initState() {
-    super.initState();
-
-    if (widget.files != null) {
-      _currentFiles = widget.files!.where((file) {
-        return PathUtil.isImage(file.name, type: file.type);
-      }).toList();
-    }
-
-    if (_currentFiles.isEmpty) {
-      _currentFiles = [widget.file];
-    }
-
-    final index = _currentFiles.indexWhere((file) =>
-        file.type == widget.file.type && file.name == widget.file.name);
-    if (index >= 0) {
-      _currentIndex = index;
-    }
-
-    _pageController = PageController(initialPage: _currentIndex);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  bool filter(File file) {
+    return PathUtil.isImage(file.name, type: file.type);
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentFile = _currentFiles[_currentIndex];
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: _fullscreen
-          ? null
-          : AppBar(
-              title: Text(
-                currentFile.name,
-                overflow: TextOverflow.ellipsis,
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () async {
-                    final result = await showFileAction(
-                      context,
-                      currentFile,
-                      ref: ref,
-                    );
-                    if (!context.mounted) return;
-                    result?.action(context, currentFile, ref: ref);
-                  },
-                ),
-              ],
-            ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          PageView.builder(
-            itemCount: _currentFiles.length,
-            itemBuilder: (BuildContext context, int index) {
-              final file = _currentFiles[index];
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _fullscreen = !_fullscreen;
-                  });
-                },
-                child: ImagePreview.remote(
-                  filepath.posix.join(file.path, file.name),
-                  fit: BoxFit.contain,
-                ),
+      appBar: AppBar(
+        title: Text(
+          _file.name,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () async {
+              final result = await showFileAction(
+                context,
+                _file,
+                ref: ref,
               );
-            },
-            controller: _pageController,
-            onPageChanged: (int index) {
-              setState(() {
-                _currentIndex = index;
-              });
+              if (!context.mounted) return;
+              result?.action(context, _file, ref: ref);
             },
           ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text("${_currentIndex + 1}/${_currentFiles.length}"),
-            ),
-          ),
-          if (!Breakpoint.isSmall(context))
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: Icon(Icons.chevron_left, size: 32),
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () {
-                    if (_currentIndex == 0) {
-                      _pageController.jumpToPage(
-                        _currentFiles.length - 1,
-                      );
-                    } else {
-                      _pageController.previousPage(
-                        duration: Duration(milliseconds: 200),
-                        curve: Curves.easeIn,
-                      );
-                    }
-                  },
-                ),
-              ),
-            ),
-          if (!Breakpoint.isSmall(context))
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  icon: Icon(Icons.chevron_right, size: 32),
-                  color: Theme.of(context).primaryColor,
-                  onPressed: () {
-                    if (_currentIndex == _currentFiles.length - 1) {
-                      _pageController.jumpToPage(0);
-                    } else {
-                      _pageController.nextPage(
-                        duration: Duration(milliseconds: 200),
-                        curve: Curves.easeIn,
-                      );
-                    }
-                  },
-                ),
-              ),
-            ),
         ],
+      ),
+      body: ImageListPreview(
+        index: _index,
+        sources: _sources,
+        onChanged: (index) {
+          setState(() {
+            _index = index;
+          });
+        },
       ),
     );
   }
 }
 
-class FileAudioPreview extends StatefulWidget {
-  final File file;
-  final List<File>? files;
-
-  const FileAudioPreview({super.key, required this.file, this.files});
+class FileAudioPreview extends _FilePreviewBase {
+  const FileAudioPreview({super.key, required super.file, super.files});
 
   @override
-  State<FileAudioPreview> createState() => _FileAudioPreviewState();
+  ConsumerState<FileAudioPreview> createState() => _FileAudioPreviewState();
 }
 
-class _FileAudioPreviewState extends State<FileAudioPreview>
-    with SingleTickerProviderStateMixin {
-  late final AudioPreviewController _controller;
-
+class _FileAudioPreviewState extends ConsumerState<FileAudioPreview>
+    with _FilePreviewBaseStateMixin<FileAudioPreview> {
   @override
-  void initState() {
-    super.initState();
-
-    List<File> currentFiles = [];
-    if (widget.files != null) {
-      currentFiles = widget.files!.where((file) {
-        return PathUtil.isAudio(file.name, type: file.type);
-      }).toList();
-    }
-
-    if (currentFiles.isEmpty) {
-      currentFiles = [widget.file];
-    }
-
-    int index = currentFiles.indexWhere((file) {
-      return file.type == widget.file.type && file.name == widget.file.name;
-    });
-    if (index < 0) {
-      index = 0;
-    }
-
-    _controller = AudioPreviewController(
-      currentFiles.map((file) {
-        final remotePath = filepath.posix.join(file.path, file.name);
-        return PreviewSource.network(GRPC.instance.previewURL(remotePath));
-      }).toList(),
-      index: index,
-      autoPlay: true,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  bool filter(File file) {
+    return PathUtil.isAudio(file.name, type: file.type);
   }
 
   @override
@@ -352,64 +281,31 @@ class _FileAudioPreviewState extends State<FileAudioPreview>
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _controller.currentSource.name,
+          _file.name,
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: AudioPreview(controller: _controller),
+      body: AudioListPreview(
+        sources: _sources,
+        index: _index,
+        autoPlay: true,
+      ),
     );
   }
 }
 
-class FileVideoPreview extends StatefulWidget {
-  final File file;
-  final List<File>? files;
-
-  const FileVideoPreview({super.key, required this.file, this.files});
+class FileVideoPreview extends _FilePreviewBase {
+  const FileVideoPreview({super.key, required super.file, super.files});
 
   @override
-  State<FileVideoPreview> createState() => _FileVideoPreviewState();
+  ConsumerState<FileVideoPreview> createState() => _FileVideoPreviewState();
 }
 
-class _FileVideoPreviewState extends State<FileVideoPreview> {
-  late final VideoPreviewController _controller;
-
+class _FileVideoPreviewState extends ConsumerState<FileVideoPreview>
+    with _FilePreviewBaseStateMixin<FileVideoPreview> {
   @override
-  void initState() {
-    super.initState();
-
-    List<File> currentFiles = [];
-    if (widget.files != null) {
-      currentFiles = widget.files!.where((file) {
-        return PathUtil.isVideo(file.name, type: file.type);
-      }).toList();
-    }
-
-    if (currentFiles.isEmpty) {
-      currentFiles = [widget.file];
-    }
-
-    int index = currentFiles.indexWhere((file) {
-      return file.type == widget.file.type && file.name == widget.file.name;
-    });
-    if (index < 0) {
-      index = 0;
-    }
-
-    _controller = VideoPreviewController(
-      currentFiles.map((file) {
-        final remotePath = filepath.posix.join(file.path, file.name);
-        return PreviewSource.network(GRPC.instance.previewURL(remotePath));
-      }).toList(),
-      index: index,
-      autoPlay: true,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  bool filter(File file) {
+    return PathUtil.isVideo(file.name, type: file.type);
   }
 
   @override
@@ -417,62 +313,20 @@ class _FileVideoPreviewState extends State<FileVideoPreview> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _controller.currentSource.name,
+          _file.name,
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: VideoPreview(controller: _controller),
-          ),
-          SliverFillRemaining(
-            child: _controller.playlist.isEmpty
-                ? Center(
-                    child: Text("播放列表为空".tr()),
-                  )
-                : buildPlaylist(context),
-          ),
-        ],
+      body: VideoListPreview(
+        onChanged: (index) {
+          setState(() {
+            _index = index;
+          });
+        },
+        autoPlay: true,
+        index: _index,
+        sources: _sources,
       ),
-    );
-  }
-
-  buildPlaylist(BuildContext context) {
-    return ExpansionTile(
-      initiallyExpanded: true,
-      leading: Icon(Icons.playlist_play),
-      title: Text("播放列表".tr()),
-      children: [
-        ListView.separated(
-          shrinkWrap: true,
-          separatorBuilder: (context, index) {
-            return Divider(
-              height: 0.1,
-              color: Colors.grey[300],
-            );
-          },
-          itemCount: _controller.playlist.length,
-          itemBuilder: (context, index) {
-            final source = _controller.playlist[index];
-            final selected = _controller.currentSource == source;
-            return ListTile(
-              leading: Icon(selected
-                  ? Icons.pause_circle_outlined
-                  : Icons.play_circle_outlined),
-              title: Text(
-                source.name,
-                overflow: TextOverflow.ellipsis,
-              ),
-              selected: selected,
-              onTap: () {
-                _controller.play(source);
-                setState(() {});
-              },
-            );
-          },
-        ),
-      ],
     );
   }
 }

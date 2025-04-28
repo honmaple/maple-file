@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
 
@@ -10,138 +9,33 @@ import 'package:maple_file/common/widgets/dialog.dart';
 
 import 'source.dart';
 
-class AudioPreviewController extends ChangeNotifier {
+class AudioPreviewController extends PreviewSourceListController {
   final AudioPlayer _player;
-  final List<PreviewSource> _playlist;
+  PreviewSourceImpl? _source;
 
-  int _index = 0;
-  PreviewLoopMode _loopMode;
-
-  AudioPreviewController(
-    List<PreviewSource> playlist, {
-    int index = 0,
-    PreviewLoopMode loopMode = PreviewLoopMode.list,
+  AudioPreviewController({
+    PreviewSourceImpl? source,
     bool autoPlay = false,
-  })  : assert(playlist.isNotEmpty, "playlist is empty"),
-        assert(index < playlist.length && index >= 0, "playlist index error"),
-        _index = index,
-        _loopMode = loopMode,
-        _player = AudioPlayer(),
-        _playlist = playlist {
-    if (autoPlay) {
-      play(currentSource);
+  })  : _source = source,
+        _player = AudioPlayer() {
+    if (source != null) {
+      setSource(source, autoPlay: autoPlay);
     }
   }
 
-  AudioPlayer get player {
-    return _player;
+  AudioPlayer get player => _player;
+  PreviewSourceImpl? get source => _source;
+
+  Future<void> play() {
+    return _player.resume();
   }
 
-  List<PreviewSource> get playlist {
-    return _playlist;
+  Future<void> pause() {
+    return _player.pause();
   }
 
-  PreviewLoopMode get currentLoopMode {
-    return _loopMode;
-  }
-
-  PlayerState get currentState {
-    return _player.state;
-  }
-
-  PreviewSource get currentSource {
-    return _playlist[_index];
-  }
-
-  Source get _source {
-    final s = _playlist[_index];
-    switch (s.sourceType) {
-      case SourceType.file:
-        return DeviceFileSource(s.source);
-      case SourceType.asset:
-        return AssetSource(s.source);
-      case SourceType.network:
-        return UrlSource(s.source);
-    }
-  }
-
-  int get _randomIndex {
-    if (_playlist.length <= 1) {
-      return 0;
-    }
-    int index = Random().nextInt(_playlist.length);
-    if (index == _index) {
-      index += 1;
-    }
-    if (index >= _playlist.length) {
-      index = 0;
-    }
-    return index;
-  }
-
-  void prev() {
-    switch (_loopMode) {
-      case PreviewLoopMode.off:
-      case PreviewLoopMode.one:
-      case PreviewLoopMode.list:
-        _index--;
-        break;
-      case PreviewLoopMode.random:
-        _index = _randomIndex;
-        break;
-    }
-
-    if (_index < 0) {
-      _index = _playlist.length - 1;
-    }
-
-    _player.play(_source);
-
-    notifyListeners();
-  }
-
-  void next() {
-    switch (_loopMode) {
-      case PreviewLoopMode.off:
-      case PreviewLoopMode.one:
-      case PreviewLoopMode.list:
-        _index++;
-        break;
-      case PreviewLoopMode.random:
-        _index = _randomIndex;
-        break;
-    }
-
-    if (_index >= _playlist.length) {
-      _index = 0;
-    }
-
-    _player.play(_source);
-
-    notifyListeners();
-  }
-
-  Future<void> play(PreviewSource source) async {
-    final index = _playlist.indexWhere((s) {
-      return s.source == source.source && s.sourceType == source.sourceType;
-    });
-    if (index < 0) {
-      _playlist.add(source);
-      _index = _playlist.length - 1;
-    } else {
-      _index = index;
-    }
-    notifyListeners();
-
-    await _player.play(_source);
-  }
-
-  Future<void> pause() async {
-    await _player.pause();
-  }
-
-  Future<void> resume() async {
-    await _player.resume();
+  Future<void> resume() {
+    return _player.resume();
   }
 
   Future<void> toggle() async {
@@ -153,49 +47,32 @@ class AudioPreviewController extends ChangeNotifier {
         await _player.resume();
         break;
       case PlayerState.stopped:
-        await _player.play(_source);
-        break;
       case PlayerState.completed:
-        await _player.play(_source);
+        if (_source != null) {
+          await setSource(_source!, autoPlay: true);
+        }
         break;
       case PlayerState.disposed:
     }
     notifyListeners();
   }
 
-  void setSource(PreviewSource s) {
-    switch (s.sourceType) {
+  @override
+  Future<void> setSource(PreviewSourceImpl s, {bool autoPlay = false}) async {
+    _source = s;
+
+    switch (s.type) {
       case SourceType.file:
-        _player.setSource(DeviceFileSource(s.source));
+        await _player.setSource(DeviceFileSource(s.path));
       case SourceType.asset:
-        _player.setSource(AssetSource(s.source));
+        await _player.setSource(AssetSource(s.path));
       case SourceType.network:
-        _player.setSource(UrlSource(s.source));
+        await _player.setSource(UrlSource(s.path));
     }
-
-    notifyListeners();
-  }
-
-  void setLoopMode(PreviewLoopMode loopMode) {
-    _loopMode = loopMode;
-    notifyListeners();
-  }
-
-  void toggleLoopMode() {
-    switch (_loopMode) {
-      case PreviewLoopMode.off:
-        setLoopMode(PreviewLoopMode.one);
-        break;
-      case PreviewLoopMode.one:
-        setLoopMode(PreviewLoopMode.list);
-        break;
-      case PreviewLoopMode.list:
-        setLoopMode(PreviewLoopMode.random);
-        break;
-      case PreviewLoopMode.random:
-        setLoopMode(PreviewLoopMode.off);
-        break;
+    if (autoPlay) {
+      await _player.resume();
     }
+    notifyListeners();
   }
 
   @override
@@ -207,35 +84,55 @@ class AudioPreviewController extends ChangeNotifier {
   }
 }
 
-class AudioPreview extends StatefulWidget {
-  final AudioPreviewController controller;
+class AudioListPreview extends StatefulWidget {
+  final int index;
+  final bool autoPlay;
+  final List<PreviewSourceImpl> sources;
+  final Function(int)? onChanged;
+  final AudioPreviewController? controller;
 
-  const AudioPreview({
+  const AudioListPreview({
     super.key,
-    required this.controller,
+    required this.sources,
+    this.index = 0,
+    this.autoPlay = false,
+    this.controller,
+    this.onChanged,
   });
 
   @override
-  State<AudioPreview> createState() => _AudioPreviewState();
+  State<AudioListPreview> createState() => _AudioListPreviewState();
 }
 
-class _AudioPreviewState extends State<AudioPreview> {
-  AudioPreviewController get _controller => widget.controller;
+class _AudioListPreviewState extends State<AudioListPreview> {
+  AudioPlayer get _player => _controller.player;
+
+  late final AudioPreviewController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller.addListener(() {
-      setState(() {});
-    });
+    _controller = widget.controller ?? AudioPreviewController();
+    _controller.setSources(
+      widget.sources,
+      index: widget.index,
+      autoPlay: widget.autoPlay,
+    );
+
     _controller.player.onPlayerComplete.listen((event) {
       _controller.next();
+    });
+    _controller.addListener(() {
+      setState(() {});
     });
   }
 
   @override
   void dispose() {
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
@@ -248,15 +145,16 @@ class _AudioPreviewState extends State<AudioPreview> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const Spacer(),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.music_note,
-                  size: 81, color: Theme.of(context).primaryColor),
-              Text(filepath
-                  .basenameWithoutExtension(_controller.currentSource.name)),
-            ],
-          ),
+          if (_controller.source != null)
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.music_note,
+                    size: 81, color: Theme.of(context).primaryColor),
+                Text(filepath
+                    .basenameWithoutExtension(_controller.source!.name)),
+              ],
+            ),
           const Spacer(),
           Column(
             mainAxisSize: MainAxisSize.min,
@@ -280,7 +178,20 @@ class _AudioPreviewState extends State<AudioPreview> {
       children: [
         IconButton(
           onPressed: () {
-            _controller.toggleLoopMode();
+            switch (_controller.loopMode) {
+              case PreviewLoopMode.off:
+                _controller.setLoopMode(PreviewLoopMode.one);
+                break;
+              case PreviewLoopMode.one:
+                _controller.setLoopMode(PreviewLoopMode.list);
+                break;
+              case PreviewLoopMode.list:
+                _controller.setLoopMode(PreviewLoopMode.random);
+                break;
+              case PreviewLoopMode.random:
+                _controller.setLoopMode(PreviewLoopMode.off);
+                break;
+            }
           },
           iconSize: 32,
           icon: _buildLoopModeIcon(),
@@ -311,7 +222,10 @@ class _AudioPreviewState extends State<AudioPreview> {
             showListDialog2(
               context,
               height: MediaQuery.sizeOf(context).height * 0.618,
-              child: AudioPreviewPlaylist(controller: _controller),
+              child: AudioPreviewPlaylist(
+                sources: widget.sources,
+                controller: _controller,
+              ),
             );
           },
           iconSize: 32,
@@ -322,15 +236,15 @@ class _AudioPreviewState extends State<AudioPreview> {
   }
 
   Widget _buildPlayIcon() {
-    if (_controller.currentState == PlayerState.stopped ||
-        _controller.currentState == PlayerState.paused) {
+    if (_player.state == PlayerState.stopped ||
+        _player.state == PlayerState.paused) {
       return const Icon(Icons.play_circle_outlined);
     }
     return const Icon(Icons.pause_circle_outlined);
   }
 
   Widget _buildLoopModeIcon() {
-    switch (_controller.currentLoopMode) {
+    switch (_controller.loopMode) {
       case PreviewLoopMode.off:
         return const Icon(Icons.music_off);
       case PreviewLoopMode.one:
@@ -344,10 +258,12 @@ class _AudioPreviewState extends State<AudioPreview> {
 }
 
 class AudioPreviewPlaylist extends StatefulWidget {
+  final List<PreviewSourceImpl> sources;
   final AudioPreviewController controller;
 
   const AudioPreviewPlaylist({
     super.key,
+    required this.sources,
     required this.controller,
   });
 
@@ -367,7 +283,7 @@ class _AudioPreviewPlaylistState extends State<AudioPreviewPlaylist> {
           ListTile(
             title: Text(
               "当前播放列表({length})".tr(args: {
-                "length": widget.controller.playlist.length,
+                "length": widget.sources.length,
               }),
               style: Theme.of(context).textTheme.titleLarge,
             ),
@@ -376,19 +292,19 @@ class _AudioPreviewPlaylistState extends State<AudioPreviewPlaylist> {
             height: 0.1,
             color: Colors.grey[300],
           ),
-          for (final source in widget.controller.playlist)
-            _buildPlaylist(source)
+          for (final (index, source) in widget.sources.indexed)
+            _buildPlaylist(index, source)
         ],
       ),
     );
   }
 
-  _buildPlaylist(PreviewSource source) {
-    final selected = widget.controller.currentSource == source;
+  _buildPlaylist(int index, PreviewSourceImpl source) {
+    final selected = (widget.controller.source == source);
     return ListTile(
       title: Text(source.name),
       trailing: selected
-          ? widget.controller.currentState == PlayerState.playing
+          ? widget.controller.player.state == PlayerState.playing
               ? const Icon(Icons.pause_circle_outlined)
               : const Icon(Icons.play_circle_outlined)
           : const Icon(Icons.play_circle_outlined),
@@ -397,9 +313,8 @@ class _AudioPreviewPlaylistState extends State<AudioPreviewPlaylist> {
         if (selected) {
           await widget.controller.toggle();
         } else {
-          await widget.controller.play(source);
+          await widget.controller.setSource(source, autoPlay: true);
         }
-        setState(() {});
       },
     );
   }

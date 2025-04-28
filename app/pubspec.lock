@@ -554,6 +554,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.0.0"
+  fvp:
+    dependency: "direct main"
+    description:
+      name: fvp
+      sha256: "895421eafcb14c3f66fed24b20b6421e45711224d0df29ecd7b8bdb37a867f69"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.31.2"
   glob:
     dependency: transitive
     description:

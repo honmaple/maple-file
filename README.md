@@ -28,7 +28,9 @@
    - [X] SMB
    - [X] Webdav
    - [X] Alist
-   - [X] Mirror(镜像站，支持文件查看和下载，支持格式：清华源、阿里源或者其他 **nginx** 文件列表源)
+   - [X] Github
+   - [X] Github Release
+   - [X] Mirror(镜像站，支持文件查看和下载，支持格式：清华源、阿里源或者其他 **NGINX** 文件列表源)
    - [X] 又拍云
 
 ## 功能
@@ -46,18 +48,20 @@
 ## 截图
 <table rules="none">
   <tr>
-    <td><img src="./example/screenshot/flutter_01.png" /></td>
-    <td><img src="./example/screenshot/flutter_02.png" /></td>
+    <td width="33%"><img src="./example/screenshot/01.png" /></td>
+    <td width="33%"><img src="./example/screenshot/02.png" /></td>
+    <td width="33%"><img src="./example/screenshot/03.png" /></td>
   </tr>
    <tr>
-    <td><img src="./example/screenshot/flutter_03.png" /></td>
-    <td><img src="./example/screenshot/flutter_04.png" /></td>
+    <td width="33%"><img src="./example/screenshot/04.png" /></td>
+    <td width="33%"><img src="./example/screenshot/05.png" /></td>
+    <td width="33%"><img src="./example/screenshot/06.png" /></td>
   </tr>
+</table>
+
+<table rules="none">
    <tr>
-    <td><img src="./example/screenshot/flutter_05.png" /></td>
-  </tr>
-   <tr>
-    <td><img src="./example/screenshot/flutter_06.png" /></td>
-    <td><img src="./example/screenshot/flutter_07.png" /></td>
+    <td width="50%"><img src="./example/screenshot/desktop-01.png" /></td>
+    <td width="50%"><img src="./example/screenshot/desktop-02.png" /></td>
   </tr>
 </table>

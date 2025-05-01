@@ -128,7 +128,9 @@ extension FileActionExtension on FileAction {
           ),
         );
         if (result != null) {
-          await FileService.instance.rename(file.path, file.name, result).then((_) {
+          await FileService.instance
+              .rename(file.path, file.name, result)
+              .then((_) {
             ref?.invalidate(fileProvider(file.path));
           });
         }
@@ -631,7 +633,10 @@ class FileSortAction extends ConsumerWidget {
     final sort = ref.watch(fileSettingProvider.select((state) => state.sort));
     final sortReversed =
         ref.watch(fileSettingProvider.select((state) => state.sortReversed));
+    final sortDir =
+        ref.watch(fileSettingProvider.select((state) => state.sortDir));
     return PopupMenuButton(
+      menuPadding: EdgeInsets.zero,
       position: PopupMenuPosition.under,
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
@@ -641,29 +646,47 @@ class FileSortAction extends ConsumerWidget {
           Text(sort.label(context)),
         ],
       ),
-      itemBuilder: (BuildContext bc) {
-        return FileListSort.values.map((value) {
-          return PopupMenuItem(
+      itemBuilder: (context) {
+        return <PopupMenuEntry>[
+          ...FileListSort.values.map((value) {
+            return PopupMenuItem(
+              height: 16 * 2,
+              child: ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                title: Text(value.label(context)),
+                trailing: sort == value
+                    ? Icon(sortReversed ? Icons.north : Icons.south, size: 16)
+                    : null,
+              ),
+              onTap: () {
+                ref.read(fileSettingProvider.notifier).update((state) {
+                  if (sort == value) {
+                    return state.copyWith(sortReversed: !state.sortReversed);
+                  }
+                  return state.copyWith(sort: value);
+                });
+              },
+            );
+          }),
+          PopupMenuDivider(height: 1),
+          PopupMenuItem(
             height: 16 * 2,
             child: ListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-              title: Text(value.label(context)),
-              trailing: sort == value
-                  ? Icon(sortReversed ? Icons.north : Icons.south, size: 16)
-                  : null,
+              title: Text("目录优先".tr()),
+              trailing: sortDir ? Icon(Icons.check, size: 16) : null,
             ),
             onTap: () {
               ref.read(fileSettingProvider.notifier).update((state) {
-                if (sort == value) {
-                  return state.copyWith(sortReversed: !state.sortReversed);
-                }
-                return state.copyWith(sort: value);
+                return state.copyWith(sortDir: !state.sortDir);
               });
             },
-          );
-        }).toList();
+          ),
+        ];
       },
     );
   }

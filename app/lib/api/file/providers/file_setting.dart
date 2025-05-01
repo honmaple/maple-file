@@ -64,6 +64,7 @@ class FileSetting with _$FileSetting {
   const FileSetting._();
 
   const factory FileSetting({
+    @Default(false) @JsonKey(name: 'sortDir') bool sortDir,
     @Default(false) @JsonKey(name: 'sortReversed') bool sortReversed,
     @Default(FileListSort.name) @JsonKey(name: 'sort') FileListSort sort,
     @Default(FileListView.list) @JsonKey(name: 'view') FileListView view,

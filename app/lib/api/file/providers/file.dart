@@ -17,17 +17,16 @@ class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
       return state.paginationSize;
     }));
 
-    final results = await FileService.instance.list(
+    final sort = ref.watch(fileSettingProvider.select((state) {
+      return state.sort;
+    }));
+
+    List<File> results = await FileService.instance.list(
       filter: {
         "path": arg,
         "page_size": "$size",
       },
     );
-
-    final sort = ref.watch(fileSettingProvider.select((state) {
-      return state.sort;
-    }));
-
     switch (sort) {
       case FileListSort.name:
         results.sort((a, b) {
@@ -50,11 +49,30 @@ class FileNotifier extends FamilyAsyncNotifier<List<File>, String>
         });
         break;
     }
+
     final sortReversed =
         ref.watch(fileSettingProvider.select((state) => state.sortReversed));
     if (sortReversed) {
-      return results.reversed.toList();
+      results = results.reversed.toList();
     }
+
+    final sortDir =
+        ref.watch(fileSettingProvider.select((state) => state.sortDir));
+    if (sortDir) {
+      results.sort((a, b) {
+        if (a.type == b.type) {
+          return 0;
+        }
+        if (a.type == "DIR") {
+          return -1;
+        }
+        if (b.type == "DIR") {
+          return 1;
+        }
+        return 0;
+      });
+    }
+
     return results;
   }
 

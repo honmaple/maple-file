@@ -33,14 +33,15 @@ class FileSource extends PreviewSource {
         );
 }
 
-abstract class _FilePreviewBase extends ConsumerStatefulWidget {
+abstract class FilePreviewBase extends ConsumerStatefulWidget {
   final File file;
   final List<File>? files;
 
-  const _FilePreviewBase({super.key, required this.file, this.files});
+  const FilePreviewBase({super.key, required this.file, this.files});
 }
 
-mixin _FilePreviewBaseStateMixin<C extends _FilePreviewBase> on State<C> {
+abstract class FilePreviewBaseState<T extends FilePreviewBase>
+    extends ConsumerState<T> {
   File get _file => _sources[_index].file;
 
   late final List<FileSource> _sources;
@@ -211,15 +212,14 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
   }
 }
 
-class FileImagePreview extends _FilePreviewBase {
+class FileImagePreview extends FilePreviewBase {
   const FileImagePreview({super.key, required super.file, super.files});
 
   @override
   ConsumerState<FileImagePreview> createState() => _FileImagePreviewState();
 }
 
-class _FileImagePreviewState extends ConsumerState<FileImagePreview>
-    with _FilePreviewBaseStateMixin<FileImagePreview> {
+class _FileImagePreviewState extends FilePreviewBaseState<FileImagePreview> {
   @override
   bool filter(File file) {
     return PathUtil.isImage(file.name, type: file.type);
@@ -262,15 +262,14 @@ class _FileImagePreviewState extends ConsumerState<FileImagePreview>
   }
 }
 
-class FileAudioPreview extends _FilePreviewBase {
+class FileAudioPreview extends FilePreviewBase {
   const FileAudioPreview({super.key, required super.file, super.files});
 
   @override
   ConsumerState<FileAudioPreview> createState() => _FileAudioPreviewState();
 }
 
-class _FileAudioPreviewState extends ConsumerState<FileAudioPreview>
-    with _FilePreviewBaseStateMixin<FileAudioPreview> {
+class _FileAudioPreviewState extends FilePreviewBaseState<FileAudioPreview> {
   @override
   bool filter(File file) {
     return PathUtil.isAudio(file.name, type: file.type);
@@ -294,15 +293,14 @@ class _FileAudioPreviewState extends ConsumerState<FileAudioPreview>
   }
 }
 
-class FileVideoPreview extends _FilePreviewBase {
+class FileVideoPreview extends FilePreviewBase {
   const FileVideoPreview({super.key, required super.file, super.files});
 
   @override
   ConsumerState<FileVideoPreview> createState() => _FileVideoPreviewState();
 }
 
-class _FileVideoPreviewState extends ConsumerState<FileVideoPreview>
-    with _FilePreviewBaseStateMixin<FileVideoPreview> {
+class _FileVideoPreviewState extends FilePreviewBaseState<FileVideoPreview> {
   @override
   bool filter(File file) {
     return PathUtil.isVideo(file.name, type: file.type);

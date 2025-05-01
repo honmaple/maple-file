@@ -1,7 +1,6 @@
 PODS:
   - audioplayers_darwin (0.0.1):
     - Flutter
-  - BIJKPlayer (0.7.16)
   - DKImagePickerController/Core (4.3.9):
     - DKImagePickerController/ImageDataManager
     - DKImagePickerController/Resource
@@ -34,9 +33,6 @@ PODS:
     - SDWebImage
     - SwiftyGif
   - external_path (2.0.1):
-    - Flutter
-  - fijkplayer (0.11.0):
-    - BIJKPlayer (~> 0.7.16)
     - Flutter
   - file_picker (0.0.1):
     - DKImagePickerController/PhotoGallery
@@ -73,7 +69,6 @@ PODS:
 DEPENDENCIES:
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
   - external_path (from `.symlinks/plugins/external_path/ios`)
-  - fijkplayer (from `.symlinks/plugins/fijkplayer/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
@@ -88,7 +83,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - BIJKPlayer
     - DKImagePickerController
     - DKPhotoGallery
     - mdk
@@ -100,8 +94,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/audioplayers_darwin/ios"
   external_path:
     :path: ".symlinks/plugins/external_path/ios"
-  fijkplayer:
-    :path: ".symlinks/plugins/fijkplayer/ios"
   file_picker:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
@@ -127,11 +119,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
-  BIJKPlayer: 4c5d66e5cb99ae5bade6f22a4fcc031722a81c64
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   external_path: fd37c654b69a1336e33a2403f48383ae6100e443
-  fijkplayer: 2dd31ec312ba554bb6a9163cb2f44cdb528e50da
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_native_splash: 6cad9122ea0fad137d23137dd14b937f3e90b145

@@ -1,94 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fijkplayer/fijkplayer.dart';
 
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/util.dart';
 
 import 'source.dart';
 
-abstract class VideoPreviewController extends PreviewSourceListController {
-  PreviewSourceImpl? get source;
-
-  Future<void> play();
-  Future<void> pause();
-  Future<void> resume();
-  // Future<void> setSource(PreviewSourceImpl s, {bool autoPlay = false});
-
-  Widget playerWidget(BuildContext context);
-}
-
-class MobileVideoPreviewController extends VideoPreviewController {
-  final FijkPlayer _player;
-
-  PreviewSourceImpl? _source;
-
-  MobileVideoPreviewController({
-    PreviewSourceImpl? source,
-    bool autoPlay = false,
-  })  : _source = source,
-        _player = FijkPlayer() {
-    if (source != null) {
-      setSource(source, autoPlay: autoPlay);
-    }
-  }
-
-  FijkPlayer get player => _player;
-
-  @override
-  PreviewSourceImpl? get source => _source;
-
-  @override
-  Future<void> play() {
-    return _player.start();
-  }
-
-  @override
-  Future<void> pause() async {
-    await _player.pause();
-  }
-
-  @override
-  Future<void> resume() async {
-    await _player.start();
-  }
-
-  @override
-  Future<void> setSource(PreviewSourceImpl s, {bool autoPlay = false}) async {
-    _source = s;
-
-    await player.reset();
-
-    switch (s.type) {
-      case SourceType.file:
-        return _player.setDataSource("file://${s.path}", autoPlay: autoPlay);
-      case SourceType.asset:
-        return _player.setDataSource("asset:///${s.path}", autoPlay: autoPlay);
-      case SourceType.network:
-        return _player.setDataSource(s.path, autoPlay: autoPlay);
-    }
-  }
-
-  @override
-  void dispose() {
-    _player.release();
-    // _player.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget playerWidget(BuildContext context) {
-    return FijkView(
-      fit: FijkFit.cover,
-      player: _player,
-    );
-  }
-}
-
-class DesktopVideoPreviewController extends VideoPreviewController {
+class VideoPreviewController extends PreviewSourceListController {
   late VideoPlayerController _controller;
 
   ChewieController? _chewieController;
@@ -96,7 +16,7 @@ class DesktopVideoPreviewController extends VideoPreviewController {
 
   bool _initialized = false;
 
-  DesktopVideoPreviewController({
+  VideoPreviewController({
     PreviewSourceImpl? source,
     bool autoPlay = false,
   }) : _source = source {
@@ -118,20 +38,16 @@ class DesktopVideoPreviewController extends VideoPreviewController {
 
   VideoPlayerController get player => _controller;
 
-  @override
   PreviewSourceImpl? get source => _source;
 
-  @override
   Future<void> play() async {
     return _controller.play();
   }
 
-  @override
   Future<void> pause() {
     return _controller.pause();
   }
 
-  @override
   Future<void> resume() {
     return _controller.play();
   }
@@ -178,7 +94,6 @@ class DesktopVideoPreviewController extends VideoPreviewController {
     super.dispose();
   }
 
-  @override
   Widget playerWidget(BuildContext context) {
     return Chewie(
       controller: chewie,
@@ -209,10 +124,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   void initState() {
     super.initState();
 
-    _controller = widget.controller ??
-        (Util.isDesktop
-            ? DesktopVideoPreviewController()
-            : MobileVideoPreviewController());
+    _controller = widget.controller ?? VideoPreviewController();
     _controller.setSource(widget.source, autoPlay: widget.autoPlay);
 
     _controller.addListener(() {
@@ -268,10 +180,7 @@ class _VideoListPreviewState extends State<VideoListPreview> {
 
     _index = widget.index;
 
-    _controller = widget.controller ??
-        (Util.isDesktop
-            ? DesktopVideoPreviewController()
-            : MobileVideoPreviewController());
+    _controller = widget.controller ?? VideoPreviewController();
   }
 
   @override

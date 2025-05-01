@@ -374,14 +374,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "15.0.0"
-  fijkplayer:
-    dependency: "direct main"
-    description:
-      name: fijkplayer
-      sha256: e6098034e696ce448f5f289fb5b3fa363df5e606bdb418d52944c1dcb8e14cba
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.11.0"
   file:
     dependency: transitive
     description:

@@ -88,9 +88,9 @@ class App {
   }
 
   Future<void> initMedia() async {
-    if (Util.isDesktop) {
-      fvp.registerWith();
-    }
+    fvp.registerWith(options: {
+      "global": {"log": "off"}
+    });
   }
 
   Future<void> initPermission() async {}

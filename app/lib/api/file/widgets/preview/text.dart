@@ -72,10 +72,11 @@ class _TextPreviewState extends State<TextPreview> {
           if (response.statusCode == 200) {
             return utf8.decode(response.bodyBytes);
           }
+          final body = response.body;
+          return body == "" ? "Can't read this file" : body;
         } catch (e) {
           return e.toString();
         }
-        return "Can't read this file";
     }
   }
 }

@@ -111,7 +111,9 @@ func (d *Github) Get(ctx context.Context, path string) (driver.File, error) {
 	if repo == "" {
 		return nil, fmt.Errorf("can't stat %s", path)
 	}
-	if ref == "" {
+
+	// 获取仓库信息
+	if ref == "" && actualPath == "/" {
 		result, _, err := d.client.Repositories.Get(ctx, d.opt.Owner, repo)
 		if err != nil {
 			return nil, err
@@ -126,10 +128,12 @@ func (d *Github) Get(ctx context.Context, path string) (driver.File, error) {
 		}
 		return info.File(), nil
 	}
+
+	// 获取分支信息
 	if actualPath == "/" {
 		info := &driver.FileInfo{
 			Path:    path,
-			Name:    url.PathEscape(ref),
+			Name:    ref,
 			IsDir:   true,
 			ModTime: time.Now(),
 		}
@@ -137,7 +141,6 @@ func (d *Github) Get(ctx context.Context, path string) (driver.File, error) {
 	}
 
 	dir, filename := filepath.Dir(actualPath), filepath.Base(actualPath)
-
 	_, dc, _, err := d.client.Repositories.GetContents(context.Background(), d.opt.Owner, repo, dir, &github.RepositoryContentGetOptions{
 		Ref: ref,
 	})
@@ -150,6 +153,7 @@ func (d *Github) Get(ctx context.Context, path string) (driver.File, error) {
 			continue
 		}
 		info := &driver.FileInfo{
+			Path:    path,
 			Name:    result.GetName(),
 			Size:    int64(result.GetSize()),
 			IsDir:   result.GetType() == "dir",
@@ -162,7 +166,7 @@ func (d *Github) Get(ctx context.Context, path string) (driver.File, error) {
 
 func (d *Github) Open(path string) (driver.FileReader, error) {
 	repo, ref, actualPath := d.getActualPath(path)
-	if repo == "" || ref == "" || actualPath == "/" {
+	if repo == "" || actualPath == "/" {
 		return nil, fmt.Errorf("can't open %s", path)
 	}
 
@@ -284,6 +288,7 @@ func (d *Github) List(ctx context.Context, path string, metas ...driver.Meta) ([
 	}
 	if fc != nil {
 		info := &driver.FileInfo{
+			Path:    path,
 			Name:    fc.GetName(),
 			Size:    int64(fc.GetSize()),
 			IsDir:   fc.GetType() == "dir",
@@ -295,6 +300,7 @@ func (d *Github) List(ctx context.Context, path string, metas ...driver.Meta) ([
 	files := make([]driver.File, len(dc))
 	for i, result := range dc {
 		info := &driver.FileInfo{
+			Path:    path,
 			Name:    result.GetName(),
 			Size:    int64(result.GetSize()),
 			IsDir:   result.GetType() == "dir",

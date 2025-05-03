@@ -24,12 +24,6 @@ func (srv *Service) getSetting(ctx context.Context, key string) (*viper.Viper, e
 		return nil, err
 	}
 
-	allSettings := make([]*settingpb.Setting, 0)
-	srv.app.DB.WithContext(ctx).Find(&allSettings)
-	for _, set := range allSettings {
-		fmt.Println(set.Key, set.Value)
-	}
-
 	setting := make(map[string]any)
 	if err := json.Unmarshal([]byte(ins.GetValue()), &setting); err != nil {
 		return nil, err

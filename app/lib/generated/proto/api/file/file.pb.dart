@@ -11,6 +11,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import '../../google/protobuf/timestamp.pb.dart' as $2;
@@ -23,7 +24,7 @@ class File extends $pb.GeneratedMessage {
     $2.Timestamp? updatedAt,
     $core.String? name,
     $core.String? type,
-    $core.int? size,
+    $fixnum.Int64? size,
     $core.String? hash,
     $core.String? path,
     $1.Repo? repo,
@@ -72,7 +73,7 @@ class File extends $pb.GeneratedMessage {
     ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
     ..aOS(4, _omitFieldNames ? '' : 'name')
     ..aOS(5, _omitFieldNames ? '' : 'type')
-    ..a<$core.int>(6, _omitFieldNames ? '' : 'size', $pb.PbFieldType.O3)
+    ..aInt64(6, _omitFieldNames ? '' : 'size')
     ..aOS(7, _omitFieldNames ? '' : 'hash')
     ..aOS(8, _omitFieldNames ? '' : 'path')
     ..aOM<$1.Repo>(10, _omitFieldNames ? '' : 'repo', subBuilder: $1.Repo.create)
@@ -155,9 +156,9 @@ class File extends $pb.GeneratedMessage {
   void clearType() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.int get size => $_getIZ(5);
+  $fixnum.Int64 get size => $_getI64(5);
   @$pb.TagNumber(6)
-  set size($core.int v) { $_setSignedInt32(5, v); }
+  set size($fixnum.Int64 v) { $_setInt64(5, v); }
   @$pb.TagNumber(6)
   $core.bool hasSize() => $_has(5);
   @$pb.TagNumber(6)
@@ -210,7 +211,7 @@ class FileRequest extends $pb.GeneratedMessage {
     $core.List<$core.int>? chunk,
     $core.String? path,
     $core.String? filename,
-    $core.int? size,
+    $fixnum.Int64? size,
   }) {
     final $result = create();
     if (index != null) {
@@ -239,7 +240,7 @@ class FileRequest extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'chunk', $pb.PbFieldType.OY)
     ..aOS(3, _omitFieldNames ? '' : 'path')
     ..aOS(4, _omitFieldNames ? '' : 'filename')
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'size', $pb.PbFieldType.O3)
+    ..aInt64(5, _omitFieldNames ? '' : 'size')
     ..hasRequiredFields = false
   ;
 
@@ -301,9 +302,9 @@ class FileRequest extends $pb.GeneratedMessage {
   void clearFilename() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.int get size => $_getIZ(4);
+  $fixnum.Int64 get size => $_getI64(4);
   @$pb.TagNumber(5)
-  set size($core.int v) { $_setSignedInt32(4, v); }
+  set size($fixnum.Int64 v) { $_setInt64(4, v); }
   @$pb.TagNumber(5)
   $core.bool hasSize() => $_has(4);
   @$pb.TagNumber(5)

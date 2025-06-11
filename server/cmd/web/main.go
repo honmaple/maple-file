@@ -1,9 +1,7 @@
 package main
 
 import (
-	"embed"
 	"fmt"
-	"io/fs"
 	"os"
 
 	"github.com/honmaple/maple-file/server/internal/app"
@@ -14,8 +12,6 @@ import (
 )
 
 var (
-	//go:embed web
-	webFS      embed.FS
 	defaultApp = app.New()
 )
 
@@ -34,21 +30,16 @@ func action(clx *cli.Context) error {
 		defaultApp.Config.Set("server.mode", "dev")
 	}
 
-	var root fs.FS
-
-	if ok := clx.Bool("fs"); ok {
-		rootFS, err := fs.Sub(webFS, "web")
-		if err != nil {
-			return err
-		}
-		root = rootFS
-	}
-
 	listener, err := app.Listen(defaultApp.Config.GetString(config.ServerAddr))
 	if err != nil {
 		return err
 	}
-	return defaultApp.Start(listener, root)
+
+	server, err := defaultApp.NewServer(listener)
+	if err != nil {
+		return err
+	}
+	return server.Start()
 }
 
 func main() {
@@ -61,11 +52,6 @@ func main() {
 				Name:    "debug",
 				Aliases: []string{"D"},
 				Usage:   "debug mode",
-			},
-			&cli.BoolFlag{
-				Name:    "fs",
-				Aliases: []string{"F"},
-				Usage:   "serve static file",
 			},
 			&cli.StringFlag{
 				Name:    "addr",

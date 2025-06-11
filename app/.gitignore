@@ -49,3 +49,5 @@ app.*.map.json
 **/ios/Frameworks/
 **/macos/Frameworks/
 **/android/app/libs/
+
+.cxx/

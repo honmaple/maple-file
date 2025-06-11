@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	filepath "path"
+	"slices"
 	"strings"
 
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
@@ -123,21 +124,14 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 		cf = viper.New()
 	}
 
-	if limitSize := cf.GetInt32("upload.limit_size"); limitSize > 0 && req.GetSize() > limitSize*1024*1024 {
+	if limitSize := cf.GetInt64("upload.limit_size"); limitSize > 0 && req.GetSize() > limitSize*1024*1024 {
 		return nil, errors.New("上传限制大小")
 	}
 
 	if limitType := cf.GetString("upload.limit_type"); limitType != "" {
 		fileExt := filepath.Ext(filename)
 
-		limit := true
-		for _, t := range strings.Split(limitType, ",") {
-			if fileExt == t {
-				limit = false
-				break
-			}
-		}
-		if limit {
+		if slices.Contains(strings.Split(limitType, ","), fileExt) {
 			return nil, errors.New("上传限制类型")
 		}
 	}

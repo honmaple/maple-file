@@ -132,7 +132,7 @@ class _FileViewState extends ConsumerState<FileView> {
                 ),
                 if (row.type != "DIR")
                   Text(
-                    Util.formatSize(row.size),
+                    Util.formatSize(row.size.toInt()),
                     style: const TextStyle(fontSize: 12),
                   ),
               ],

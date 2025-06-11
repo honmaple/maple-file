@@ -18,7 +18,7 @@ message File {
 	// @gotags: gorm:"not null;"
 	string name = 4;
 	string type = 5;
-	int32  size = 6;
+	int64  size = 6;
 	string hash = 7;
 	// @gotags: gorm:"not null;"
 	string path = 8;
@@ -30,7 +30,7 @@ message File {
 
 message FileRequest {
 	int32  index = 1;
-	int32  size = 5;
+	int64  size = 5;
 	string path = 3;
 	string filename = 4;
 	bytes  chunk = 2;

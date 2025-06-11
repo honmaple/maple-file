@@ -36,6 +36,7 @@ class FileDescriptorSet extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FileDescriptorSet', package: const $pb.PackageName(_omitMessageNames ? '' : 'google.protobuf'), createEmptyInstance: create)
     ..pc<FileDescriptorProto>(1, _omitFieldNames ? '' : 'file', $pb.PbFieldType.PM, subBuilder: FileDescriptorProto.create)
+    ..hasExtensions = true
   ;
 
   @$core.Deprecated(
@@ -237,6 +238,9 @@ class FileDescriptorProto extends $pb.GeneratedMessage {
   ///  The supported values are "proto2", "proto3", and "editions".
   ///
   ///  If `edition` is present, this value must be "editions".
+  ///  WARNING: This field should only be used by protobuf plugins or special
+  ///  cases like the proto compiler. Other uses are discouraged and
+  ///  developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(12)
   $core.String get syntax => $_getSZ(11);
   @$pb.TagNumber(12)
@@ -247,6 +251,9 @@ class FileDescriptorProto extends $pb.GeneratedMessage {
   void clearSyntax() => clearField(12);
 
   /// The edition of the proto file.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(14)
   Edition get edition => $_getN(12);
   @$pb.TagNumber(14)
@@ -1868,6 +1875,9 @@ class FileOptions extends $pb.GeneratedMessage {
   void clearRubyPackage() => clearField(45);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(50)
   FeatureSet get features => $_getN(19);
   @$pb.TagNumber(50)
@@ -2063,6 +2073,9 @@ class MessageOptions extends $pb.GeneratedMessage {
   void clearDeprecatedLegacyJsonFieldConflicts() => clearField(11);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(12)
   FeatureSet get features => $_getN(5);
   @$pb.TagNumber(12)
@@ -2351,12 +2364,13 @@ class FieldOptions extends $pb.GeneratedMessage {
   static FieldOptions getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FieldOptions>(create);
   static FieldOptions? _defaultInstance;
 
+  /// NOTE: ctype is deprecated. Use `features.(pb.cpp).string_type` instead.
   /// The ctype option instructs the C++ code generator to use a different
   /// representation of the field than it normally would.  See the specific
   /// options below.  This option is only implemented to support use of
   /// [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
-  /// type "bytes" in the open source release -- sorry, we'll try to include
-  /// other types in a future version!
+  /// type "bytes" in the open source release.
+  /// TODO: make ctype actually deprecated.
   @$pb.TagNumber(1)
   FieldOptions_CType get ctype => $_getN(0);
   @$pb.TagNumber(1)
@@ -2495,6 +2509,9 @@ class FieldOptions extends $pb.GeneratedMessage {
   $core.List<FieldOptions_EditionDefault> get editionDefaults => $_getList(10);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(21)
   FeatureSet get features => $_getN(11);
   @$pb.TagNumber(21)
@@ -2568,6 +2585,9 @@ class OneofOptions extends $pb.GeneratedMessage {
   static OneofOptions? _defaultInstance;
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(1)
   FeatureSet get features => $_getN(0);
   @$pb.TagNumber(1)
@@ -2690,6 +2710,9 @@ class EnumOptions extends $pb.GeneratedMessage {
   void clearDeprecatedLegacyJsonFieldConflicts() => clearField(6);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(7)
   FeatureSet get features => $_getN(3);
   @$pb.TagNumber(7)
@@ -2780,6 +2803,9 @@ class EnumValueOptions extends $pb.GeneratedMessage {
   void clearDeprecated() => clearField(1);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(2)
   FeatureSet get features => $_getN(1);
   @$pb.TagNumber(2)
@@ -2884,6 +2910,9 @@ class ServiceOptions extends $pb.GeneratedMessage {
   void clearDeprecated() => clearField(33);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(34)
   FeatureSet get features => $_getN(1);
   @$pb.TagNumber(34)
@@ -2978,6 +3007,9 @@ class MethodOptions extends $pb.GeneratedMessage {
   void clearIdempotencyLevel() => clearField(34);
 
   /// Any features defined in the specific edition.
+  /// WARNING: This field should only be used by protobuf plugins or special
+  /// cases like the proto compiler. Other uses are discouraged and
+  /// developers should rely on the protoreflect APIs for their client language.
   @$pb.TagNumber(35)
   FeatureSet get features => $_getN(2);
   @$pb.TagNumber(35)
@@ -3211,6 +3243,7 @@ class FeatureSet extends $pb.GeneratedMessage {
     FeatureSet_Utf8Validation? utf8Validation,
     FeatureSet_MessageEncoding? messageEncoding,
     FeatureSet_JsonFormat? jsonFormat,
+    FeatureSet_EnforceNamingStyle? enforceNamingStyle,
   }) {
     final $result = create();
     if (fieldPresence != null) {
@@ -3231,6 +3264,9 @@ class FeatureSet extends $pb.GeneratedMessage {
     if (jsonFormat != null) {
       $result.jsonFormat = jsonFormat;
     }
+    if (enforceNamingStyle != null) {
+      $result.enforceNamingStyle = enforceNamingStyle;
+    }
     return $result;
   }
   FeatureSet._() : super();
@@ -3244,6 +3280,7 @@ class FeatureSet extends $pb.GeneratedMessage {
     ..e<FeatureSet_Utf8Validation>(4, _omitFieldNames ? '' : 'utf8Validation', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_Utf8Validation.UTF8_VALIDATION_UNKNOWN, valueOf: FeatureSet_Utf8Validation.valueOf, enumValues: FeatureSet_Utf8Validation.values)
     ..e<FeatureSet_MessageEncoding>(5, _omitFieldNames ? '' : 'messageEncoding', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_MessageEncoding.MESSAGE_ENCODING_UNKNOWN, valueOf: FeatureSet_MessageEncoding.valueOf, enumValues: FeatureSet_MessageEncoding.values)
     ..e<FeatureSet_JsonFormat>(6, _omitFieldNames ? '' : 'jsonFormat', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_JsonFormat.JSON_FORMAT_UNKNOWN, valueOf: FeatureSet_JsonFormat.valueOf, enumValues: FeatureSet_JsonFormat.values)
+    ..e<FeatureSet_EnforceNamingStyle>(7, _omitFieldNames ? '' : 'enforceNamingStyle', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_EnforceNamingStyle.ENFORCE_NAMING_STYLE_UNKNOWN, valueOf: FeatureSet_EnforceNamingStyle.valueOf, enumValues: FeatureSet_EnforceNamingStyle.values)
     ..hasExtensions = true
   ;
 
@@ -3321,6 +3358,15 @@ class FeatureSet extends $pb.GeneratedMessage {
   $core.bool hasJsonFormat() => $_has(5);
   @$pb.TagNumber(6)
   void clearJsonFormat() => clearField(6);
+
+  @$pb.TagNumber(7)
+  FeatureSet_EnforceNamingStyle get enforceNamingStyle => $_getN(6);
+  @$pb.TagNumber(7)
+  set enforceNamingStyle(FeatureSet_EnforceNamingStyle v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasEnforceNamingStyle() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearEnforceNamingStyle() => clearField(7);
 }
 
 /// A map from every known edition with a unique set of defaults to its
@@ -3670,7 +3716,7 @@ class SourceCodeInfo extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SourceCodeInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'google.protobuf'), createEmptyInstance: create)
     ..pc<SourceCodeInfo_Location>(1, _omitFieldNames ? '' : 'location', $pb.PbFieldType.PM, subBuilder: SourceCodeInfo_Location.create)
-    ..hasRequiredFields = false
+    ..hasExtensions = true
   ;
 
   @$core.Deprecated(

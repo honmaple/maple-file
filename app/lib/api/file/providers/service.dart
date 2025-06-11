@@ -1,7 +1,9 @@
 import 'dart:io' as io;
 import 'dart:math' as math;
 import 'dart:async';
+import 'dart:core';
 import 'dart:typed_data';
+import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:path/path.dart' as filepath;
 import 'package:flutter/material.dart';
 
@@ -132,7 +134,7 @@ class FileService {
     // 第0片不包括chunk
     yield FileRequest(
       path: path,
-      size: size,
+      size: fixnum.Int64(size),
       filename: name,
     );
 
@@ -146,7 +148,7 @@ class FileService {
 
       yield FileRequest(
         path: path,
-        size: size,
+        size: fixnum.Int64(size),
         index: index,
         chunk: chunk.toList(),
         filename: name,
@@ -157,7 +159,7 @@ class FileService {
     if (chunk.isNotEmpty) {
       yield FileRequest(
         path: path,
-        size: size,
+        size: fixnum.Int64(size),
         index: index + 1,
         chunk: chunk.toList(),
         filename: name,

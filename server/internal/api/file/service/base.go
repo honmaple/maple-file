@@ -49,7 +49,7 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 
 			result, err := srv.upload(ctx, &pb.FileRequest{
 				Path:     path,
-				Size:     int32(file.Size),
+				Size:     file.Size,
 				Filename: file.Filename,
 			}, src)
 			if err != nil {

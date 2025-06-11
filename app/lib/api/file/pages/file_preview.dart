@@ -180,7 +180,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
               const SizedBox(height: 8),
               Text(
                 "文件大小: {size}".tr(args: {
-                  "size": Util.formatSize(file.size),
+                  "size": Util.formatSize(file.size.toInt()),
                 }),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

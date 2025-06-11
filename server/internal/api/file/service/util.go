@@ -53,7 +53,7 @@ func infoToFile(m driver.File) *pb.File {
 	file := &pb.File{
 		Path:      m.Path(),
 		Name:      m.Name(),
-		Size:      int32(m.Size()),
+		Size:      m.Size(),
 		Type:      m.Type(),
 		CreatedAt: timestamppb.New(m.ModTime()),
 		UpdatedAt: timestamppb.New(m.ModTime()),

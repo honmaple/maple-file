@@ -169,7 +169,7 @@ extension FileActionExtension on FileAction {
 }
 
 void showFileDetail(BuildContext context, File file) {
-  final size = Util.formatSize(file.size);
+  final size = Util.formatSize(file.size.toInt());
   showListDialog2(
     context,
     child: Column(

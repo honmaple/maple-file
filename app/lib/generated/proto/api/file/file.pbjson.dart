@@ -22,7 +22,7 @@ const File$json = {
     {'1': 'updated_at', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     {'1': 'name', '3': 4, '4': 1, '5': 9, '10': 'name'},
     {'1': 'type', '3': 5, '4': 1, '5': 9, '10': 'type'},
-    {'1': 'size', '3': 6, '4': 1, '5': 5, '10': 'size'},
+    {'1': 'size', '3': 6, '4': 1, '5': 3, '10': 'size'},
     {'1': 'hash', '3': 7, '4': 1, '5': 9, '10': 'hash'},
     {'1': 'path', '3': 8, '4': 1, '5': 9, '10': 'path'},
     {'1': 'repo', '3': 10, '4': 1, '5': 11, '6': '.api.file.Repo', '10': 'repo'},
@@ -35,7 +35,7 @@ final $typed_data.Uint8List fileDescriptor = $convert.base64Decode(
     'CgRGaWxlEg4KAmlkGAEgASgFUgJpZBI5CgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3'
     'RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUu'
     'cHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSEgoEbmFtZRgEIAEoCVIEbmFtZRISCgR0eX'
-    'BlGAUgASgJUgR0eXBlEhIKBHNpemUYBiABKAVSBHNpemUSEgoEaGFzaBgHIAEoCVIEaGFzaBIS'
+    'BlGAUgASgJUgR0eXBlEhIKBHNpemUYBiABKANSBHNpemUSEgoEaGFzaBgHIAEoCVIEaGFzaBIS'
     'CgRwYXRoGAggASgJUgRwYXRoEiIKBHJlcG8YCiABKAsyDi5hcGkuZmlsZS5SZXBvUgRyZXBvEh'
     'cKB3JlcG9faWQYCyABKAVSBnJlcG9JZA==');
 
@@ -44,7 +44,7 @@ const FileRequest$json = {
   '1': 'FileRequest',
   '2': [
     {'1': 'index', '3': 1, '4': 1, '5': 5, '10': 'index'},
-    {'1': 'size', '3': 5, '4': 1, '5': 5, '10': 'size'},
+    {'1': 'size', '3': 5, '4': 1, '5': 3, '10': 'size'},
     {'1': 'path', '3': 3, '4': 1, '5': 9, '10': 'path'},
     {'1': 'filename', '3': 4, '4': 1, '5': 9, '10': 'filename'},
     {'1': 'chunk', '3': 2, '4': 1, '5': 12, '10': 'chunk'},
@@ -53,7 +53,7 @@ const FileRequest$json = {
 
 /// Descriptor for `FileRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List fileRequestDescriptor = $convert.base64Decode(
-    'CgtGaWxlUmVxdWVzdBIUCgVpbmRleBgBIAEoBVIFaW5kZXgSEgoEc2l6ZRgFIAEoBVIEc2l6ZR'
+    'CgtGaWxlUmVxdWVzdBIUCgVpbmRleBgBIAEoBVIFaW5kZXgSEgoEc2l6ZRgFIAEoA1IEc2l6ZR'
     'ISCgRwYXRoGAMgASgJUgRwYXRoEhoKCGZpbGVuYW1lGAQgASgJUghmaWxlbmFtZRIUCgVjaHVu'
     'axgCIAEoDFIFY2h1bms=');
 

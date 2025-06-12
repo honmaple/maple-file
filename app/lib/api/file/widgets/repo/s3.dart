@@ -72,7 +72,7 @@ class _S3State extends State<S3> {
             },
           ),
           CustomFormField(
-            label: "访问key".tr(),
+            label: "访问身份".tr(),
             value: _option["access_key"],
             isRequired: true,
             onTap: (result) {
@@ -94,6 +94,31 @@ class _S3State extends State<S3> {
 
               widget.form.option = jsonEncode(_option);
             },
+          ),
+          CustomFormField(
+            type: CustomFormFieldType.password,
+            label: "会话令牌".tr(),
+            value: _option["session_token"],
+            onTap: (result) {
+              setState(() {
+                _option["session_token"] = result;
+              });
+
+              widget.form.option = jsonEncode(_option);
+            },
+          ),
+          ListTile(
+            title: Text('强制路径样式'.tr()),
+            trailing: Switch(
+              value: _option["force_path_style"] ?? false,
+              onChanged: (result) {
+                setState(() {
+                  _option["force_path_style"] = result;
+                });
+
+                widget.form.option = jsonEncode(_option);
+              },
+            ),
           ),
           CustomFormField(
             label: "访问版本".tr(),

@@ -22,12 +22,14 @@ import (
 
 type Option struct {
 	base.Option
-	Endpoint    string `json:"endpoint"     validate:"required"`
-	Bucket      string `json:"bucket"       validate:"required"`
-	Region      string `json:"region"`
-	AccessKey   string `json:"access_key"`
-	SecretKey   string `json:"secret_key"   validate:"required_with=AccessKey"`
-	ListVersion string `json:"list_version" validate:"omitempty,oneof=v1 v2"`
+	Endpoint       string `json:"endpoint"     validate:"required"`
+	Bucket         string `json:"bucket"       validate:"required"`
+	Region         string `json:"region"`
+	AccessKey      string `json:"access_key"`
+	SecretKey      string `json:"secret_key"   validate:"required_with=AccessKey"`
+	SessionToken   string `json:"session_token"`
+	ListVersion    string `json:"list_version" validate:"omitempty,oneof=v1 v2"`
+	ForcePathStyle bool   `json:"force_path_style"`
 }
 
 func (opt *Option) NewFS() (driver.FS, error) {
@@ -310,16 +312,13 @@ func New(opt *Option) (driver.FS, error) {
 	if err := driver.VerifyOption(opt); err != nil {
 		return nil, err
 	}
-	if opt.Region == "" {
-		opt.Region = "maple-file"
-	}
 	cfg := &aws.Config{
 		Region:           aws.String(opt.Region),
 		Endpoint:         aws.String(opt.Endpoint),
-		S3ForcePathStyle: aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(opt.ForcePathStyle),
 	}
 	if opt.AccessKey != "" {
-		cfg.Credentials = credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, "")
+		cfg.Credentials = credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, opt.SessionToken)
 	}
 	sess, err := session.NewSession(cfg)
 	if err != nil {

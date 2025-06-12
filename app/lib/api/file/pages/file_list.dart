@@ -67,7 +67,7 @@ class _FileListState extends ConsumerState<FileList> {
                   : () {
                       _onLongPress(context, file);
                     },
-              onSecondaryTapUp: (!_isRoot && Util.isDesktop)
+              onSecondaryTapUp: (!_isRoot && (Util.isDesktop || Util.isWeb))
                   ? (detail) {
                       _onSecondaryTapUp(context, file, detail);
                     }
@@ -197,12 +197,12 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
             onLongPress: () {
               _onLongPress(context, file);
             },
-            onSecondaryTapUp:
-                (Util.isDesktop && widget.selection.selected.isNotEmpty)
-                    ? (detail) {
-                        _onSecondaryTapUp(context, detail);
-                      }
-                    : null,
+            onSecondaryTapUp: ((Util.isDesktop || Util.isWeb) &&
+                    widget.selection.selected.isNotEmpty)
+                ? (detail) {
+                    _onSecondaryTapUp(context, detail);
+                  }
+                : null,
             child: child,
           );
         },

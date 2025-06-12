@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 
@@ -59,8 +61,8 @@ func (app *App) NewServer(listener net.Listener) (*Server, error) {
 	e := echo.New()
 
 	srv := grpc.NewServer(
-		grpc.UnaryInterceptor(unaryInterceptor),
-		grpc.StreamInterceptor(streamInterceptor),
+		grpc.UnaryInterceptor(app.unaryInterceptor),
+		grpc.StreamInterceptor(app.streamInterceptor),
 	)
 
 	mux := runtime.NewServeMux()
@@ -81,6 +83,44 @@ func (app *App) NewServer(listener net.Listener) (*Server, error) {
 		}
 	})
 	e.Any("/*", echo.WrapHandler(handler))
+
+	e.Listener = listener
+
+	return &Server{
+		app:      app,
+		grpc:     srv,
+		server:   &http.Server{Handler: h2c.NewHandler(e, &http2.Server{})},
+		listener: listener,
+	}, nil
+}
+
+func (app *App) NewWebServer(listener net.Listener, webFS fs.FS) (*Server, error) {
+	e := echo.New()
+
+	srv := grpc.NewServer(
+		grpc.UnaryInterceptor(app.unaryInterceptor),
+		grpc.StreamInterceptor(app.streamInterceptor),
+	)
+
+	mux := runtime.NewServeMux()
+	for _, creator := range creators {
+		s, err := creator(app)
+		if err != nil {
+			return nil, err
+		}
+		s.Register(srv)
+		s.RegisterGateway(app.ctx, mux, e)
+	}
+
+	options := []grpcweb.Option{
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+		grpcweb.WithOriginFunc(func(_ string) bool {
+			return true
+		}),
+	}
+	e.Any("/api.*", echo.WrapHandler(grpcweb.WrapServer(srv, options...)))
+	e.GET("/*", echo.WrapHandler(http.FileServer(http.FS(webFS))))
+
 	e.Listener = listener
 
 	return &Server{

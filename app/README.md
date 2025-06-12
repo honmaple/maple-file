@@ -29,3 +29,8 @@
   ```
   dart run _script/extract_tr.dart 
   ```
+  
+- web
+  ```
+  flutter build web --no-tree-shake-icons -o ../server/cmd/web/dist
+  ```

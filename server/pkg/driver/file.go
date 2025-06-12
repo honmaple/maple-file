@@ -14,6 +14,7 @@ type (
 		fs.FileInfo
 		Type() string
 		Path() string
+		ExtraInfo() map[string]any
 	}
 	FileReader interface {
 		io.Seeker
@@ -25,13 +26,14 @@ type (
 )
 
 type FileInfo struct {
-	Name    string      `json:"name"`
-	Type    string      `json:"type"`
-	Size    int64       `json:"size"`
-	Path    string      `json:"path"`
-	Mode    fs.FileMode `json:"mode"`
-	IsDir   bool        `json:"is_dir"`
-	ModTime time.Time   `json:"mod_time"`
+	Name      string         `json:"name"`
+	Type      string         `json:"type"`
+	Size      int64          `json:"size"`
+	Path      string         `json:"path"`
+	Mode      fs.FileMode    `json:"mode"`
+	IsDir     bool           `json:"is_dir"`
+	ModTime   time.Time      `json:"mod_time"`
+	ExtraInfo map[string]any `json:"extra_info"`
 }
 
 func (info *FileInfo) File() File {
@@ -56,13 +58,14 @@ func (f *emptyFile) Type() string {
 	}
 	return mime.TypeByExtension(filepath.Ext(f.FileInfo.Name))
 }
-func (f *emptyFile) Path() string       { return f.FileInfo.Path }
-func (f *emptyFile) Name() string       { return f.FileInfo.Name }
-func (f *emptyFile) Size() int64        { return f.FileInfo.Size }
-func (f *emptyFile) Mode() fs.FileMode  { return f.FileInfo.Mode }
-func (f *emptyFile) IsDir() bool        { return f.FileInfo.IsDir }
-func (f *emptyFile) ModTime() time.Time { return f.FileInfo.ModTime }
-func (f *emptyFile) Sys() any           { return nil }
+func (f *emptyFile) Path() string              { return f.FileInfo.Path }
+func (f *emptyFile) Name() string              { return f.FileInfo.Name }
+func (f *emptyFile) Size() int64               { return f.FileInfo.Size }
+func (f *emptyFile) Mode() fs.FileMode         { return f.FileInfo.Mode }
+func (f *emptyFile) IsDir() bool               { return f.FileInfo.IsDir }
+func (f *emptyFile) ModTime() time.Time        { return f.FileInfo.ModTime }
+func (f *emptyFile) Sys() any                  { return nil }
+func (f *emptyFile) ExtraInfo() map[string]any { return f.FileInfo.ExtraInfo }
 
 type seeker struct {
 	r            io.ReadCloser

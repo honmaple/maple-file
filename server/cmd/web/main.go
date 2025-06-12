@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/honmaple/maple-file/server/internal/app"
@@ -12,6 +14,8 @@ import (
 )
 
 var (
+	//go:embed dist
+	webFS      embed.FS
 	defaultApp = app.New()
 )
 
@@ -35,7 +39,12 @@ func action(clx *cli.Context) error {
 		return err
 	}
 
-	server, err := defaultApp.NewServer(listener)
+	indexFS, err := fs.Sub(webFS, "dist")
+	if err != nil {
+		return err
+	}
+
+	server, err := defaultApp.NewWebServer(listener, indexFS)
 	if err != nil {
 		return err
 	}

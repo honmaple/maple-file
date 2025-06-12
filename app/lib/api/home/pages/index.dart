@@ -106,7 +106,9 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                   label: Text('任务'.tr()),
                 ),
               ],
-              leading: Util.isWindows ? null : const SizedBox(height: 16),
+              leading: Util.isWindows || Util.isWeb
+                  ? null
+                  : const SizedBox(height: 16),
               trailing: Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

@@ -12,8 +12,10 @@ import "mirror.dart";
 import "s3.dart";
 import "sftp.dart";
 import "smb.dart";
+import "quark.dart";
 import "upyun.dart";
 import "webdav.dart";
+import "pan115.dart";
 import "github.dart";
 import "github_release.dart";
 
@@ -24,6 +26,8 @@ enum DriverType {
   sftp,
   alist,
   local,
+  pan115,
+  quark,
   upyun,
   webdav,
   mirror,
@@ -40,6 +44,8 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.sftp: "SFTP",
       DriverType.alist: "Alist",
       DriverType.local: "本地".tr(),
+      DriverType.pan115: "115网盘".tr(),
+      DriverType.quark: "夸克网盘".tr(),
       DriverType.upyun: "又拍云".tr(),
       DriverType.webdav: "Webdav",
       DriverType.mirror: "Mirror",
@@ -100,6 +106,10 @@ class _DriverFormState extends State<DriverForm> {
         return Alist(form: widget.form);
       case "local":
         return Local(form: widget.form);
+      case "quark":
+        return Quark(form: widget.form);
+      case "pan115":
+        return Pan115(form: widget.form);
       case "upyun":
         return Upyun(form: widget.form);
       case "webdav":

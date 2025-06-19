@@ -4,7 +4,6 @@ import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
-import "base.dart";
 import "alist.dart";
 import "ftp.dart";
 import "local.dart";
@@ -18,6 +17,7 @@ import "webdav.dart";
 import "pan115.dart";
 import "github.dart";
 import "github_release.dart";
+import "advance.dart";
 
 enum DriverType {
   s3,
@@ -66,8 +66,6 @@ class DriverForm extends StatefulWidget {
 }
 
 class _DriverFormState extends State<DriverForm> {
-  bool _showMore = false;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -75,16 +73,16 @@ class _DriverFormState extends State<DriverForm> {
       children: [
         _buildForm(),
         if (!Breakpoint.isSmall(context)) const SizedBox(height: 4),
-        if (_showMore) BaseForm(form: widget.form),
-        if (_showMore) SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            child: Text(_showMore ? "隐藏更多设置".tr() : "更多设置".tr()),
+            child: Text("更多设置".tr()),
             onPressed: () {
-              setState(() {
-                _showMore = !_showMore;
-              });
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) {
+                  return DriverAdvanceForm(form: widget.form);
+                },
+              ));
             },
           ),
         ),

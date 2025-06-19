@@ -9,16 +9,18 @@ import (
 )
 
 type Option struct {
-	RootPath       string         `json:"root_path"   validate:"omitempty,startswith=/"`
-	HiddenFiles    []string       `json:"hidden_files"`
-	Encrypt        bool           `json:"encrypt"`
-	EncryptOption  EncryptOption  `json:"encrypt_option"`
-	Compress       bool           `json:"compress"`
-	CompressOption CompressOption `json:"compress_option"`
-	Recycle        bool           `json:"recycle"`
-	RecycleOption  RecycleOption  `json:"recycle_option"`
-	Cache          bool           `json:"cache"`
-	CacheOption    CacheOption    `json:"cache_option"`
+	RootPath        string          `json:"root_path"   validate:"omitempty,startswith=/"`
+	HiddenFiles     []string        `json:"hidden_files"`
+	Encrypt         bool            `json:"encrypt"`
+	EncryptOption   EncryptOption   `json:"encrypt_option"`
+	Compress        bool            `json:"compress"`
+	CompressOption  CompressOption  `json:"compress_option"`
+	Recycle         bool            `json:"recycle"`
+	RecycleOption   RecycleOption   `json:"recycle_option"`
+	Cache           bool            `json:"cache"`
+	CacheOption     CacheOption     `json:"cache_option"`
+	RateLimit       bool            `json:"rate_limit"`
+	RateLimitOption RateLimitOption `json:"rate_limit_option"`
 }
 
 func (opt *Option) getActualPath(path string) string {
@@ -53,6 +55,9 @@ func New(fs driver.FS, opt *Option) (driver.FS, error) {
 	}
 	if opt.Recycle {
 		opts = append(opts, &opt.RecycleOption)
+	}
+	if opt.RateLimit {
+		opts = append(opts, &opt.RateLimitOption)
 	}
 	if opt.Cache {
 		opts = append(opts, &opt.CacheOption)

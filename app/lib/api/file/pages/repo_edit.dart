@@ -29,6 +29,8 @@ class RepoEdit extends ConsumerStatefulWidget {
 }
 
 class _RepoEditState extends ConsumerState<RepoEdit> {
+  final _formKey = GlobalKey<FormState>();
+
   late Repo _form;
 
   @override
@@ -50,160 +52,170 @@ class _RepoEditState extends ConsumerState<RepoEdit> {
         actions: [
           if (_isEditing)
             TextButton(
+              onPressed: _handleDelete,
               child: Text("删除".tr()),
-              onPressed: () async {
-                final result = await showAlertDialog<bool>(context,
-                    content: Text("确认删除存储?".tr()));
-                if (result != null && result) {
-                  await FileService.instance.deleteRepo(_form.id).then((_) {
-                    _handleDone(_form);
-                    if (context.mounted) Navigator.of(context).pop();
-                  });
-                }
-              },
             ),
         ],
       ),
       body: Container(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: ListView(
-          children: <Widget>[
-            Card(
-              child: Column(
-                children: [
-                  if (!_isEditing)
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: <Widget>[
+              Card(
+                child: Column(
+                  children: [
+                    if (!_isEditing)
+                      CustomFormField(
+                        label: "存储类型".tr(),
+                        value: _form.driver,
+                        type: CustomFormFieldType.option,
+                        options: DriverType.values.map((v) {
+                          return CustomFormFieldOption(
+                            label: v.label(),
+                            value: v.name,
+                          );
+                        }).toList(),
+                        isRequired: true,
+                        onTap: (result) {
+                          setState(() {
+                            _form.driver = result;
+                          });
+                        },
+                      ),
                     CustomFormField(
-                      label: "存储类型".tr(),
-                      value: _form.driver,
-                      type: CustomFormFieldType.option,
-                      options: DriverType.values.map((v) {
-                        return CustomFormFieldOption(
-                          label: v.label(),
-                          value: v.name,
-                        );
-                      }).toList(),
+                      label: "存储名称".tr(),
+                      value: _form.name,
                       isRequired: true,
                       onTap: (result) {
                         setState(() {
-                          _form.driver = result;
+                          _form.name = result;
                         });
                       },
                     ),
-                  CustomFormField(
-                    label: "存储名称".tr(),
-                    value: _form.name,
-                    isRequired: true,
-                    onTap: (result) {
-                      setState(() {
-                        _form.name = result;
-                      });
-                    },
-                  ),
-                  CustomFormField(
-                    label: "挂载目录".tr(),
-                    value: _form.path,
-                    onTap: (result) {
-                      setState(() {
-                        _form.path = result;
-                      });
-                    },
-                  ),
-                  ListTile(
-                    title: Text('存储状态'.tr()),
-                    trailing: Switch(
-                      value: _form.status,
-                      onChanged: (result) {
+                    CustomFormField(
+                      label: "挂载目录".tr(),
+                      value: _form.path,
+                      onTap: (result) {
                         setState(() {
-                          _form.status = result;
+                          _form.path = result;
                         });
                       },
                     ),
-                  ),
-                ],
-              ),
-            ),
-            if (_form.driver != "")
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DriverForm(form: _form),
-                  SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      child: Text('测试连接'.tr()),
-                      onPressed: () async {
-                        await FileService.instance.testRepo(_form);
-                      },
-                    ),
-                  ),
-                  SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: _isEditing
-                        ? ElevatedButton(
-                            child: Text('确认修改'.tr()),
-                            onPressed: () async {
-                              await FileService.instance
-                                  .updateRepo(_form)
-                                  .then((resp) {
-                                if (!resp.hasErr) {
-                                  _handleDone(_form);
-                                  if (context.mounted) {
-                                    Navigator.of(context).pop();
-                                  }
-                                }
-                              });
-                            },
-                          )
-                        : ElevatedButton(
-                            child: Text('确认添加'.tr()),
-                            onPressed: () async {
-                              await FileService.instance
-                                  .createRepo(_form)
-                                  .then((resp) {
-                                if (!resp.hasErr) {
-                                  _handleDone(_form);
-                                  if (context.mounted) {
-                                    Navigator.of(context).pop();
-                                  }
-                                }
-                              });
-                            },
-                          ),
-                  ),
-                  if (_isEditing)
-                    SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
-                  if (_isEditing)
-                    Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              child: Icon(
-                                Icons.error_outline,
-                                size: 16,
-                              ),
-                            ),
-                            const TextSpan(text: " "),
-                            TextSpan(
-                              text: "删除或者修改存储可能会导致正在进行中的任务中断，请确认任务完成后再操作".tr(),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                    ListTile(
+                      title: Text('存储状态'.tr()),
+                      trailing: Switch(
+                        value: _form.status,
+                        onChanged: (result) {
+                          setState(() {
+                            _form.status = result;
+                          });
+                        },
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
-            SizedBox(height: Breakpoint.isSmall(context) ? 8 : 16),
-          ],
+              if (_form.driver != "")
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DriverForm(form: _form),
+                    SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _handleTest,
+                        child: Text('测试连接'.tr()),
+                      ),
+                    ),
+                    SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: _isEditing
+                          ? ElevatedButton(
+                              onPressed: _handleUpdate,
+                              child: Text('确认修改'.tr()),
+                            )
+                          : ElevatedButton(
+                              onPressed: _handleCreate,
+                              child: Text('确认添加'.tr()),
+                            ),
+                    ),
+                    if (_isEditing)
+                      SizedBox(height: Breakpoint.isSmall(context) ? 4 : 8),
+                    if (_isEditing)
+                      Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              const WidgetSpan(
+                                child: Icon(
+                                  Icons.error_outline,
+                                  size: 16,
+                                ),
+                              ),
+                              const TextSpan(text: " "),
+                              TextSpan(
+                                text:
+                                    "删除或者修改存储可能会导致正在进行中的任务中断，请确认任务完成后再操作".tr(),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                  ],
+                ),
+              SizedBox(height: Breakpoint.isSmall(context) ? 8 : 16),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  _handleTest() {
+    if (_formKey.currentState!.validate()) {
+      FileService.instance.testRepo(_form);
+    }
+  }
+
+  _handleCreate() {
+    if (_formKey.currentState!.validate()) {
+      FileService.instance.createRepo(_form).then((_) {
+        _handleDone(_form);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+    }
+  }
+
+  _handleUpdate() {
+    if (_formKey.currentState!.validate()) {
+      FileService.instance.updateRepo(_form).then((_) {
+        _handleDone(_form);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+    }
+  }
+
+  _handleDelete() async {
+    final result =
+        await showAlertDialog<bool>(context, content: Text("确认删除存储?".tr()));
+    if (result != null && result) {
+      await FileService.instance.deleteRepo(_form.id).then((_) {
+        _handleDone(_form);
+        if (context.mounted) Navigator.of(context).pop();
+      });
+    }
   }
 
   _handleDone(Repo repo) {

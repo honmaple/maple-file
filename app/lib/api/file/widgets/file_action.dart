@@ -210,7 +210,6 @@ void showFileDetail(BuildContext context, File file) {
 Future<FileAction?> showFileAction(
   BuildContext context,
   File file, {
-  WidgetRef? ref,
   bool popup = false,
   Offset? popupOffset,
 }) {
@@ -218,7 +217,6 @@ Future<FileAction?> showFileAction(
     return showFilePopupAction(
       context,
       file,
-      ref: ref,
       popupOffset: popupOffset,
     );
   }
@@ -248,7 +246,6 @@ Future<FileAction?> showFileAction(
 Future<FileAction?> showFilePopupAction(
   BuildContext context,
   File file, {
-  WidgetRef? ref,
   Offset? popupOffset,
 }) {
   PopupMenuItem<FileAction> menu(FileAction value) {

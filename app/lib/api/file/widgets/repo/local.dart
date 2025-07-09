@@ -2,10 +2,10 @@ import 'dart:io' as io;
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:permission_handler/permission_handler.dart';
 import "package:macos_secure_bookmarks/macos_secure_bookmarks.dart";
 
-import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/form.dart';
@@ -69,8 +69,9 @@ class _LocalState extends State<Local> {
                       onPressed: () async {
                         await Permission.manageExternalStorage
                             .onDeniedCallback(() {
-                          App.showSnackBar(
-                            Text("拒绝权限可能会导致本地存储无法获取到文件信息".tr()),
+                          SmartDialog.showNotify(
+                            msg: "拒绝权限可能会导致本地存储无法获取到文件信息".tr(),
+                            notifyType: NotifyType.warning,
                           );
                         }).request();
                       },

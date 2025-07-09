@@ -144,11 +144,7 @@ class _FileViewState extends ConsumerState<FileView> {
                     ? IconButton(
                         icon: const Icon(Icons.more_vert),
                         onPressed: () async {
-                          final result = await showFileAction(
-                            context,
-                            row,
-                            ref: ref,
-                          );
+                          final result = await showFileAction(context, row);
                           if (!context.mounted) return;
                           result?.action(context, row, ref: ref);
                         },

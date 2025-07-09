@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-import 'package:maple_file/app/app.dart';
+import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/generated/proto/api/task/service.pbgrpc.dart';
 import 'package:maple_file/generated/proto/api/task/task.pb.dart';
@@ -69,16 +69,15 @@ class TaskService {
 
   Future<List<PersistTask>> listPersistTasks(
       {Map<String, String>? filterMap}) async {
-    final result = await doFuture(() async {
+    return doFuture(() async {
       ListPersistTasksRequest request = ListPersistTasksRequest();
       ListPersistTasksResponse response =
           await client.listPersistTasks(request);
       return response.results;
     });
-    return result.data ?? <PersistTask>[];
   }
 
-  Future<Response<PersistTask>> createPersistTask(PersistTask payload) {
+  Future<PersistTask> createPersistTask(PersistTask payload) {
     return doFuture(() async {
       CreatePersistTaskRequest request =
           CreatePersistTaskRequest(payload: payload);
@@ -88,7 +87,7 @@ class TaskService {
     });
   }
 
-  Future<Response<PersistTask>> updatePersistTask(PersistTask payload) {
+  Future<PersistTask> updatePersistTask(PersistTask payload) {
     return doFuture(() async {
       UpdatePersistTaskRequest request =
           UpdatePersistTaskRequest(payload: payload);
@@ -119,7 +118,8 @@ class TaskService {
 
       return client.executePersistTask(request);
     }).then((_) {
-      App.showSnackBar(const Text("执行成功，请转至任务列表查看"));
+      SmartDialog.showNotify(
+          msg: "执行成功，请转至任务列表查看".tr(), notifyType: NotifyType.success);
     });
   }
 }

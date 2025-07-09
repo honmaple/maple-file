@@ -18,16 +18,6 @@ class App {
   static final navigatorKey = GlobalKey<NavigatorState>();
   static final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  static void showSnackBar(Widget content, {SnackBarAction? action}) {
-    scaffoldMessengerKey.currentState!.showSnackBar(
-      SnackBar(content: content, action: action),
-    );
-  }
-
-  static void hideCurrentSnackBar(Widget content) {
-    scaffoldMessengerKey.currentState!.hideCurrentSnackBar();
-  }
-
   App._internal();
 
   static App get instance => _instance;

@@ -491,6 +491,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.6.1"
+  flutter_smart_dialog:
+    dependency: "direct main"
+    description:
+      name: flutter_smart_dialog
+      sha256: d09a661b928b0af0bff58c84c5a5244ab342fc7ce6f910ac1d01b0b284d821be
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.9.8+8"
   flutter_spinkit:
     dependency: "direct main"
     description:

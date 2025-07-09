@@ -1,19 +1,20 @@
 import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:maple_file/api/file/providers/file.dart';
-import 'package:maple_file/api/file/providers/service.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import 'package:path/path.dart' as filepath;
 import 'package:file_picker/file_picker.dart';
 
-import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
+
+import 'package:maple_file/api/file/providers/file.dart';
+import 'package:maple_file/api/file/providers/service.dart';
 
 class SettingBackup extends ConsumerStatefulWidget {
   const SettingBackup({super.key});
@@ -182,11 +183,12 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
 
       doFuture(() {
         return io.File(src).copy(dst).then((_) {
-          App.showSnackBar(Text(
-            "备份成功，文件名称: {name}".tr(args: {
+          SmartDialog.showNotify(
+            msg: "备份成功，文件名称: {name}".tr(args: {
               "name": name,
             }),
-          ));
+            notifyType: NotifyType.success,
+          );
         });
       });
     }
@@ -210,11 +212,12 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
       ], newNames: {
         path: name,
       }).then((_) {
-        App.showSnackBar(Text(
-          "备份成功，文件名称: {name}".tr(args: {
+        SmartDialog.showNotify(
+          msg: "备份成功，文件名称: {name}".tr(args: {
             "name": name,
           }),
-        ));
+          notifyType: NotifyType.success,
+        );
         ref.invalidate(fileProvider(result));
       });
     }
@@ -229,14 +232,20 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
     if (result != null && result.files.isNotEmpty) {
       final src = result.files.single.path!;
       if (!src.endsWith(".db")) {
-        App.showSnackBar(Text("错误的文件类型".tr()));
+        SmartDialog.showNotify(
+          msg: "错误的文件类型".tr(),
+          notifyType: NotifyType.error,
+        );
         return;
       }
       final dst = await PathUtil.getDatabasePath();
 
       doFuture(() {
         return io.File(src).copy(dst).then((resp) {
-          App.showSnackBar(Text("恢复成功，请重启应用".tr()));
+          SmartDialog.showNotify(
+            msg: "恢复成功，请重启应用".tr(),
+            notifyType: NotifyType.success,
+          );
         });
       });
     }
@@ -260,7 +269,10 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
       FileService.instance
           .download(result as String, io.File(path), override: true)
           .then((_) {
-        App.showSnackBar(Text("恢复成功，请重启应用".tr()));
+        SmartDialog.showNotify(
+          msg: "恢复成功，请重启应用".tr(),
+          notifyType: NotifyType.success,
+        );
       });
     }
   }

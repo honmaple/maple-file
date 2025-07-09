@@ -62,11 +62,9 @@ void showTaskDetail(BuildContext context, Task task) {
         title: Text("执行日志".tr()),
       ),
       body: ListView(
+        padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(task.log),
-          ),
+          SelectableText(task.log),
         ],
       ),
     ),

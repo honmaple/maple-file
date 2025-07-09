@@ -159,7 +159,6 @@ class _FileListState extends ConsumerState<FileList> {
     final result = await showFilePopupAction(
       context,
       file,
-      ref: ref,
       popupOffset: detail.globalPosition,
     );
     if (!context.mounted) return;

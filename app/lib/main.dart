@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
+import 'common/utils/util.dart';
 import 'common/watchers/lifecycle.dart';
 
 import 'app/app.dart';
@@ -70,6 +72,21 @@ class MyApp extends ConsumerWidget {
         navigatorKey: App.navigatorKey,
         title: '红枫云盘'.tr(),
         locale: I18n.delegate.isSupported(locale) ? locale : null,
+        scaffoldMessengerKey: App.scaffoldMessengerKey,
+        themeMode: appearance.themeMode,
+        theme: FlexThemeData.light(
+          scheme: appearance.scheme,
+          fontFamily: Util.isWindows ? "Microsoft YaHei" : null,
+        ),
+        darkTheme: FlexThemeData.dark(
+          scheme: appearance.scheme,
+          fontFamily: Util.isWindows ? "Microsoft YaHei" : null,
+        ),
+        localizationsDelegates: I18n.localizationsDelegates,
+        supportedLocales: I18n.supportedLocales,
+        initialRoute: App.initialRoute,
+        onGenerateRoute: App.router.generateRoute,
+        debugShowCheckedModeBanner: false,
         scrollBehavior: const MaterialScrollBehavior().copyWith(
           dragDevices: {
             PointerDeviceKind.mouse,
@@ -78,15 +95,7 @@ class MyApp extends ConsumerWidget {
             PointerDeviceKind.unknown
           },
         ),
-        scaffoldMessengerKey: App.scaffoldMessengerKey,
-        themeMode: appearance.themeMode,
-        theme: FlexThemeData.light(scheme: appearance.scheme),
-        darkTheme: FlexThemeData.dark(scheme: appearance.scheme),
-        localizationsDelegates: I18n.localizationsDelegates,
-        supportedLocales: I18n.supportedLocales,
-        initialRoute: App.initialRoute,
-        onGenerateRoute: App.router.generateRoute,
-        debugShowCheckedModeBanner: false,
+        builder: FlutterSmartDialog.init(),
       ),
     );
   }

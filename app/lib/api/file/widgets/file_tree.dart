@@ -78,7 +78,6 @@ class FileTreeState extends ConsumerState<FileTree> {
                 final result = await showFilePopupAction(
                   context,
                   file,
-                  ref: ref,
                   popupOffset: detail.globalPosition,
                 );
                 if (!context.mounted) return;

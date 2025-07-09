@@ -1,16 +1,17 @@
 import 'dart:io' as io;
 import 'dart:math' as math;
-import 'dart:async';
 import 'dart:core';
 import 'dart:typed_data';
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:path/path.dart' as filepath;
-import 'package:flutter/material.dart';
 
-import 'package:maple_file/app/app.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/utils/util.dart';
+import 'package:maple_file/common/utils/isolate.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 import 'package:maple_file/generated/proto/api/file/service.pbgrpc.dart';
@@ -42,20 +43,19 @@ class FileService {
   }
 
   Future<List<File>> list({Map<String, String>? filter}) async {
-    final result = await doFuture(() async {
+    return doFuture(() async {
       ListFilesRequest request = ListFilesRequest(filter: filter);
       ListFilesResponse response = await client.list(request);
       return response.results;
     });
-    return result.data ?? <File>[];
   }
 
   Future<void> move(
     String path,
     String newPath,
     List<String> names,
-  ) async {
-    await doFuture(() {
+  ) {
+    return doFuture(() {
       MoveFileRequest request = MoveFileRequest(
         path: path,
         newPath: newPath,
@@ -69,8 +69,8 @@ class FileService {
     String path,
     String newPath,
     List<String> names,
-  ) async {
-    await doFuture(() {
+  ) {
+    return doFuture(() {
       CopyFileRequest request = CopyFileRequest(
         path: path,
         newPath: newPath,
@@ -84,8 +84,8 @@ class FileService {
     String path,
     String name,
     String newName,
-  ) async {
-    await doFuture(() {
+  ) {
+    return doFuture(() {
       RenameFileRequest request = RenameFileRequest(
         path: path,
         name: name,
@@ -98,8 +98,8 @@ class FileService {
   Future<void> mkdir(
     String path,
     String name,
-  ) async {
-    await doFuture(() {
+  ) {
+    return doFuture(() {
       MkdirFileRequest request = MkdirFileRequest(
         path: path,
         name: name,
@@ -111,8 +111,8 @@ class FileService {
   Future<void> remove(
     String path,
     List<String> names,
-  ) async {
-    await doFuture(() {
+  ) {
+    return doFuture(() {
       RemoveFileRequest request = RemoveFileRequest(
         path: path,
         names: names,
@@ -121,7 +121,8 @@ class FileService {
     });
   }
 
-  Stream<FileRequest> _upload(
+  // isolate必须使用static函数
+  static Stream<FileRequest> _upload(
     String path,
     io.File file, {
     String? newName,
@@ -216,32 +217,38 @@ class FileService {
     List<io.Directory>? dirs,
     Map<String, String>? newNames,
     bool recursive = true,
-  }) async {
+  }) {
     final dirsCount = dirs?.length ?? 0;
     final filesCount = files?.length ?? 0;
-    App.showSnackBar(Text("共有{file_count}{sep}{dir_count}添加至上传任务".tr(args: {
-      "sep": dirsCount > 0 && filesCount > 0 ? ", " : "",
-      "dir_count": dirsCount == 0
-          ? ""
-          : "{count}个文件夹".tr(args: {
-              "count": dirsCount,
-            }),
-      "file_count": filesCount == 0
-          ? ""
-          : "{count}个文件".tr(args: {
-              "count": filesCount,
-            }),
-    })));
 
-    final result = await doFuture(() async {
+    SmartDialog.showNotify(
+      msg: "共有{file_count}{sep}{dir_count}添加至上传任务".tr(args: {
+        "sep": dirsCount > 0 && filesCount > 0 ? ", " : "",
+        "dir_count": dirsCount == 0
+            ? ""
+            : "{count}个文件夹".tr(args: {
+                "count": dirsCount,
+              }),
+        "file_count": filesCount == 0
+            ? ""
+            : "{count}个文件".tr(args: {
+                "count": filesCount,
+              }),
+      }),
+      notifyType: NotifyType.success,
+    );
+
+    return doFuture(() async {
       List<File> results = <File>[];
 
       for (final file in files ?? []) {
-        final response = await client.upload(_upload(
-          path,
-          file,
-          newName: newNames == null ? null : newNames[file.path],
-        ));
+        final stream = await IsolateUtil.streamCompute<
+            (String, String, String?),
+            FileRequest>(((String, String, String?) args) {
+          return _upload(args.$1, io.File(args.$2), newName: args.$3);
+        }, (path, file.path, newNames == null ? null : newNames[file.path]));
+
+        final response = await client.upload(stream);
 
         results.add(response.result);
       }
@@ -251,11 +258,10 @@ class FileService {
       }
       return results;
     });
-    return result.data;
   }
 
-  Future<Uint8List?> preview(String path) async {
-    final result = await doFuture(() async {
+  Future<Uint8List?> preview(String path) {
+    return doFuture(() async {
       PreviewFileRequest request = PreviewFileRequest(path: path);
 
       final response = client.preview(request);
@@ -276,7 +282,6 @@ class FileService {
       }
       return bytes;
     });
-    return result.data;
   }
 
   Future<void> download(
@@ -286,7 +291,10 @@ class FileService {
   }) {
     return doFuture(() async {
       if (file.existsSync() && !override) {
-        App.showSnackBar(Text("文件已存在".tr()));
+        SmartDialog.showNotify(
+          msg: "文件已存在".tr(),
+          notifyType: NotifyType.warning,
+        );
         return;
       }
 
@@ -303,13 +311,12 @@ class FileService {
     });
   }
 
-  Future<List<Repo>> listRepos({Map<String, String>? filterMap}) async {
-    final result = await doFuture(() async {
+  Future<List<Repo>> listRepos({Map<String, String>? filterMap}) {
+    return doFuture(() async {
       ListReposRequest request = ListReposRequest();
       ListReposResponse response = await client.listRepos(request);
       return response.results;
     });
-    return result.data ?? <Repo>[];
   }
 
   Future<void> testRepo(Repo payload) {
@@ -318,12 +325,15 @@ class FileService {
       request.payload = payload;
 
       return client.testRepo(request).then((response) {
-        App.showSnackBar(const Text("连接成功"));
+        SmartDialog.showNotify(
+          msg: "连接成功".tr(),
+          notifyType: NotifyType.warning,
+        );
       });
     });
   }
 
-  Future<Response<Repo>> createRepo(Repo payload) {
+  Future<Repo> createRepo(Repo payload) {
     return doFuture(() async {
       CreateRepoRequest request = CreateRepoRequest(payload: payload);
       CreateRepoResponse response = await client.createRepo(request);
@@ -331,7 +341,7 @@ class FileService {
     });
   }
 
-  Future<Response<Repo>> updateRepo(Repo payload) {
+  Future<Repo> updateRepo(Repo payload) {
     return doFuture(() async {
       UpdateRepoRequest request = UpdateRepoRequest(payload: payload);
       UpdateRepoResponse response = await client.updateRepo(request);

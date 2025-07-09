@@ -139,7 +139,6 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
               final result = await showFileAction(
                 context,
                 widget.file,
-                ref: ref,
               );
               if (!context.mounted) return;
               result?.action(context, widget.file, ref: ref);
@@ -241,7 +240,6 @@ class _FileImagePreviewState extends FilePreviewBaseState<FileImagePreview> {
               final result = await showFileAction(
                 context,
                 _file,
-                ref: ref,
               );
               if (!context.mounted) return;
               result?.action(context, _file, ref: ref);

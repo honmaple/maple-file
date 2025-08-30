@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	filepath "path"
+
 	"github.com/hashicorp/golang-lru/v2/expirable"
 	"github.com/honmaple/maple-file/server/pkg/driver"
 )
@@ -37,6 +39,56 @@ func (d *cacheFS) List(ctx context.Context, path string, metas ...driver.Meta) (
 
 	d.cache.Add(path, files)
 	return files, nil
+}
+
+func (d *cacheFS) Create(path string) (driver.FileWriter, error) {
+	w, err := d.FS.Create(path)
+	if err != nil {
+		return nil, err
+	}
+	d.cache.Remove(filepath.Dir(path))
+	return w, nil
+}
+
+func (d *cacheFS) Rename(ctx context.Context, path, newName string) error {
+	if err := d.FS.Rename(ctx, path, newName); err != nil {
+		return err
+	}
+	d.cache.Remove(filepath.Dir(path))
+	return nil
+}
+
+func (d *cacheFS) Move(ctx context.Context, src, dst string) error {
+	if err := d.FS.Move(ctx, src, dst); err != nil {
+		return err
+	}
+	d.cache.Remove(filepath.Dir(src))
+	d.cache.Remove(dst)
+	return nil
+}
+
+func (d *cacheFS) Copy(ctx context.Context, src, dst string) error {
+	if err := d.FS.Copy(ctx, src, dst); err != nil {
+		return err
+	}
+	d.cache.Remove(dst)
+	return nil
+}
+
+func (d *cacheFS) MakeDir(ctx context.Context, path string) error {
+	if err := d.FS.MakeDir(ctx, path); err != nil {
+		return err
+	}
+	d.cache.Remove(filepath.Dir(path))
+	return nil
+}
+
+func (d *cacheFS) Remove(ctx context.Context, path string) error {
+	if err := d.FS.Remove(ctx, path); err != nil {
+		return err
+	}
+	d.cache.Remove(filepath.Dir(path))
+	return nil
 }
 
 func CacheFS(fs driver.FS, opt *CacheOption) (driver.FS, error) {

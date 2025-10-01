@@ -67,6 +67,14 @@ class _DriverAdvanceFormState extends State<DriverAdvanceForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text('更多设置'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: Text("确定".tr()),
+          ),
+        ],
       ),
       body: ListView(
         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -372,6 +380,57 @@ class _DriverAdvanceFormState extends State<DriverAdvanceForm> {
                             widget.form.option = jsonEncode(_option);
                           },
                         ),
+                      ),
+                      CustomFormField(
+                        type: CustomFormFieldType.option,
+                        options: [
+                          CustomFormFieldOption(
+                            label: "密码反馈模式".tr(),
+                            value: "CFB",
+                          ),
+                          CustomFormFieldOption(
+                            label: "输出反馈模式".tr(),
+                            value: "OFB",
+                          ),
+                          CustomFormFieldOption(
+                            label: "计数器模式".tr(),
+                            value: "CTR",
+                          ),
+                        ],
+                        label: "加密模式".tr(),
+                        value: _encryptOption["mode"] ?? "CFB",
+                        isRequired: true,
+                        onTap: (result) {
+                          setState(() {
+                            _encryptOption["mode"] = result;
+                            _option["encrypt_option"] = _encryptOption;
+                          });
+
+                          widget.form.option = jsonEncode(_option);
+                        },
+                      ),
+                      CustomFormField(
+                        type: CustomFormFieldType.option,
+                        options: [
+                          CustomFormFieldOption(
+                            label: "v1",
+                            value: "v1",
+                          ),
+                          CustomFormFieldOption(
+                            label: "v2",
+                            value: "v2",
+                          ),
+                        ],
+                        label: "加密版本".tr(),
+                        value: _encryptOption["version"] ?? "v1",
+                        onTap: (result) {
+                          setState(() {
+                            _encryptOption["version"] = result;
+                            _option["encrypt_option"] = _encryptOption;
+                          });
+
+                          widget.form.option = jsonEncode(_option);
+                        },
                       ),
                     ],
                   ),

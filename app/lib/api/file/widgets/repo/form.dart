@@ -77,12 +77,16 @@ class _DriverFormState extends State<DriverForm> {
           width: double.infinity,
           child: ElevatedButton(
             child: Text("更多设置".tr()),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
+            onPressed: () async {
+              final form = widget.form.clone();
+              final result = await Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) {
-                  return DriverAdvanceForm(form: widget.form);
+                  return DriverAdvanceForm(form: form);
                 },
               ));
+              if (result != null && result) {
+                widget.form.option = form.option;
+              }
             },
           ),
         ),

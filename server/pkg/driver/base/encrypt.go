@@ -3,8 +3,6 @@ package base
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/md5"
 	"encoding/base64"
 	"errors"
@@ -14,14 +12,17 @@ import (
 	"strings"
 
 	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/maple-file/server/pkg/driver/base/aes"
 )
 
 type EncryptOption struct {
+	Mode         string `json:"mode"`
 	DirName      bool   `json:"dir_name"`
 	FileName     bool   `json:"file_name"`
 	Suffix       string `json:"suffix"`
 	Password     string `json:"password"`
 	PasswordSalt string `json:"password_salt"`
+	Version      string `json:"version"`
 }
 
 func (opt *EncryptOption) NewFS(fs driver.FS) (driver.FS, error) {
@@ -30,57 +31,21 @@ func (opt *EncryptOption) NewFS(fs driver.FS) (driver.FS, error) {
 
 type encryptFS struct {
 	driver.FS
-	opt   *EncryptOption
-	iv    []byte
-	block cipher.Block
+	opt *EncryptOption
+
+	cipher *aes.Cipher
 }
 
 var _ driver.FS = (*encryptFS)(nil)
 
-func deriveKey(key string) []byte {
-	has := md5.Sum([]byte(key))
-	return []byte(fmt.Sprintf("%x", has))
-}
-
-func pkcs5Padding(src []byte) []byte {
-	return pkcs7Padding(src, 16)
-}
-
-func pkcs5UnPadding(src []byte) []byte {
-	return pkcs7UnPadding(src)
-}
-
-func pkcs7Padding(src []byte, blockSize int) []byte {
-	paddingSize := blockSize - len(src)%blockSize
-	paddingText := bytes.Repeat([]byte{byte(paddingSize)}, paddingSize)
-	return append(src, paddingText...)
-}
-
-func pkcs7UnPadding(src []byte) []byte {
-	if len(src) == 0 {
-		return []byte("")
-	}
-	n := len(src) - int(src[len(src)-1])
-	return src[0:n]
-}
-
-func (d *encryptFS) decrypt(ciphertext []byte) (string, error) {
-	ciphertext, err := base64.RawURLEncoding.DecodeString(string(ciphertext))
+func (d *encryptFS) decrypt(src string) (string, error) {
+	ciphertext, err := base64.RawURLEncoding.DecodeString(string(src))
 	if err != nil {
 		return "", err
 	}
 
-	blockSize := d.block.BlockSize()
-	if len(ciphertext) < blockSize {
-		return "", errors.New("ciphertext too short")
-	}
-
-	plaintext := make([]byte, len(ciphertext))
-
-	stream := cipher.NewCFBDecrypter(d.block, d.iv[:])
-	stream.XORKeyStream(plaintext, ciphertext)
-
-	return string(pkcs7UnPadding(plaintext)), nil
+	dst := d.cipher.Decrypt(ciphertext)
+	return string(dst), nil
 }
 
 func (d *encryptFS) decryptPath(path string) (string, error) {
@@ -90,7 +55,7 @@ func (d *encryptFS) decryptPath(path string) (string, error) {
 		if str == "" {
 			continue
 		}
-		plaintext, err := d.decrypt([]byte(str))
+		plaintext, err := d.decrypt(str)
 		if err != nil {
 			return "", err
 		}
@@ -99,19 +64,9 @@ func (d *encryptFS) decryptPath(path string) (string, error) {
 	return strings.Join(strs, "/"), nil
 }
 
-func (d *encryptFS) decryptReader(in io.Reader) (*cipher.StreamReader, error) {
-	return &cipher.StreamReader{S: cipher.NewCFBDecrypter(d.block, d.iv[:]), R: in}, nil
-}
-
-func (d *encryptFS) encrypt(plaintext []byte) string {
-	plaintext = pkcs7Padding(plaintext, d.block.BlockSize())
-
-	ciphertext := make([]byte, len(plaintext))
-
-	stream := cipher.NewCFBEncrypter(d.block, d.iv[:])
-	stream.XORKeyStream(ciphertext, plaintext)
-
-	return base64.RawURLEncoding.EncodeToString(ciphertext)
+func (d *encryptFS) encrypt(src string) string {
+	dst := d.cipher.Encrypt([]byte(src))
+	return base64.RawURLEncoding.EncodeToString(dst)
 }
 
 func (d *encryptFS) encryptPath(path string) string {
@@ -121,13 +76,9 @@ func (d *encryptFS) encryptPath(path string) string {
 		if str == "" {
 			continue
 		}
-		strs[i] = d.encrypt([]byte(str))
+		strs[i] = d.encrypt(str)
 	}
 	return strings.Join(strs, "/")
-}
-
-func (d *encryptFS) encryptWriter(out io.Writer) (*cipher.StreamWriter, error) {
-	return &cipher.StreamWriter{S: cipher.NewCFBEncrypter(d.block, d.iv[:]), W: out}, nil
 }
 
 func (d *encryptFS) getActualPath(path string, isDir bool) string {
@@ -142,7 +93,7 @@ func (d *encryptFS) getActualPath(path string, isDir bool) string {
 		path = d.encryptPath(path)
 	}
 	if d.opt.FileName {
-		name = d.encrypt([]byte(name))
+		name = d.encrypt(name)
 	} else if d.opt.Suffix != "" {
 		name = name + d.opt.Suffix
 	}
@@ -157,9 +108,10 @@ func (d *encryptFS) getActualFile(file driver.File) driver.File {
 			if p, err := d.decryptPath(path); err == nil {
 				path = p
 			}
-			if n, err := d.decrypt([]byte(name)); err == nil {
+			if n, err := d.decrypt(name); err == nil {
 				name = n
 			}
+
 			return driver.NewFile(path, file, func(info *driver.FileInfo) {
 				info.Name = name
 			})
@@ -173,7 +125,7 @@ func (d *encryptFS) getActualFile(file driver.File) driver.File {
 		}
 	}
 	if d.opt.FileName {
-		if n, err := d.decrypt([]byte(name)); err == nil {
+		if n, err := d.decrypt(name); err == nil {
 			name = n
 		}
 	} else if d.opt.Suffix != "" {
@@ -215,16 +167,29 @@ func (d *encryptFS) Get(ctx context.Context, path string) (driver.File, error) {
 }
 
 func (d *encryptFS) Open(path string) (driver.FileReader, error) {
-	r, err := d.FS.Open(d.getActualPath(path, false))
+	actualPath := d.getActualPath(path, false)
+
+	info, err := d.FS.Get(context.TODO(), actualPath)
 	if err != nil {
 		return nil, err
 	}
 
-	nr, err := d.decryptReader(r)
-	if err != nil {
-		return nil, err
+	rangeFunc := func(offset int64, length int64) (io.ReadCloser, error) {
+		r, err := d.FS.Open(actualPath)
+		if err != nil {
+			return nil, err
+		}
+
+		dr := d.cipher.StreamDecrypt(r)
+
+		// 通过丢弃内容实现偏移
+		_, err = io.CopyN(io.Discard, dr, offset)
+		if err != nil {
+			return nil, err
+		}
+		return dr, nil
 	}
-	return &WrapReader{r, nr}, nil
+	return driver.NewFileReader(info.Size(), rangeFunc)
 }
 
 func (d *encryptFS) Create(path string) (driver.FileWriter, error) {
@@ -234,11 +199,7 @@ func (d *encryptFS) Create(path string) (driver.FileWriter, error) {
 	if err != nil {
 		return nil, err
 	}
-	nw, err := d.encryptWriter(w)
-	if err != nil {
-		return nil, err
-	}
-	return &WrapWriter{w, nw}, nil
+	return d.cipher.StreamEncrypt(w), nil
 }
 
 func (d *encryptFS) Copy(ctx context.Context, src string, dst string) error {
@@ -263,7 +224,7 @@ func (d *encryptFS) Rename(ctx context.Context, path, newName string) error {
 		return err
 	}
 	if d.opt.FileName {
-		newName = d.encrypt([]byte(newName))
+		newName = d.encrypt(newName)
 	} else if d.opt.Suffix != "" {
 		newName = newName + d.opt.Suffix
 	}
@@ -283,27 +244,68 @@ func (d *encryptFS) MakeDir(ctx context.Context, path string) error {
 	return d.FS.MakeDir(ctx, d.getActualPath(path, true))
 }
 
+func pkcs7Padding(src []byte, blockSize int) []byte {
+	paddingSize := blockSize - len(src)%blockSize
+	paddingText := bytes.Repeat([]byte{byte(paddingSize)}, paddingSize)
+	return append(src, paddingText...)
+}
+
+func generateIV(key string) []byte {
+	iv := generateKey(key)
+	if len(iv) > 16 {
+		iv = iv[:16]
+	}
+	return iv
+}
+
+func generateIV_v1(key string) []byte {
+	iv := pkcs7Padding([]byte(key), 16)
+	if len(iv) > 16 {
+		iv = iv[:16]
+	}
+	return iv
+}
+
+func generateKey(key string) []byte {
+	hash := md5.Sum([]byte(key))
+	return []byte(fmt.Sprintf("%x", hash))
+}
+
 func EncryptFS(fs driver.FS, opt *EncryptOption) (driver.FS, error) {
 	if opt.Password == "" {
-		return nil, errors.New("Password is required")
-	}
-
-	block, err := aes.NewCipher(deriveKey(opt.Password))
-	if err != nil {
-		return nil, err
+		return nil, errors.New("password is required")
 	}
 	if opt.PasswordSalt == "" {
 		opt.PasswordSalt = opt.Password
 	}
-	blockSize := block.BlockSize()
-	iv := pkcs7Padding([]byte(opt.PasswordSalt), blockSize)
-	if len(iv) > blockSize {
-		iv = iv[:blockSize]
+
+	var mode aes.BlockMode
+
+	switch opt.Mode {
+	case "CTR":
+		mode = aes.CTR
+	case "OFB":
+		mode = aes.OFB
+	default:
+		mode = aes.CFB
 	}
+
+	c, err := aes.NewCipher(mode, generateKey(opt.Password))
+	if err != nil {
+		return nil, err
+	}
+	c.SetPadding(aes.PKCS7)
+
+	// 兼容第一版的iv
+	if opt.Version == "v2" {
+		c.SetIV(generateIV(opt.PasswordSalt))
+	} else {
+		c.SetIV(generateIV_v1(opt.PasswordSalt))
+	}
+
 	return &encryptFS{
-		FS:    fs,
-		opt:   opt,
-		iv:    iv,
-		block: block,
+		FS:     fs,
+		opt:    opt,
+		cipher: c,
 	}, nil
 }

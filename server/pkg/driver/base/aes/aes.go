@@ -84,5 +84,5 @@ func NewCipher(mode BlockMode, key []byte) (*Cipher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Cipher{block: block}, nil
+	return &Cipher{block: block, mode: mode}, nil
 }

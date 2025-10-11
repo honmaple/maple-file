@@ -29,7 +29,7 @@ func (c *Cipher) SetPadding(padding PaddingMode) {
 	c.padding = padding
 }
 
-func (c *Cipher) stream() cipher.Stream {
+func (c *Cipher) encryptStream() cipher.Stream {
 	var stream cipher.Stream
 	switch c.mode {
 	case CTR:
@@ -51,19 +51,31 @@ func (c *Cipher) Encrypt(src []byte) []byte {
 	}
 
 	dst := make([]byte, len(src))
-	stream := c.stream()
+	stream := c.encryptStream()
 	stream.XORKeyStream(dst, src)
 	return dst
 }
 
 func (c *Cipher) StreamEncrypt(w io.Writer) io.WriteCloser {
-	stream := c.stream()
-	return &cipher.StreamWriter{S: stream, W: w}
+	return &cipher.StreamWriter{S: c.encryptStream(), W: w}
+}
+
+func (c *Cipher) decryptStream() cipher.Stream {
+	var stream cipher.Stream
+	switch c.mode {
+	case CTR:
+		stream = cipher.NewCTR(c.block, c.iv[:])
+	case OFB:
+		stream = cipher.NewOFB(c.block, c.iv[:])
+	default:
+		stream = cipher.NewCFBDecrypter(c.block, c.iv[:])
+	}
+	return stream
 }
 
 func (c *Cipher) Decrypt(src []byte) []byte {
 	dst := make([]byte, len(src))
-	stream := c.stream()
+	stream := c.decryptStream()
 	stream.XORKeyStream(dst, src)
 
 	switch c.padding {
@@ -76,7 +88,7 @@ func (c *Cipher) Decrypt(src []byte) []byte {
 }
 
 func (c *Cipher) StreamDecrypt(r io.Reader) io.ReadCloser {
-	return &StreamReader{S: c.stream(), R: r}
+	return &StreamReader{S: c.decryptStream(), R: r}
 }
 
 func NewCipher(mode BlockMode, key []byte) (*Cipher, error) {
@@ -84,5 +96,5 @@ func NewCipher(mode BlockMode, key []byte) (*Cipher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Cipher{block: block, mode: mode}, nil
+	return &Cipher{block: block, mode: mode, padding: PKCS7}, nil
 }

@@ -9,36 +9,21 @@ import (
 
 func main() {}
 
-var (
-	server *app.Server
-)
-
 //export Start
 func Start(cfgPtr *C.char) (*C.char, *C.char) {
-	if server != nil {
-		return C.CString(server.Addr()), nil
-	}
-
 	if cfgPtr == nil {
 		return nil, C.CString("cfg is required")
 	}
 	cfg := C.GoString(cfgPtr)
 
-	var err error
-
-	server, err = app.NewServer(cfg)
+	result, err := app.Start(cfg)
 	if err != nil {
 		return nil, C.CString(err.Error())
 	}
-	go server.Start()
-
-	return C.CString(server.Addr()), nil
+	return C.CString(result), nil
 }
 
 //export Stop
 func Stop() {
-	if server != nil {
-		server.Shutdown()
-	}
-	server = nil
+	app.Stop()
 }

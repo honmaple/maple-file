@@ -7,29 +7,10 @@ import (
 	_ "golang.org/x/mobile/bind"
 )
 
-var (
-	server *app.Server
-)
-
 func Start(cfg string) (string, error) {
-	if server != nil {
-		return server.Addr(), nil
-	}
-
-	var err error
-
-	server, err = app.NewServer(cfg)
-	if err != nil {
-		return "", err
-	}
-	go server.Start()
-
-	return server.Addr(), nil
+	return app.Start(cfg)
 }
 
 func Stop() {
-	if server != nil {
-		server.Shutdown()
-	}
-	server = nil
+	app.Stop()
 }

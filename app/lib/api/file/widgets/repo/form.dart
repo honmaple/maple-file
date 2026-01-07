@@ -6,6 +6,7 @@ import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 import "alist.dart";
 import "ftp.dart";
+import "foxel.dart";
 import "local.dart";
 import "mirror.dart";
 import "s3.dart";
@@ -25,6 +26,7 @@ enum DriverType {
   smb,
   sftp,
   alist,
+  foxel,
   local,
   pan115,
   quark,
@@ -43,6 +45,7 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.ftp: "FTP",
       DriverType.sftp: "SFTP",
       DriverType.alist: "Alist",
+      DriverType.foxel: "Foxel",
       DriverType.local: "本地".tr(),
       DriverType.pan115: "115网盘".tr(),
       DriverType.quark: "夸克网盘".tr(),
@@ -106,6 +109,8 @@ class _DriverFormState extends State<DriverForm> {
         return SFTP(form: widget.form);
       case "alist":
         return Alist(form: widget.form);
+      case "foxel":
+        return Foxel(form: widget.form);
       case "local":
         return Local(form: widget.form);
       case "quark":

@@ -271,16 +271,14 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Decode key.properties file
-        if: ${{ secrets.ANDROID_KEY_PROPERTIES != '' }}
         env:
           ENCODED_STRING: ${{ secrets.ANDROID_KEY_PROPERTIES }}
-        run: printf '%s' "$ENCODED_STRING" | base64 -d > app/android/key.properties
+        run: echo $ENCODED_STRING | base64 -di > app/android/key.properties
 
       - name: Decode keystore.jks file
-        if: ${{ secrets.ANDROID_KEY_STORE != '' }}
         env:
           ENCODED_STRING: ${{ secrets.ANDROID_KEY_STORE }}
-        run: printf '%s' "$ENCODED_STRING" | base64 -d > app/android/keystore.jks
+        run: echo $ENCODED_STRING | base64 -di > app/android/keystore.jks
 
       - name: Build Go aar
         run: |

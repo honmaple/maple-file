@@ -7,18 +7,8 @@ plugins {
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
-def hasReleaseSigning = false
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
-    def storeFilePath = keystoreProperties['storeFile']
-    if (storeFilePath) {
-        def storeFile = file(storeFilePath)
-        hasReleaseSigning = storeFile.exists() &&
-                keystoreProperties['storePassword'] &&
-                keystoreProperties['keyAlias'] &&
-                keystoreProperties['keyPassword']
-    }
 }
 
 android {
@@ -68,7 +58,7 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             // signingConfig = signingConfigs.debug
-            signingConfig = hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
+            signingConfig = signingConfigs.release
         }
     }
 }

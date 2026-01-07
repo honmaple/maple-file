@@ -104,6 +104,9 @@ func WithForm(data map[string]string) Option {
 			form.Set(k, v)
 		}
 		opt.body = strings.NewReader(form.Encode())
+		WithHeaders(map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		})(opt)
 		return nil
 	}
 }

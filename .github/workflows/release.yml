@@ -248,9 +248,6 @@ jobs:
     needs:
       - get-version
     runs-on: ubuntu-22.04
-    env:
-      ANDROID_KEY_PROPERTIES: ${{ secrets.ANDROID_KEY_PROPERTIES }}
-      ANDROID_KEY_STORE: ${{ secrets.ANDROID_KEY_STORE }}
 
     steps:
       - name: Checkout
@@ -274,12 +271,16 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Decode key.properties file
-        if: ${{ env.ANDROID_KEY_PROPERTIES != '' }}
-        run: printf '%s' "$ANDROID_KEY_PROPERTIES" | base64 -d > app/android/key.properties
+        if: ${{ secrets.ANDROID_KEY_PROPERTIES != '' }}
+        env:
+          ENCODED_STRING: ${{ secrets.ANDROID_KEY_PROPERTIES }}
+        run: printf '%s' "$ENCODED_STRING" | base64 -d > app/android/key.properties
 
       - name: Decode keystore.jks file
-        if: ${{ env.ANDROID_KEY_STORE != '' }}
-        run: printf '%s' "$ANDROID_KEY_STORE" | base64 -d > app/android/keystore.jks
+        if: ${{ secrets.ANDROID_KEY_STORE != '' }}
+        env:
+          ENCODED_STRING: ${{ secrets.ANDROID_KEY_STORE }}
+        run: printf '%s' "$ENCODED_STRING" | base64 -d > app/android/keystore.jks
 
       - name: Build Go aar
         run: |

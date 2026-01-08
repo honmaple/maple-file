@@ -41,6 +41,19 @@ func (d *cacheFS) List(ctx context.Context, path string, metas ...driver.Meta) (
 	return files, nil
 }
 
+// 部分服务会先获取文件信息，再获取列表，Get方式也需要缓存
+func (d *cacheFS) Get(ctx context.Context, path string) (driver.File, error) {
+	files, ok := d.cache.Get(filepath.Dir(path))
+	if ok {
+		for _, file := range files {
+			if file.Name() == filepath.Base(path) {
+				return file, nil
+			}
+		}
+	}
+	return d.FS.Get(ctx, path)
+}
+
 func (d *cacheFS) Create(path string) (driver.FileWriter, error) {
 	w, err := d.FS.Create(path)
 	if err != nil {

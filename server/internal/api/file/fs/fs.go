@@ -2,9 +2,10 @@ package fs
 
 import (
 	"context"
-	"errors"
+	"os"
 	filepath "path"
 	"strings"
+	"time"
 
 	"github.com/honmaple/maple-file/server/internal/app"
 	"github.com/honmaple/maple-file/server/pkg/driver"
@@ -107,13 +108,54 @@ func (d *defaultFS) List(ctx context.Context, path string, metas ...driver.Meta)
 	return results, nil
 }
 
+func (d *defaultFS) Get(ctx context.Context, path string) (driver.File, error) {
+	// webdav server必须先获取目录信息，所以这里需要特殊处理一下
+	if path == "/" {
+		info := &driver.FileInfo{
+			Path:    "/",
+			Name:    "/",
+			IsDir:   true,
+			ModTime: time.Now(),
+		}
+		return info.File(), nil
+	}
+
+	repo := d.GetRepo(path)
+	if repo == nil {
+		// 获取虚拟路径
+		for _, repo := range d.repos.Iter() {
+			if !repo.GetStatus() {
+				continue
+			}
+			// /a/b:/a/b/c
+			if util.IsSubPath(path, repo.Path) {
+				info := &driver.FileInfo{
+					Path:    filepath.Dir(path),
+					Name:    filepath.Base(path),
+					IsDir:   true,
+					ModTime: repo.UpdatedAt.AsTime(),
+				}
+				return info.File(), nil
+			}
+		}
+		return nil, os.ErrNotExist
+	}
+	if path == filepath.Join(repo.Path, repo.Name) {
+		info := &driver.FileInfo{
+			Path:    repo.Path,
+			Name:    repo.Name,
+			IsDir:   true,
+			ModTime: repo.UpdatedAt.AsTime(),
+		}
+		return info.File(), nil
+	}
+	return d.FS.Get(ctx, path)
+}
+
 func (d *defaultFS) GetFS(path string) (driver.FS, string, error) {
 	repo := d.GetRepo(path)
 	if repo == nil {
-		return nil, "", errors.New("路径不存在或者路径为虚拟路径")
-	}
-	if !repo.Status {
-		return nil, "", errors.New("存储未激活")
+		return nil, "", os.ErrNotExist
 	}
 
 	rootPath := filepath.Join(repo.GetPath(), repo.GetName())
@@ -143,7 +185,7 @@ func (d *defaultFS) GetRepo(path string) *pb.Repo {
 	)
 
 	for {
-		if v, ok := d.repos.Load(pathstr); ok {
+		if v, ok := d.repos.Load(pathstr); ok && v.Status {
 			repo = v
 			break
 		}

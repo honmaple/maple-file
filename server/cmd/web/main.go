@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	"fmt"
-	"io/fs"
 	"os"
 
 	"github.com/honmaple/maple-file/server/internal/app"
@@ -34,17 +33,7 @@ func action(clx *cli.Context) error {
 		defaultApp.Config.Set("server.mode", "dev")
 	}
 
-	listener, err := app.Listen(defaultApp.Config.GetString(config.ServerAddr))
-	if err != nil {
-		return err
-	}
-
-	indexFS, err := fs.Sub(webFS, "dist")
-	if err != nil {
-		return err
-	}
-
-	server, err := defaultApp.NewWebServer(listener, indexFS)
+	server, err := app.NewServer(defaultApp)
 	if err != nil {
 		return err
 	}

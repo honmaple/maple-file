@@ -62,7 +62,7 @@ class PreviewSource implements PreviewSourceImpl {
 
   PreviewSource.remote(String path)
       : _name = filepath.posix.basename(path),
-        _path = GRPC.instance.previewURL(path),
+        _path = Grpc.instance.previewURL(path),
         _type = SourceType.network;
 
   @override

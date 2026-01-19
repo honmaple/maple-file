@@ -1,19 +1,20 @@
 import 'dart:ffi' as ffi;
-import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:grpc/grpc.dart';
-import 'package:grpc/service_api.dart' as grpcapi;
 import 'package:ffi/ffi.dart';
-
 import 'package:flutter/services.dart';
 
-import '../common/utils/util.dart';
-import '../common/utils/path.dart';
-import '../generated/ffi/libserver.dart';
+import './stub.dart';
+
+import '../../common/utils/util.dart';
+import '../../common/utils/path.dart';
+import '../../generated/ffi/libserver.dart';
+
+export 'stub.dart';
 
 abstract class GrpcIOService {
-  Future<String> start();
+  Future<String> start(Map<String, dynamic> cfg);
   Future<void> stop();
 }
 
@@ -36,13 +37,9 @@ class GrpcFFIService implements GrpcIOService {
 
   // https://docs.flutter.dev/platform-integration/macos/c-interop
   @override
-  Future<String> start() async {
-    final Map<String, dynamic> args = {
-      'path': await PathUtil.getApplicationPath(),
-    };
-
+  Future<String> start(Map<String, dynamic> cfg) async {
     // ffi.Char
-    final result = _lib.Start(jsonEncode(args).toNativeUtf8().cast());
+    final result = _lib.Start(jsonEncode(cfg).toNativeUtf8().cast());
     if (result.r1.address == ffi.nullptr.address) {
       return Future.value(result.r0.cast<Utf8>().toDartString());
     }
@@ -59,12 +56,8 @@ class GrpcChannelService implements GrpcIOService {
   static const platform = MethodChannel("honmaple.com/maple_file");
 
   @override
-  Future<String> start() async {
-    final path = await PathUtil.getApplicationPath();
-    final Map<String, dynamic> args = {
-      'path': path,
-    };
-    return await platform.invokeMethod("Start", jsonEncode(args));
+  Future<String> start(Map<String, dynamic> cfg) async {
+    return await platform.invokeMethod("Start", jsonEncode(cfg));
   }
 
   @override
@@ -74,11 +67,8 @@ class GrpcChannelService implements GrpcIOService {
 }
 
 class GrpcService {
-  late String _addr;
-  late grpcapi.ClientChannel _client;
-
-  String get addr => _addr;
-  grpcapi.ClientChannel get client => _client;
+  late GrpcResult _result;
+  GrpcResult get result => _result;
 
   late GrpcIOService _service;
 
@@ -90,36 +80,38 @@ class GrpcService {
     }
   }
 
-  Future<void> start() async {
-    _addr = await _service.start();
-    _client = _createChannel(_addr);
+  Future<GrpcResult> start() async {
+    final Map<String, dynamic> cfg = {
+      "path": await PathUtil.getApplicationPath(),
+    };
+
+    final result = jsonDecode(await _service.start(cfg));
+
+    final addrs = result["addr"].split(":");
+    final host = addrs[0];
+    final port = int.parse(addrs[1]);
+
+    _result = GrpcResult(
+      host: host,
+      port: port,
+      token: result["token"] ?? "",
+      client: ClientChannel(
+        host,
+        port: port,
+        options: ChannelOptions(
+          credentials: ChannelCredentials.insecure(),
+        ),
+      ),
+    );
+    return _result;
   }
 
   Future<void> stop() async {
     await _service.stop();
   }
 
-  Future<void> restart() async {
+  Future<GrpcResult> restart() async {
     await stop();
-    await start();
-  }
-
-  grpcapi.ClientChannel _createChannel(String addr) {
-    const options = ChannelOptions(
-      credentials: ChannelCredentials.insecure(),
-    );
-    if (addr.endsWith(".sock")) {
-      return ClientChannel(
-        InternetAddress(addr, type: InternetAddressType.unix),
-        options: options,
-      );
-    }
-
-    final addrs = addr.split(":");
-    return ClientChannel(
-      addrs[0],
-      port: int.parse(addrs[1]),
-      options: options,
-    );
+    return await start();
   }
 }

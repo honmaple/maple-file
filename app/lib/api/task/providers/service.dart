@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:grpc/grpc.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import 'package:maple_file/app/i18n.dart';
@@ -12,26 +13,22 @@ class TaskService {
   static TaskService get instance => _instance;
   static final TaskService _instance = TaskService._internal();
   factory TaskService() => _instance;
+  TaskService._internal();
 
-  late TaskServiceClient _client;
-  late DateTime _clientTime;
-
-  TaskService._internal() {
-    _setClient();
-  }
+  TaskServiceClient? _client;
+  DateTime _clientTime = DateTime.now();
 
   TaskServiceClient get client {
-    if (GRPC.instance.connectTime.isAfter(_clientTime)) {
-      _setClient();
+    if (_client == null || Grpc.instance.connectTime.isAfter(_clientTime)) {
+      _client = TaskServiceClient(
+        Grpc.instance.client,
+        options: CallOptions(
+          metadata: {"Authorization": "Bearer ${Grpc.instance.token}"},
+        ),
+      );
+      _clientTime = Grpc.instance.connectTime;
     }
-    return _client;
-  }
-
-  void _setClient() {
-    _client = TaskServiceClient(
-      GRPC.instance.client,
-    );
-    _clientTime = GRPC.instance.connectTime;
+    return _client!;
   }
 
   Future<List<Task>> listTasks({Map<String, String>? filterMap}) async {

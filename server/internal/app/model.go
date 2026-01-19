@@ -1,4 +1,4 @@
-package config
+package app
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 
+	"github.com/honmaple/maple-file/server/internal/app/config"
 	"github.com/honmaple/maple-file/server/internal/app/serializer"
 )
 
@@ -46,7 +47,7 @@ func NewDB(conf *Config) (*DB, error) {
 	var (
 		db  *gorm.DB
 		err error
-		dsn = conf.GetString(DatabaseDSN)
+		dsn = conf.GetString(config.DatabaseDSN)
 	)
 	gcfg := &gorm.Config{
 		Logger: logger.Default,
@@ -69,7 +70,7 @@ func NewDB(conf *Config) (*DB, error) {
 		return nil, err
 	}
 
-	if conf.GetBool(DatabaseEcho) {
+	if conf.GetBool(config.DatabaseEcho) {
 		db = db.Debug()
 	}
 

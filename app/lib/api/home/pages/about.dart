@@ -13,6 +13,7 @@ class About extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
     return Scaffold(
       appBar: AppBar(
         title: Text("关于".tr()),
@@ -23,7 +24,7 @@ class About extends ConsumerWidget {
         child: CustomAsyncValue(
           value: ref.watch(infoProvider),
           builder: (resp) {
-            return ListView(
+            return Column(
               children: [
                 Center(
                   child: Column(
@@ -52,10 +53,6 @@ class About extends ConsumerWidget {
                         title: Text("Arch".tr()),
                         trailing: Text(resp.os),
                       ),
-                      ListTile(
-                        title: Text("Runtime".tr()),
-                        trailing: Text(resp.runtime),
-                      ),
                     ],
                   ),
                 ),
@@ -82,6 +79,18 @@ class About extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+                Spacer(),
+                Container(
+                  padding: EdgeInsets.only(bottom: 32),
+                  child: Column(children: [
+                    Text(
+                      '© ${now.year} honmaple',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey,
+                          ),
+                    ),
+                  ]),
                 ),
               ],
             );

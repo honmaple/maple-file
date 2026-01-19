@@ -4,6 +4,7 @@ import 'dart:core';
 import 'dart:typed_data';
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:path/path.dart' as filepath;
+import 'package:grpc/grpc.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -20,26 +21,22 @@ class FileService {
   static FileService get instance => _instance;
   static final FileService _instance = FileService._internal();
   factory FileService() => _instance;
+  FileService._internal();
 
-  late FileServiceClient _client;
-  late DateTime _clientTime;
-
-  FileService._internal() {
-    _setClient();
-  }
+  FileServiceClient? _client;
+  DateTime _clientTime = DateTime.now();
 
   FileServiceClient get client {
-    if (GRPC.instance.connectTime.isAfter(_clientTime)) {
-      _setClient();
+    if (_client == null || Grpc.instance.connectTime.isAfter(_clientTime)) {
+      _client = FileServiceClient(
+        Grpc.instance.client,
+        options: CallOptions(
+          metadata: {"Authorization": "Bearer ${Grpc.instance.token}"},
+        ),
+      );
+      _clientTime = Grpc.instance.connectTime;
     }
-    return _client;
-  }
-
-  void _setClient() {
-    _client = FileServiceClient(
-      GRPC.instance.client,
-    );
-    _clientTime = GRPC.instance.connectTime;
+    return _client!;
   }
 
   Future<List<File>> list({Map<String, String>? filter}) async {

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:grpc/grpc.dart';
+
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/generated/proto/api/setting/info.pb.dart';
 import 'package:maple_file/generated/proto/api/setting/setting.pb.dart';
@@ -9,26 +11,22 @@ class SystemService {
   static SystemService get instance => _instance;
   static final SystemService _instance = SystemService._internal();
   factory SystemService() => _instance;
+  SystemService._internal();
 
-  late SystemServiceClient _client;
-  late DateTime _clientTime;
-
-  SystemService._internal() {
-    _setClient();
-  }
+  SystemServiceClient? _client;
+  DateTime _clientTime = DateTime.now();
 
   SystemServiceClient get client {
-    if (GRPC.instance.connectTime.isAfter(_clientTime)) {
-      _setClient();
+    if (_client == null || Grpc.instance.connectTime.isAfter(_clientTime)) {
+      _client = SystemServiceClient(
+        Grpc.instance.client,
+        options: CallOptions(
+          metadata: {"Authorization": "Bearer ${Grpc.instance.token}"},
+        ),
+      );
+      _clientTime = Grpc.instance.connectTime;
     }
-    return _client;
-  }
-
-  void _setClient() {
-    _client = SystemServiceClient(
-      GRPC.instance.client,
-    );
-    _clientTime = GRPC.instance.connectTime;
+    return _client!;
   }
 
   Future<Info> info() async {

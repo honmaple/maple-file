@@ -16,6 +16,7 @@ import (
 )
 
 type Service struct {
+	app.BaseService
 	pb.UnimplementedFileServiceServer
 	fs  fs.FS
 	app *app.App
@@ -25,9 +26,11 @@ func (srv *Service) Register(grpc *grpc.Server) {
 	pb.RegisterFileServiceServer(grpc, srv)
 }
 
-func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, e *echo.Echo) {
+func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) {
 	pb.RegisterFileServiceHandlerServer(ctx, mux, srv)
+}
 
+func (srv *Service) RegisterHTTP(e *echo.Echo) {
 	g := e.Group("/api/file")
 
 	g.POST("/upload/blob", func(c echo.Context) error {
@@ -35,6 +38,7 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 		if path == "" {
 			return c.JSON(400, "path is required")
 		}
+		rctx := c.Request().Context()
 
 		form, err := c.MultipartForm()
 		if err != nil {
@@ -47,7 +51,7 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, 
 				return err
 			}
 
-			result, err := srv.upload(ctx, &pb.FileRequest{
+			result, err := srv.upload(rctx, &pb.FileRequest{
 				Path:     path,
 				Size:     file.Size,
 				Filename: file.Filename,

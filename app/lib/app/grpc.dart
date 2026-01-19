@@ -5,7 +5,7 @@ import 'package:grpc/grpc.dart';
 import 'package:grpc/service_api.dart' as grpcapi;
 
 import 'app.dart';
-import 'grpc_web.dart' if (dart.library.io) 'grpc_io.dart';
+import 'grpc/web.dart' if (dart.library.io) 'grpc/io.dart';
 
 Future<T> doFuture<T>(
   Future<T> Function() callback, {
@@ -16,6 +16,8 @@ Future<T> doFuture<T>(
     return await callback();
   } on GrpcError catch (e) {
     err = e.message ?? e.toString();
+  } on SocketException catch (e) {
+    err = e.message;
   } catch (e) {
     err = e.toString();
   }
@@ -27,38 +29,48 @@ Future<T> doFuture<T>(
   return Future.error(err);
 }
 
-class GRPC {
-  static GRPC get instance => _instance;
-  static final GRPC _instance = GRPC._internal();
+class Grpc {
+  static Grpc get instance => _instance;
+  static final Grpc _instance = Grpc._internal();
 
-  factory GRPC() => _instance;
+  factory Grpc() => _instance;
 
   late GrpcService _service;
 
-  GRPC._internal() {
-    // App.logger.info("init grpc");
+  Grpc._internal() {
+    App.logger.info("init grpc");
 
     _service = GrpcService();
   }
 
-  String get addr => _service.addr;
-  grpcapi.ClientChannel get client => _service.client;
+  String? get error => _error;
+  String get token => _result.token;
+  DateTime get connectTime => _result.clientTime;
+  grpcapi.ClientChannel get client => _result.client;
+  Map<String, String> get metadata => {
+        "Authorization": "Bearer ${Grpc.instance.token}",
+      };
 
-  DateTime connectTime = DateTime.now();
+  String? _error;
+  GrpcResult _result = GrpcResult.empty();
 
   Future<void> init() async {
-    await _service.start();
-    connectTime = DateTime.now();
+    try {
+      _error = null;
+      _result = await _service.start();
+    } catch (e) {
+      _error = e.toString();
+      App.logger.warning("start server fail: $_error");
+    }
   }
 
   Future<bool> check() async {
     try {
-      final addrs = addr.split(":");
-      final socket = await Socket.connect(addrs[0], int.parse(addrs[1]));
+      final socket = await Socket.connect(_result.host, _result.port);
       socket.destroy();
       return true;
     } catch (e) {
-      App.logger.warning("connect $addr failed: $e");
+      App.logger.warning("connect ${_result.addr} failed: $e");
       return false;
     }
   }
@@ -70,16 +82,22 @@ class GRPC {
     }
 
     App.logger.info("reboot server");
-
-    await _service.restart();
-    connectTime = DateTime.now();
+    try {
+      _error = null;
+      _result = await _service.restart();
+    } catch (e) {
+      _error = e.toString();
+      App.logger.warning("reboot server fail: $_error");
+    }
   }
 
   String previewURL(String path) {
-    return "http://$addr/api/file/preview/blob?path=$path";
+    path = Uri.encodeComponent(path);
+    return "http://${_result.addr}/api/file/preview/blob?path=$path&token=${_result.token}";
   }
 
   String downloadURL(String path) {
-    return "http://$addr/api/file/download/blob?path=$path";
+    path = Uri.encodeComponent(path);
+    return "http://${_result.addr}/api/file/download/blob?path=$path&token=${_result.token}";
   }
 }

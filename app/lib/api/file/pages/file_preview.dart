@@ -26,7 +26,7 @@ class FileSource extends PreviewSource {
   }) : super(
           type: SourceType.network,
           name: file.name,
-          path: GRPC.instance.previewURL(filepath.posix.join(
+          path: Grpc.instance.previewURL(filepath.posix.join(
             file.path,
             file.name,
           )),

@@ -74,7 +74,7 @@ class App {
   }
 
   Future<void> initGrpc() async {
-    await GRPC.instance.init();
+    await Grpc.instance.init();
   }
 
   Future<void> initMedia() async {

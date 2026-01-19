@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
 
 	"github.com/honmaple/maple-file/server/internal/app"
@@ -13,6 +12,7 @@ import (
 )
 
 type Service struct {
+	app.BaseService
 	pb.UnimplementedTaskServiceServer
 	app *app.App
 }
@@ -21,7 +21,7 @@ func (srv *Service) Register(grpc *grpc.Server) {
 	pb.RegisterTaskServiceServer(grpc, srv)
 }
 
-func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux, e *echo.Echo) {
+func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) {
 	pb.RegisterTaskServiceHandlerServer(ctx, mux, srv)
 }
 

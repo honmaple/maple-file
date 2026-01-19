@@ -11,11 +11,11 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.23.0
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/go-github/v70 v70.0.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hirochachacha/go-smb2 v1.1.0
-	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/jlaffaye/ftp v0.2.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/pkg/sftp v1.13.6
@@ -47,15 +47,14 @@ require (
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
 	github.com/andreburgaud/crypt2go v1.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
-	github.com/cenkalti/backoff/v4 v4.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/geoffgarside/ber v1.1.0 // indirect
 	github.com/go-resty/resty/v2 v2.14.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -67,7 +66,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -81,7 +79,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/rs/cors v1.7.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -105,7 +102,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	nhooyr.io/websocket v1.8.6 // indirect
 )
 
 replace nhooyr.io/websocket => github.com/coder/websocket v1.8.7

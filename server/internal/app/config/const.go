@@ -1,9 +1,12 @@
 package config
 
 const (
-	ServerAddr   = "server.addr"
-	DatabaseDSN  = "database.dsn"
-	DatabaseEcho = "database.echo"
+	ApplicationPath = "app.path"
+
+	ServerAddr      = "server.addr"
+	ServerSecretKey = "server.secret_key"
+	DatabaseDSN     = "database.dsn"
+	DatabaseEcho    = "database.echo"
 
 	LoggerLevel         = "logger.level"
 	LoggerOutput        = "logger.output"

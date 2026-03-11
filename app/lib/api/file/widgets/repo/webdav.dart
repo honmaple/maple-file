@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 part 'webdav.g.dart';
@@ -45,48 +46,48 @@ class _WebdavState extends State<Webdav> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          CustomFormField(
-            label: "域名/IP".tr(),
-            value: _option.endpoint,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.endpoint = result;
-              });
+    return CustomListSection(
+      hasLeading: false,
+      dividerMargin: 20,
+      children: [
+        CustomListTileTextField(
+          label: "域名/IP".tr(),
+          value: _option.endpoint,
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option.endpoint = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          CustomFormField(
-            label: "用户".tr(),
-            value: _option.username,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.username = result;
-              });
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+        CustomListTileTextField(
+          label: "用户".tr(),
+          value: _option.username,
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option.username = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          CustomFormField(
-            type: CustomFormFieldType.password,
-            label: "密码".tr(),
-            value: _option.password,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.password = result;
-              });
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+        CustomListTileTextField(
+          type: CustomListTileTextFieldType.password,
+          label: "密码".tr(),
+          value: _option.password,
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option.password = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-        ],
-      ),
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+      ],
     );
   }
 }

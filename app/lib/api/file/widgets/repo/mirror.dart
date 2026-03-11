@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 class Mirror extends StatefulWidget {
@@ -28,46 +29,37 @@ class _MirrorState extends State<Mirror> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          CustomFormField(
-            label: "源站".tr(),
-            value: _option["endpoint"],
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option["endpoint"] = result;
-              });
+    return CustomListSection(
+      hasLeading: false,
+      dividerMargin: 20,
+      children: [
+        CustomListTileTextField(
+          label: "源站".tr(),
+          value: _option["endpoint"],
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option["endpoint"] = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          ListTile(
-            title: Text('源站格式'.tr()),
-            trailing: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(_option["format"] ?? "未选择".tr()),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
-            onTap: () async {
-              final result = await showListDialog(context, items: [
-                ListDialogItem(value: "nginx"),
-                ListDialogItem(value: "tuna"),
-                ListDialogItem(value: "aliyun"),
-              ]);
-              if (result != null) {
-                setState(() {
-                  _option["format"] = result;
-                });
-                widget.form.option = jsonEncode(_option);
-              }
-            },
-          ),
-        ],
-      ),
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+        CustomListTileOptions(
+          label: '源站格式'.tr(),
+          options: [
+            CustomOption(label: "nginx", value: "nginx"),
+            CustomOption(label: "tuna", value: "tuna"),
+            CustomOption(label: "aliyun", value: "aliyun"),
+          ],
+          onTap: (result) async {
+            setState(() {
+              _option["format"] = result;
+            });
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+      ],
     );
   }
 }

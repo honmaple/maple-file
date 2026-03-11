@@ -3,14 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'dart:io' as io;
 import 'package:path/path.dart' as filepath;
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart' as image_picker;
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
+import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 import 'package:maple_file/api/task/providers/task.dart';
 
@@ -118,9 +122,9 @@ extension FileActionExtension on FileAction {
         return;
       case FileAction.rename:
         final ext = filepath.posix.extension(file.name);
-        final result = await showEditingDialog(
-          context,
-          "重命名".tr(),
+        final result = await showCustomEditingDialog(
+          context: context,
+          label: "重命名".tr(),
           value: file.name,
           selection: TextSelection(
             baseOffset: 0,
@@ -152,8 +156,8 @@ extension FileActionExtension on FileAction {
         });
         return;
       case FileAction.remove:
-        final result = await showAlertDialog<bool>(
-          context,
+        final result = await showCustomConfirmDialog(
+          context: context,
           content: Text("确认删除文件{name}?".tr(
             args: {"name": file.name},
           )),
@@ -170,7 +174,7 @@ extension FileActionExtension on FileAction {
 
 void showFileDetail(BuildContext context, File file) {
   final size = Util.formatSize(file.size.toInt());
-  showListDialog2(
+  showCustomDialog(
     context,
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -221,26 +225,35 @@ Future<FileAction?> showFileAction(
     );
   }
 
-  ListDialogItem<FileAction> menu(FileAction value) {
-    return ListDialogItem(
-      icon: value.icon,
+  CustomOption<FileAction> menu(FileAction value) {
+    return CustomOption(
+      // icon: Icon(value.icon),
+      icon: Icon(
+        value.icon,
+        color: ColorUtil.backgroundColorWithString(value.label),
+      ),
       label: value.label,
       value: value,
     );
   }
 
-  return showListDialog<FileAction>(context, items: [
-    menu(FileAction.open),
-    menu(FileAction.detail),
-    if (file.type != "DIR") menu(FileAction.download),
-    menu(FileAction.copy),
-    menu(FileAction.move),
-    menu(FileAction.rename),
-    ListDialogItem(
-      child: const Divider(height: 4),
-    ),
-    menu(FileAction.remove),
-  ]);
+  return showCustomListOptions<FileAction>(
+    context: context,
+    useMaterial: true,
+    cancelAction: false,
+    options: [
+      menu(FileAction.open),
+      menu(FileAction.detail),
+      if (file.type != "DIR") menu(FileAction.download),
+      menu(FileAction.copy),
+      menu(FileAction.move),
+      menu(FileAction.rename),
+      CustomOption(
+        child: const Divider(height: 4),
+      ),
+      menu(FileAction.remove),
+    ],
+  );
 }
 
 Future<FileAction?> showFilePopupAction(
@@ -291,6 +304,56 @@ Future<FileAction?> showFilePopupAction(
   );
 }
 
+Future<bool> requestCameraPermission(BuildContext context) async {
+  final status = await Permission.camera.request();
+  if (!status.isGranted) {
+    if (!context.mounted) return false;
+    final result = await showCustomConfirmDialog(
+      context: context,
+      content: Text("无法访问相机, 去设置?".tr()),
+    );
+    if (result != null && result) {
+      await openAppSettings();
+    }
+    return false;
+  }
+  return true;
+}
+
+Future<bool> requestPhotosPermission(BuildContext context) async {
+  PermissionStatus status;
+
+  if (Util.isAndroid) {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    if (androidInfo.version.sdkInt >= 33) {
+      status = await Permission.photos.request();
+      if (status.isGranted) {
+        final videos = await Permission.videos.request();
+        if (!videos.isGranted) {
+          status = PermissionStatus.denied;
+        }
+      }
+    } else {
+      status = await Permission.storage.request();
+    }
+  } else {
+    status = await Permission.photos.request();
+  }
+
+  if (!status.isGranted) {
+    if (!context.mounted) return false;
+    final result = await showCustomConfirmDialog(
+      context: context,
+      content: Text("无法访问相册, 去设置?".tr()),
+    );
+    if (result != null && result) {
+      await openAppSettings();
+    }
+    return false;
+  }
+  return true;
+}
+
 enum FileFloatingAction {
   camera,
   photo,
@@ -329,6 +392,9 @@ extension FileFloatingActionExtension on FileFloatingAction {
     Future<void>? future;
     switch (this) {
       case FileFloatingAction.camera:
+        final status = await requestCameraPermission(context);
+        if (!status || !context.mounted) return;
+
         image_picker.XFile? image = await picker.pickImage(
           source: image_picker.ImageSource.camera,
           imageQuality: 100,
@@ -341,6 +407,9 @@ extension FileFloatingActionExtension on FileFloatingAction {
         }
         break;
       case FileFloatingAction.photo:
+        final status = await requestPhotosPermission(context);
+        if (!status || !context.mounted) return;
+
         List<image_picker.XFile> images = await picker.pickMultiImage(
           imageQuality: 100,
         );
@@ -363,7 +432,10 @@ extension FileFloatingActionExtension on FileFloatingAction {
         }
         break;
       case FileFloatingAction.folder:
-        final name = await showEditingDialog(context, "新建目录".tr());
+        final name = await showCustomEditingDialog(
+          context: context,
+          label: "新建目录".tr(),
+        );
         if (name != null) {
           future = FileService.instance.mkdir(path, name);
         }
@@ -380,18 +452,23 @@ Future<FileFloatingAction?> showFileFloatingAction(
   String path, {
   WidgetRef? ref,
 }) async {
-  ListDialogItem<FileFloatingAction> menu(FileFloatingAction value) {
-    return ListDialogItem(
-      icon: value.icon,
+  CustomOption<FileFloatingAction> menu(FileFloatingAction value) {
+    return CustomOption(
+      icon: Icon(
+        value.icon,
+        color: ColorUtil.backgroundColorWithString(value.label),
+      ),
       label: value.label,
       value: value,
     );
   }
 
-  return showListDialog<FileFloatingAction>(context,
+  return showCustomListOptions<FileFloatingAction>(
+      context: context,
       cancelAction: true,
-      useAlertDialog: true,
-      items: [
+      // useAlertDialog: true,
+      useMaterial: true,
+      options: [
         if (Util.isMobile) menu(FileFloatingAction.camera),
         if (Util.isMobile) menu(FileFloatingAction.photo),
         menu(FileFloatingAction.file),
@@ -490,8 +567,8 @@ extension FileSelectionActionExtension on FileSelectionAction {
         });
         return;
       case FileSelectionAction.remove:
-        final result = await showAlertDialog<bool>(
-          context,
+        final result = await showCustomConfirmDialog(
+          context: context,
           content: Text("确认删除{n}个文件?".tr(
             args: {"n": selected.length},
           )),
@@ -565,53 +642,44 @@ class FilePopupAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final view = ref.watch(fileSettingProvider.select((state) => state.view));
-    return PopupMenuButton(
-      icon: const Icon(Icons.more_vert),
-      position: PopupMenuPosition.under,
-      menuPadding: EdgeInsets.zero,
+    return PlatformPopupMenuButton(
+      icon: Icon(
+        Icons.more_vert,
+        size: 24,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 16),
       itemBuilder: (BuildContext bc) {
         return [
-          PopupMenuItem(
-            child: ListTile(
-              dense: true,
-              title: Text("存储库".tr()),
-              leading: const Icon(Icons.storage),
-            ),
+          PlatformPopupMenuItem(
+            icon: Icons.storage,
+            label: "存储库".tr(),
             onTap: () {
               Navigator.of(context).pushNamed("/file/setting/repo");
             },
           ),
           view == FileListView.list
-              ? PopupMenuItem(
-                  child: ListTile(
-                    dense: true,
-                    title: Text("宫格模式".tr()),
-                    leading: const Icon(Icons.grid_view),
-                  ),
+              ? PlatformPopupMenuItem(
+                  icon: Icons.grid_view,
+                  label: "宫格模式".tr(),
                   onTap: () {
                     ref.read(fileSettingProvider.notifier).update((state) {
                       return state.copyWith(view: FileListView.grid);
                     });
                   },
                 )
-              : PopupMenuItem(
-                  child: ListTile(
-                    dense: true,
-                    title: Text("列表模式".tr()),
-                    leading: const Icon(Icons.list),
-                  ),
+              : PlatformPopupMenuItem(
+                  icon: Icons.list,
+                  label: "列表模式".tr(),
                   onTap: () {
                     ref.read(fileSettingProvider.notifier).update((state) {
                       return state.copyWith(view: FileListView.list);
                     });
                   },
                 ),
-          PopupMenuItem(
-            child: ListTile(
-              dense: true,
-              title: Text("设置".tr()),
-              leading: const Icon(Icons.settings),
-            ),
+          PlatformPopupMenuItem(
+            icon: Icons.settings,
+            label: "设置".tr(),
             onTap: () {
               Navigator.of(context).pushNamed("/setting");
             },
@@ -632,31 +700,35 @@ class FileSortAction extends ConsumerWidget {
         ref.watch(fileSettingProvider.select((state) => state.sortReversed));
     final sortDir =
         ref.watch(fileSettingProvider.select((state) => state.sortDir));
-    return PopupMenuButton(
-      menuPadding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      child: Wrap(
+
+    final colorScheme = Theme.of(context).colorScheme;
+    return PlatformPopupMenuButton(
+      icon: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Icon(sortReversed ? Icons.north : Icons.south, size: 12),
+          Icon(
+            sortReversed ? Icons.north : Icons.south,
+            size: 12,
+            color: colorScheme.onSurface,
+          ),
           const SizedBox(width: 4),
-          Text(sort.label(context)),
+          Text(
+            sort.label,
+            style: TextStyle(
+              fontSize: 12,
+              color: colorScheme.onSurface,
+            ),
+          ),
         ],
       ),
       itemBuilder: (context) {
-        return <PopupMenuEntry>[
+        return <PlatformPopupMenuEntry>[
           ...FileListSort.values.map((value) {
-            return PopupMenuItem(
-              height: 16 * 2,
-              child: ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                title: Text(value.label(context)),
-                trailing: sort == value
-                    ? Icon(sortReversed ? Icons.north : Icons.south, size: 16)
-                    : null,
-              ),
+            return PlatformPopupMenuItem(
+              iconWidget: sort == value
+                  ? Icon(sortReversed ? Icons.north : Icons.south, size: 16)
+                  : null,
+              label: value.label,
               onTap: () {
                 ref.read(fileSettingProvider.notifier).update((state) {
                   if (sort == value) {
@@ -667,16 +739,10 @@ class FileSortAction extends ConsumerWidget {
               },
             );
           }),
-          PopupMenuDivider(height: 1),
-          PopupMenuItem(
-            height: 16 * 2,
-            child: ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-              title: Text("目录优先".tr()),
-              trailing: sortDir ? Icon(Icons.check, size: 16) : null,
-            ),
+          PlatformPopupMenuDivider(),
+          PlatformPopupMenuItem(
+            iconWidget: sortDir ? Icon(Icons.check, size: 16) : null,
+            label: "目录优先".tr(),
             onTap: () {
               ref.read(fileSettingProvider.notifier).update((state) {
                 return state.copyWith(sortDir: !state.sortDir);

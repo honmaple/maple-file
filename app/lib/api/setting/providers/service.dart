@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
-
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/generated/proto/api/setting/info.pb.dart';
 import 'package:maple_file/generated/proto/api/setting/setting.pb.dart';

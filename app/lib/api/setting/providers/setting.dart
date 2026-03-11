@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:maple_file/app/app.dart';
-
 import 'service.dart';
 
 class SettingAsyncNotifier extends FamilyAsyncNotifier<String, String> {
@@ -35,12 +33,7 @@ class SettingNotifier<T> extends Notifier<T> {
     if (result == null) {
       return value;
     }
-    try {
-      return fromJson(jsonDecode(result));
-    } catch (e) {
-      App.logger.warning("load setting $key err: ${e.toString()}");
-      return value;
-    }
+    return fromJson(jsonDecode(result));
   }
 
   T update(T Function(T state) cb) {

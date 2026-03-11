@@ -64,8 +64,7 @@ class TaskService {
     });
   }
 
-  Future<List<PersistTask>> listPersistTasks(
-      {Map<String, String>? filterMap}) async {
+  Future<List<PersistTask>> listPersistTasks({Map<String, String>? filterMap}) {
     return doFuture(() async {
       ListPersistTasksRequest request = ListPersistTasksRequest();
       ListPersistTasksResponse response =

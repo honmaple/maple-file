@@ -5,8 +5,6 @@ import 'dart:typed_data';
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:path/path.dart' as filepath;
 import 'package:grpc/grpc.dart';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import 'package:maple_file/app/i18n.dart';
@@ -39,7 +37,7 @@ class FileService {
     return _client!;
   }
 
-  Future<List<File>> list({Map<String, String>? filter}) async {
+  Future<List<File>> list({Map<String, String>? filter}) {
     return doFuture(() async {
       ListFilesRequest request = ListFilesRequest(filter: filter);
       ListFilesResponse response = await client.list(request);
@@ -95,8 +93,8 @@ class FileService {
   Future<void> mkdir(
     String path,
     String name,
-  ) {
-    return doFuture(() {
+  ) async {
+    await doFuture(() {
       MkdirFileRequest request = MkdirFileRequest(
         path: path,
         name: name,
@@ -108,8 +106,8 @@ class FileService {
   Future<void> remove(
     String path,
     List<String> names,
-  ) {
-    return doFuture(() {
+  ) async {
+    await doFuture(() {
       RemoveFileRequest request = RemoveFileRequest(
         path: path,
         names: names,
@@ -214,7 +212,7 @@ class FileService {
     List<io.Directory>? dirs,
     Map<String, String>? newNames,
     bool recursive = true,
-  }) {
+  }) async {
     final dirsCount = dirs?.length ?? 0;
     final filesCount = files?.length ?? 0;
 

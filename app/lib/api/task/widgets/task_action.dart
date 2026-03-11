@@ -55,16 +55,18 @@ extension on TaskAction {
 }
 
 void showTaskDetail(BuildContext context, Task task) {
-  showListDialog2(
+  showCustomDialog(
     context,
     child: Scaffold(
       appBar: AppBar(
         title: Text("执行日志".tr()),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
         children: [
-          SelectableText(task.log),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(task.log),
+          ),
         ],
       ),
     ),
@@ -76,33 +78,35 @@ Future<void> showTaskAction(
   Task task, {
   WidgetRef? ref,
 }) async {
-  final result =
-      await showListDialog<TaskAction>(context, useAlertDialog: true, items: [
-    if (task.log != "")
-      ListDialogItem(
-        icon: TaskAction.detail.icon,
-        label: TaskAction.detail.label,
-        value: TaskAction.detail,
-      ),
-    if (isFinished(task))
-      ListDialogItem(
-        icon: TaskAction.retry.icon,
-        label: TaskAction.retry.label,
-        value: TaskAction.retry,
-      ),
-    if (isRunning(task))
-      ListDialogItem(
-        icon: TaskAction.cancel.icon,
-        label: TaskAction.cancel.label,
-        value: TaskAction.cancel,
-      ),
-    if (isFinished(task))
-      ListDialogItem(
-        icon: TaskAction.remove.icon,
-        label: TaskAction.remove.label,
-        value: TaskAction.remove,
-      ),
-  ]);
+  final result = await showCustomListOptions<TaskAction>(
+      context: context,
+      // useAlertDialog: true,
+      options: [
+        if (task.log != "")
+          CustomOption(
+            icon: Icon(TaskAction.detail.icon),
+            label: TaskAction.detail.label,
+            value: TaskAction.detail,
+          ),
+        if (isFinished(task))
+          CustomOption(
+            icon: Icon(TaskAction.retry.icon),
+            label: TaskAction.retry.label,
+            value: TaskAction.retry,
+          ),
+        if (isRunning(task))
+          CustomOption(
+            icon: Icon(TaskAction.cancel.icon),
+            label: TaskAction.cancel.label,
+            value: TaskAction.cancel,
+          ),
+        if (isFinished(task))
+          CustomOption(
+            icon: Icon(TaskAction.remove.icon),
+            label: TaskAction.remove.label,
+            value: TaskAction.remove,
+          ),
+      ]);
   if (!context.mounted) return;
   result?.action(context, task, ref: ref);
 }

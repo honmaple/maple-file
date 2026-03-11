@@ -136,10 +136,7 @@ class _FilePreviewState extends ConsumerState<FilePreview> {
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () async {
-              final result = await showFileAction(
-                context,
-                widget.file,
-              );
+              final result = await showFileAction(context, widget.file);
               if (!context.mounted) return;
               result?.action(context, widget.file, ref: ref);
             },
@@ -237,10 +234,7 @@ class _FileImagePreviewState extends FilePreviewBaseState<FileImagePreview> {
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () async {
-              final result = await showFileAction(
-                context,
-                _file,
-              );
+              final result = await showFileAction(context, _file);
               if (!context.mounted) return;
               result?.action(context, _file, ref: ref);
             },

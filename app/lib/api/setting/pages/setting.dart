@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/tree.dart';
 import 'package:maple_file/common/widgets/custom.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 
 class Setting extends StatelessWidget {
@@ -19,144 +22,156 @@ class Setting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
+      appBar: PlatformAppBar(
+        material: (context, _) {
+          return MaterialAppBarData(
+            centerTitle: true,
+          );
+        },
         title: Text("设置".tr()),
-        centerTitle: true,
         automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),
-      body: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: ListView(
-          children: <Widget>[
-            ListTile(
-              title: Text("基础设置".tr()),
-              dense: true,
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          CustomListSection(
+            header: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("基础设置".tr(), style: themeData.textTheme.bodySmall),
             ),
-            Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(
-                      Icons.brightness_medium,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text("主题".tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/setting/theme');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.language,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text("语言".tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/setting/locale');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.backup,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text("备份与恢复".tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/setting/backup');
-                    },
-                  ),
-                ],
+            children: [
+              PlatformListTile(
+                leading: Icon(
+                  Icons.brightness_medium,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("主题".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/setting/theme');
+                },
               ),
-            ),
-            ListTile(
-              title: Text("存储设置".tr()),
-              dense: true,
-            ),
-            Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(
-                      Icons.storage,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text("存储库".tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/file/setting/repo');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.upload,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text('文件上传'.tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/file/setting/upload');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.download,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text('文件下载'.tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context)
-                          .pushNamed('/file/setting/download');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.palette,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text('文件展示'.tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/file/setting/theme');
-                    },
-                  ),
-                ],
+              PlatformListTile(
+                leading: Icon(
+                  Icons.language,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("语言".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/setting/locale');
+                },
               ),
-            ),
-            Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: Icon(
-                      Icons.help,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text("帮助".tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/help');
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.person,
-                      color: themeData.colorScheme.primary,
-                    ),
-                    title: Text("关于".tr()),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      navigatorState(context).pushNamed('/about');
-                    },
-                  ),
-                ],
+              PlatformListTile(
+                leading: Icon(
+                  Icons.backup,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("备份与恢复".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/setting/backup');
+                },
               ),
-            )
-          ],
-        ),
+            ],
+          ),
+          CustomListSection(
+            header: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("存储设置".tr(), style: themeData.textTheme.bodySmall),
+            ),
+            children: [
+              PlatformListTile(
+                leading: Icon(
+                  Icons.storage,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("存储库".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/file/setting/repo');
+                },
+              ),
+              PlatformListTile(
+                leading: Icon(
+                  Icons.upload,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text('文件上传'.tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/file/setting/upload');
+                },
+              ),
+              PlatformListTile(
+                leading: Icon(
+                  Icons.download,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text('文件下载'.tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/file/setting/download');
+                },
+              ),
+              PlatformListTile(
+                leading: Icon(
+                  Icons.palette,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text('文件展示'.tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/file/setting/theme');
+                },
+              ),
+              PlatformListTile(
+                leading: Icon(
+                  Icons.api,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text('外部服务'.tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/file/setting/server');
+                },
+              ),
+            ],
+          ),
+          CustomListSection(
+            header: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("其它".tr(), style: themeData.textTheme.bodySmall),
+            ),
+            children: [
+              PlatformListTile(
+                leading: Icon(
+                  Icons.help,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("帮助".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/help');
+                },
+              ),
+              PlatformListTile(
+                leading: Icon(
+                  Icons.person,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("关于".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/about');
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -252,9 +267,12 @@ class _DesktopSettingState extends State<DesktopSetting> {
       menu: menu,
       navigatorKey: _navigatorKey,
       initialRoute: "/setting",
-      onGenerateRoute: App.router.replaceRoute(replace: {
-        "/": null,
-      }),
+      onGenerateRoute: App.router.onGenerateRouteReplace(
+        context: context,
+        replace: {
+          "/": null,
+        },
+      ),
     );
   }
 }

@@ -1,12 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
+import "advance.dart";
 import "alist.dart";
-import "ftp.dart";
 import "foxel.dart";
+import "ftp.dart";
 import "local.dart";
 import "mirror.dart";
 import "s3.dart";
@@ -18,7 +23,6 @@ import "webdav.dart";
 import "pan115.dart";
 import "github.dart";
 import "github_release.dart";
-import "advance.dart";
 
 enum DriverType {
   s3,
@@ -69,28 +73,66 @@ class DriverForm extends StatefulWidget {
 }
 
 class _DriverFormState extends State<DriverForm> {
+  final _advanceFormKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildForm(),
         if (!Breakpoint.isSmall(context)) const SizedBox(height: 4),
-        SizedBox(
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 16),
           width: double.infinity,
-          child: ElevatedButton(
-            child: Text("更多设置".tr()),
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              foregroundColor: colorScheme.primary,
+              backgroundColor: ColorUtil.backgroundColor(context),
+            ),
             onPressed: () async {
               final form = widget.form.clone();
-              final result = await Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) {
-                  return DriverAdvanceForm(form: form);
-                },
-              ));
+              final result = await Navigator.of(context).push(
+                platformPageRoute(
+                  context: context,
+                  builder: (context) => PlatformScaffold(
+                    iosContentPadding: true,
+                    backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
+                    appBar: PlatformAppBar(
+                      title: Text('更多设置'.tr()),
+                      trailingActions: [
+                        TextButton(
+                          child: Text("确认".tr()),
+                          onPressed: () {
+                            if (_advanceFormKey.currentState!.validate()) {
+                              Navigator.of(context).pop(true);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    body: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        Form(
+                          key: _advanceFormKey,
+                          child: AdvanceForm(form: form),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
               if (result != null && result) {
-                widget.form.option = form.option;
+                final option = {
+                  ...jsonDecode(widget.form.option) as Map<String, dynamic>,
+                  ...jsonDecode(form.option) as Map<String, dynamic>,
+                };
+                widget.form.option = jsonEncode(option);
               }
             },
+            child: Text("更多设置".tr()),
           ),
         ),
       ],

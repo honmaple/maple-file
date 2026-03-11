@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:maple_file/common/widgets/form.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 class Pan115 extends StatefulWidget {
@@ -26,23 +27,23 @@ class _Pan115State extends State<Pan115> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          CustomFormField(
-            label: "Cookie",
-            value: _option["cookie"],
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option["cookie"] = result;
-              });
+    return CustomListSection(
+      hasLeading: false,
+      dividerMargin: 20,
+      children: [
+        CustomListTileTextField(
+          label: "Cookie",
+          value: _option["cookie"],
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option["cookie"] = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-        ],
-      ),
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+      ],
     );
   }
 }

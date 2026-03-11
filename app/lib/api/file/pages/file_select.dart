@@ -92,9 +92,9 @@ class _FileSelectState extends ConsumerState<FileSelect> {
           TextButton(
             child: Text("新建文件夹".tr()),
             onPressed: () async {
-              final result = await showEditingDialog(
-                context,
-                "新建文件夹".tr(),
+              final result = await showCustomEditingDialog(
+                context: context,
+                label: "新建文件夹".tr(),
               );
               if (result != null) {
                 FileService.instance.mkdir(widget.path, result).then((_) {

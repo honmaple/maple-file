@@ -2,7 +2,9 @@ package webdav
 
 import (
 	"context"
+	"errors"
 	"io"
+	"io/fs"
 	"os"
 
 	filepath "path"
@@ -48,10 +50,26 @@ func (d *Webdav) List(ctx context.Context, path string, metas ...driver.Meta) ([
 }
 
 func (d *Webdav) Move(ctx context.Context, src, dst string) error {
+	dstFile, err := d.Get(ctx, dst)
+	if err != nil {
+		return err
+	} else if !dstFile.IsDir() {
+		return &fs.PathError{Op: "move", Path: dst, Err: errors.New("move dst must be a dir")}
+	} else {
+		dst = filepath.Join(dst, filepath.Base(src))
+	}
 	return d.client.Rename(src, dst, false)
 }
 
 func (d *Webdav) Copy(ctx context.Context, src, dst string) error {
+	dstFile, err := d.Get(ctx, dst)
+	if err != nil {
+		return err
+	} else if !dstFile.IsDir() {
+		return &fs.PathError{Op: "copy", Path: dst, Err: errors.New("copy dst must be a dir")}
+	} else {
+		dst = filepath.Join(dst, filepath.Base(src))
+	}
 	return d.client.Copy(src, dst, false)
 }
 
@@ -91,6 +109,15 @@ func (d *Webdav) Create(path string) (driver.FileWriter, error) {
 func (d *Webdav) Get(ctx context.Context, path string) (driver.File, error) {
 	fi, err := d.client.Stat(path)
 	if err != nil {
+		rawErr := driver.UnderlyingError(err)
+		if s, ok := rawErr.(gowebdav.StatusError); ok {
+			switch s.Status {
+			case 403:
+				return nil, os.ErrPermission
+			case 404:
+				return nil, os.ErrNotExist
+			}
+		}
 		return nil, err
 	}
 	// 绿联webdav stat无法获取文件名

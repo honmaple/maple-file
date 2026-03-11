@@ -91,6 +91,11 @@ class Grpc {
     }
   }
 
+  String thumbURL(String path) {
+    path = Uri.encodeComponent(path);
+    return "http://${_result.addr}/api/file/preview/blob?path=$path&thumb=true&token=${_result.token}";
+  }
+
   String previewURL(String path) {
     path = Uri.encodeComponent(path);
     return "http://${_result.addr}/api/file/preview/blob?path=$path&token=${_result.token}";

@@ -11,6 +11,7 @@ import "pages/repo_edit.dart";
 
 import "pages/setting_theme.dart";
 import "pages/setting_upload.dart";
+import "pages/setting_server.dart";
 import "pages/setting_download.dart";
 
 Future<void> init(CustomRouter router) async {
@@ -35,6 +36,9 @@ Future<void> init(CustomRouter router) async {
     },
     '/file/setting/upload': (context) {
       return const FileSettingUpload();
+    },
+    '/file/setting/server': (context) {
+      return const FileSettingServer();
     },
     '/file/setting/download': (context) {
       return const FileSettingDownload();

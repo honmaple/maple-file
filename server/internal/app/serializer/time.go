@@ -12,8 +12,7 @@ import (
 
 type ProtobufTimestamp struct{}
 
-func (ProtobufTimestamp) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue interface{}) (err error) {
-	// fmt.Println(reflect.TypeOf(dbValue).Name())
+func (ProtobufTimestamp) Scan(ctx context.Context, field *schema.Field, dst reflect.Value, dbValue any) (err error) {
 	if dbValue != nil {
 		var t *timestamppb.Timestamp
 
@@ -42,7 +41,7 @@ func (ProtobufTimestamp) Scan(ctx context.Context, field *schema.Field, dst refl
 	return
 }
 
-func (ProtobufTimestamp) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue interface{}) (interface{}, error) {
+func (ProtobufTimestamp) Value(_ context.Context, _ *schema.Field, _ reflect.Value, fieldValue any) (any, error) {
 	rv := reflect.ValueOf(fieldValue)
 	if rv.IsNil() || rv.IsZero() {
 		return time.Now(), nil

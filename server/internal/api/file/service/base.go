@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
+	"slices"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/labstack/echo/v4"
@@ -11,23 +14,27 @@ import (
 
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	"github.com/honmaple/maple-file/server/internal/app"
-
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
+	"github.com/honmaple/maple-file/server/pkg/server"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Service struct {
 	app.BaseService
 	pb.UnimplementedFileServiceServer
-	fs  fs.FS
-	app *app.App
-}
-
-func (srv *Service) Register(grpc *grpc.Server) {
-	pb.RegisterFileServiceServer(grpc, srv)
+	pb.UnimplementedServerServiceServer
+	fs      fs.FS
+	app     *app.App
+	servers util.Cache[string, server.Server]
 }
 
 func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) {
 	pb.RegisterFileServiceHandlerServer(ctx, mux, srv)
+}
+
+func (srv *Service) Register(grpc *grpc.Server) {
+	pb.RegisterFileServiceServer(grpc, srv)
+	pb.RegisterServerServiceServer(grpc, srv)
 }
 
 func (srv *Service) RegisterHTTP(e *echo.Echo) {
@@ -67,12 +74,13 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 	})
 
 	g.GET("/preview/blob", func(c echo.Context) error {
-		// Bind 必须增加query的tag
-		req := pb.PreviewFileRequest{
-			Path: c.QueryParams().Get("path"),
+		path := c.QueryParams().Get("path")
+		if path == "" {
+			return c.JSON(400, "path is required")
 		}
 
-		info, err := srv.fs.Get(c.Request().Context(), req.GetPath())
+		rctx := c.Request().Context()
+		info, err := srv.fs.Get(rctx, path)
 		if err != nil {
 			return err
 		}
@@ -80,7 +88,34 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 			return errors.New("can't preview dir")
 		}
 
-		file, err := srv.fs.Open(req.GetPath())
+		thumb := slices.Contains([]string{"true", "1"}, c.QueryParams().Get("thumb"))
+		if thumb {
+			thumbPath, err := srv.thumbFile(srv.app.Context(), path, info)
+			if err != nil {
+				return err
+			}
+
+			file, err := os.Open(thumbPath)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			stat, err := file.Stat()
+			if err != nil {
+				return err
+			}
+
+			// 更新访问时间
+			if err := os.Chtimes(thumbPath, time.Now(), stat.ModTime()); err != nil {
+				return err
+			}
+
+			http.ServeContent(c.Response(), c.Request(), stat.Name(), stat.ModTime(), file)
+			return nil
+		}
+
+		file, err := srv.fs.Open(path)
 		if err != nil {
 			return err
 		}
@@ -91,12 +126,12 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 	})
 
 	g.GET("/download/blob", func(c echo.Context) error {
-		// Bind 必须增加query的tag
-		req := pb.PreviewFileRequest{
-			Path: c.QueryParams().Get("path"),
+		path := c.QueryParams().Get("path")
+		if path == "" {
+			return c.JSON(400, "path is required")
 		}
 
-		info, err := srv.fs.Get(c.Request().Context(), req.GetPath())
+		info, err := srv.fs.Get(c.Request().Context(), path)
 		if err != nil {
 			return err
 		}
@@ -104,7 +139,7 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 			return errors.New("can't download dir")
 		}
 
-		file, err := srv.fs.Open(req.GetPath())
+		file, err := srv.fs.Open(path)
 		if err != nil {
 			return err
 		}
@@ -121,8 +156,11 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 
 func New(app *app.App) *Service {
 	srv := &Service{
-		app: app,
+		app:     app,
+		servers: util.NewCache[string, server.Server](),
 	}
 	srv.fs = fs.New(app)
+
+	go srv.cleanThumbFile()
 	return srv
 }

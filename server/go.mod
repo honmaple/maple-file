@@ -8,6 +8,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/SheltonZhu/115driver v1.0.37
 	github.com/aws/aws-sdk-go v1.51.21
+	github.com/djherbis/times v1.6.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.23.0
@@ -29,6 +30,7 @@ require (
 	github.com/upyun/go-sdk/v3 v3.0.4
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/crypto v0.39.0
+	golang.org/x/image v0.0.0-20190802002840-cff245a6509b
 	golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028
 	golang.org/x/net v0.41.0
 	golang.org/x/time v0.8.0

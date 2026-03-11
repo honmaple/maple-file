@@ -15,7 +15,7 @@ enum FileListView {
 }
 
 extension FileListViewExtension on FileListView {
-  String label(BuildContext context) {
+  String get label {
     Map<FileListView, String> labels = {
       FileListView.list: "列表模式".tr(),
       FileListView.grid: "宫格模式".tr(),
@@ -32,7 +32,7 @@ enum FileListSort {
 }
 
 extension FileListSortExtension on FileListSort {
-  String label(BuildContext context) {
+  String get label {
     Map<FileListSort, String> labels = {
       FileListSort.name: "名称".tr(),
       FileListSort.type: "类型".tr(),
@@ -47,13 +47,15 @@ extension FileListSortExtension on FileListSort {
 enum FileListIcon {
   rectangle,
   circle,
+  thumb,
 }
 
 extension FileListIconExtension on FileListIcon {
-  String label(BuildContext context) {
+  String get label {
     Map<FileListIcon, String> labels = {
       FileListIcon.rectangle: "默认".tr(),
       FileListIcon.circle: "圆形".tr(),
+      FileListIcon.thumb: "缩略图".tr(),
     };
     return labels[this] ?? "未知".tr();
   }
@@ -78,6 +80,7 @@ class FileSetting with _$FileSetting {
     @JsonKey(name: 'download.path') String? downloadPath,
     @Default(10) @JsonKey(name: 'download.queue_size') int downloadQueueSize,
     @Default(0) @JsonKey(name: 'pagination.size') int paginationSize,
+    FileThumbSetting? thumb,
   }) = _FileSetting;
 
   factory FileSetting.fromJson(Map<String, Object?> json) =>
@@ -87,6 +90,19 @@ class FileSetting with _$FileSetting {
         (item) => item.name == iconColor,
         orElse: () => defaultFlexScheme,
       );
+}
+
+@freezed
+class FileThumbSetting with _$FileThumbSetting {
+  factory FileThumbSetting({
+    @Default(200) int width,
+    @Default(200) int height,
+    @Default(100) int quality,
+    @JsonKey(name: 'auto_clean') @Default(false) bool autoClean,
+  }) = _FileThumbSetting;
+
+  factory FileThumbSetting.fromJson(Map<String, Object?> json) =>
+      _$FileThumbSettingFromJson(json);
 }
 
 final fileSettingProvider = newSettingNotifier(

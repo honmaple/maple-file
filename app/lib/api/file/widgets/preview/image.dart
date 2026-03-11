@@ -9,11 +9,13 @@ import 'source.dart';
 class ImagePreview extends StatefulWidget {
   final BoxFit fit;
   final PreviewSourceImpl source;
+  final WidgetBuilder? errorBuilder;
 
   const ImagePreview({
     super.key,
     required this.source,
     this.fit = BoxFit.cover,
+    this.errorBuilder,
   });
 
   @override
@@ -30,6 +32,7 @@ class _ImagePreviewState extends State<ImagePreview> {
           fit: widget.fit,
           mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
+          loadStateChanged: _loadStateChanged,
         );
       case SourceType.asset:
         return ExtendedImage.asset(
@@ -37,6 +40,7 @@ class _ImagePreviewState extends State<ImagePreview> {
           fit: widget.fit,
           mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
+          loadStateChanged: _loadStateChanged,
         );
       case SourceType.network:
         return ExtendedImage.network(
@@ -44,7 +48,17 @@ class _ImagePreviewState extends State<ImagePreview> {
           fit: widget.fit,
           mode: ExtendedImageMode.gesture,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
+          loadStateChanged: _loadStateChanged,
         );
+    }
+  }
+
+  Widget? _loadStateChanged(ExtendedImageState state) {
+    switch (state.extendedImageLoadState) {
+      case LoadState.failed:
+        return widget.errorBuilder?.call(context);
+      default:
+        return null;
     }
   }
 }

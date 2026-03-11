@@ -133,6 +133,12 @@ class CustomRefresh extends StatelessWidget {
         noMoreText: '没有更多'.tr(),
         messageText: '最后更新于 %T'.tr(),
         position: IndicatorPosition.locator,
+        showText: true,
+        showMessage: false,
+        textBuilder: (context, _, text) {
+          return Text(text, style: TextStyle(color: Colors.grey));
+        },
+        noMoreIcon: Icon(Icons.inbox_outlined, color: Colors.grey),
       ),
       // footer: TaurusFooter(
       //   skyColor: Theme.of(context).primaryColor,
@@ -382,9 +388,9 @@ class _CustomListTileState extends State<CustomListTile> {
     } else {
       _textController.text = "";
     }
-    return showEditingDialog(
-      context,
-      label,
+    return showCustomEditingDialog(
+      context: context,
+      label: label,
       controller: _textController,
       obscureText: widget.obscureText,
     );

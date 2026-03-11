@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/tabbar.dart';
 import 'package:maple_file/api/file/pages/file_list.dart';
 import 'package:maple_file/api/file/widgets/file_tree.dart';
 import 'package:maple_file/api/file/providers/file.dart';
@@ -34,25 +36,19 @@ class _IndexState extends ConsumerState<Index> {
     return Scaffold(
       body: _widgets.elementAt(_selectedIndex),
       bottomNavigationBar: !fileSelection
-          ? BottomNavigationBar(
-              items: <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.business),
-                  label: '文件'.tr(),
-                  backgroundColor: Colors.white,
-                ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.settings),
-                  label: '设置'.tr(),
-                  backgroundColor: Colors.white,
-                ),
-              ],
-              currentIndex: _selectedIndex,
-              onTap: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
+          ? Container(
+              padding: Util.isAndroid ? EdgeInsets.only(bottom: 12) : null,
+              child: CustomTabBar(
+                items: [
+                  CustomTab(icon: Icons.business, label: "文件".tr()),
+                  CustomTab(icon: Icons.settings, label: "设置".tr()),
+                ],
+                onItemChanged: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+              ),
             )
           : null,
     );
@@ -60,14 +56,7 @@ class _IndexState extends ConsumerState<Index> {
 }
 
 class DesktopIndex extends ConsumerStatefulWidget {
-  final String? initialRoute;
-  final RouteFactory? onGenerateRoute;
-
-  const DesktopIndex({
-    super.key,
-    this.initialRoute,
-    this.onGenerateRoute,
-  });
+  const DesktopIndex({super.key});
 
   @override
   ConsumerState<DesktopIndex> createState() => _DesktopIndexState();
@@ -82,6 +71,13 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onGenerateRoute = App.router.onGenerateRouteReplace(
+      context: context,
+      replace: {
+        "/": null,
+      },
+    );
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) async {
@@ -115,18 +111,18 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                   children: [
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.settings),
+                      icon: Icon(Icons.settings, color: colorScheme.onSurface),
                       onPressed: () {
-                        showListDialog2(
+                        showCustomDialog(
                           context,
                           child: const DesktopSetting(),
                         );
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.help),
+                      icon: Icon(Icons.help, color: colorScheme.onSurface),
                       onPressed: () {
-                        showListDialog2(
+                        showCustomDialog(
                           context,
                           child: const DesktopHelp(),
                         );
@@ -136,6 +132,7 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                       IconButton(
                         icon: Icon(
                           _showFileTree ? Icons.menu_open : Icons.menu,
+                          color: colorScheme.onSurface,
                         ),
                         onPressed: () {
                           setState(() {
@@ -167,12 +164,12 @@ class _DesktopIndexState extends ConsumerState<DesktopIndex> {
                 Navigator(
                   key: _navigatorKey,
                   initialRoute: "/file/list",
-                  onGenerateRoute: widget.onGenerateRoute,
+                  onGenerateRoute: onGenerateRoute,
                 ),
                 Navigator(
                   key: _navigatorKey1,
                   initialRoute: "/task/list",
-                  onGenerateRoute: widget.onGenerateRoute,
+                  onGenerateRoute: onGenerateRoute,
                 ),
               ].elementAt(_selectedIndex),
             ),

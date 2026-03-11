@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+
+import '../common/utils/util.dart';
 
 typedef RouterMiddleware = WidgetBuilder? Function(RouteSettings settings);
 
@@ -50,7 +54,10 @@ class CustomRouter {
     return routes["/404"] as WidgetBuilder;
   }
 
-  RouteFactory replaceRoute({Map<String, WidgetBuilder?> replace = const {}}) {
+  RouteFactory onGenerateRouteReplace({
+    required BuildContext context,
+    Map<String, WidgetBuilder?> replace = const {},
+  }) {
     final newRoutes = {
       for (final key in routes.keys)
         if (!replace.containsKey(key) || replace[key] != null)
@@ -65,23 +72,65 @@ class CustomRouter {
       routes: newRoutes,
       middlewares: middlewares,
     );
-    return newRouter.generateRoute;
+    return newRouter.onGenerateRoute(context);
   }
 
-  Route<dynamic>? generateRoute(RouteSettings settings) {
-    final builder = found(settings) ?? notFound();
-    // return PageRouteBuilder(
-    //   pageBuilder: (
-    //     BuildContext context,
-    //     Animation<double> animation,
-    //     Animation<double> secondaryAnimation,
-    //   ) =>
-    //       builder(context),
-    //   settings: settings,
-    // );
-    return MaterialPageRoute(
-      builder: builder,
-      settings: settings,
-    );
+  RouteFactory onGenerateRoute(BuildContext context) {
+    return (RouteSettings settings) {
+      final builder = found(settings) ?? notFound();
+      // 无动画
+      // return PageRouteBuilder(
+      //   pageBuilder: (
+      //     BuildContext context,
+      //     Animation<double> animation,
+      //     Animation<double> secondaryAnimation,
+      //   ) {
+      //     return builder(context);
+      //   },
+      //   settings: settings,
+      // );
+
+      // 从右向左
+      // return PageRouteBuilder(
+      //   settings: settings,
+      //   pageBuilder: (context, animation, secondaryAnimation) {
+      //     return builder(context);
+      //   },
+      //   transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      //     const begin = Offset(1.0, 0.0);
+      //     const end = Offset.zero;
+      //     const curve = Curves.ease;
+
+      //     var tween = Tween(
+      //       begin: begin,
+      //       end: end,
+      //     ).chain(CurveTween(curve: curve));
+      //     return SlideTransition(position: animation.drive(tween), child: child);
+      //   },
+      //   transitionDuration: Duration(milliseconds: 300),
+      // );
+      if (Util.isDesktop) {
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return builder(context);
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: Duration(milliseconds: 200),
+        );
+      }
+      if (isMaterial(context)) {
+        return MaterialPageRoute(
+          builder: builder,
+          settings: settings,
+        );
+      }
+      return CupertinoPageRoute(
+        builder: builder,
+        settings: settings,
+      );
+    };
   }
 }

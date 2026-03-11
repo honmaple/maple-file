@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	filepath "path"
@@ -146,7 +147,15 @@ func (d *Alist) Get(ctx context.Context, path string) (driver.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	return driver.NewFile(filepath.Dir(path), &fileinfo{gjson.ParseBytes(resp).Get("data")}), nil
+	result := gjson.ParseBytes(resp)
+	if result.Get("code").Int() != 200 {
+		msg := result.Get("message").String()
+		if strings.Contains(msg, "not found") {
+			return nil, os.ErrNotExist
+		}
+		return nil, errors.New(msg)
+	}
+	return driver.NewFile(filepath.Dir(path), &fileinfo{result.Get("data")}), nil
 }
 
 func (d *Alist) Open(path string) (driver.FileReader, error) {

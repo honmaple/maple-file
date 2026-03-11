@@ -80,6 +80,7 @@ class FileDescriptorProto extends $pb.GeneratedMessage {
     $core.Iterable<$core.int>? weakDependency,
     $core.String? syntax,
     Edition? edition,
+    $core.Iterable<$core.String>? optionDependency,
   }) {
     final $result = create();
     if (name != null) {
@@ -121,6 +122,9 @@ class FileDescriptorProto extends $pb.GeneratedMessage {
     if (edition != null) {
       $result.edition = edition;
     }
+    if (optionDependency != null) {
+      $result.optionDependency.addAll(optionDependency);
+    }
     return $result;
   }
   FileDescriptorProto._() : super();
@@ -141,6 +145,7 @@ class FileDescriptorProto extends $pb.GeneratedMessage {
     ..p<$core.int>(11, _omitFieldNames ? '' : 'weakDependency', $pb.PbFieldType.P3)
     ..aOS(12, _omitFieldNames ? '' : 'syntax')
     ..e<Edition>(14, _omitFieldNames ? '' : 'edition', $pb.PbFieldType.OE, defaultOrMaker: Edition.EDITION_UNKNOWN, valueOf: Edition.valueOf, enumValues: Edition.values)
+    ..pPS(15, _omitFieldNames ? '' : 'optionDependency')
   ;
 
   @$core.Deprecated(
@@ -262,6 +267,11 @@ class FileDescriptorProto extends $pb.GeneratedMessage {
   $core.bool hasEdition() => $_has(12);
   @$pb.TagNumber(14)
   void clearEdition() => clearField(14);
+
+  /// Names of files imported by this file purely for the purpose of providing
+  /// option extensions. These are excluded from the dependency list above.
+  @$pb.TagNumber(15)
+  $core.List<$core.String> get optionDependency => $_getList(13);
 }
 
 class DescriptorProto_ExtensionRange extends $pb.GeneratedMessage {
@@ -423,6 +433,7 @@ class DescriptorProto extends $pb.GeneratedMessage {
     $core.Iterable<OneofDescriptorProto>? oneofDecl,
     $core.Iterable<DescriptorProto_ReservedRange>? reservedRange,
     $core.Iterable<$core.String>? reservedName,
+    SymbolVisibility? visibility,
   }) {
     final $result = create();
     if (name != null) {
@@ -455,6 +466,9 @@ class DescriptorProto extends $pb.GeneratedMessage {
     if (reservedName != null) {
       $result.reservedName.addAll(reservedName);
     }
+    if (visibility != null) {
+      $result.visibility = visibility;
+    }
     return $result;
   }
   DescriptorProto._() : super();
@@ -472,6 +486,7 @@ class DescriptorProto extends $pb.GeneratedMessage {
     ..pc<OneofDescriptorProto>(8, _omitFieldNames ? '' : 'oneofDecl', $pb.PbFieldType.PM, subBuilder: OneofDescriptorProto.create)
     ..pc<DescriptorProto_ReservedRange>(9, _omitFieldNames ? '' : 'reservedRange', $pb.PbFieldType.PM, subBuilder: DescriptorProto_ReservedRange.create)
     ..pPS(10, _omitFieldNames ? '' : 'reservedName')
+    ..e<SymbolVisibility>(11, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: SymbolVisibility.VISIBILITY_UNSET, valueOf: SymbolVisibility.valueOf, enumValues: SymbolVisibility.values)
   ;
 
   @$core.Deprecated(
@@ -540,6 +555,16 @@ class DescriptorProto extends $pb.GeneratedMessage {
   /// A given name may only be reserved once.
   @$pb.TagNumber(10)
   $core.List<$core.String> get reservedName => $_getList(9);
+
+  /// Support for `export` and `local` keywords on enums.
+  @$pb.TagNumber(11)
+  SymbolVisibility get visibility => $_getN(10);
+  @$pb.TagNumber(11)
+  set visibility(SymbolVisibility v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasVisibility() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearVisibility() => clearField(11);
 }
 
 class ExtensionRangeOptions_Declaration extends $pb.GeneratedMessage {
@@ -1125,6 +1150,7 @@ class EnumDescriptorProto extends $pb.GeneratedMessage {
     EnumOptions? options,
     $core.Iterable<EnumDescriptorProto_EnumReservedRange>? reservedRange,
     $core.Iterable<$core.String>? reservedName,
+    SymbolVisibility? visibility,
   }) {
     final $result = create();
     if (name != null) {
@@ -1142,6 +1168,9 @@ class EnumDescriptorProto extends $pb.GeneratedMessage {
     if (reservedName != null) {
       $result.reservedName.addAll(reservedName);
     }
+    if (visibility != null) {
+      $result.visibility = visibility;
+    }
     return $result;
   }
   EnumDescriptorProto._() : super();
@@ -1154,6 +1183,7 @@ class EnumDescriptorProto extends $pb.GeneratedMessage {
     ..aOM<EnumOptions>(3, _omitFieldNames ? '' : 'options', subBuilder: EnumOptions.create)
     ..pc<EnumDescriptorProto_EnumReservedRange>(4, _omitFieldNames ? '' : 'reservedRange', $pb.PbFieldType.PM, subBuilder: EnumDescriptorProto_EnumReservedRange.create)
     ..pPS(5, _omitFieldNames ? '' : 'reservedName')
+    ..e<SymbolVisibility>(6, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: SymbolVisibility.VISIBILITY_UNSET, valueOf: SymbolVisibility.valueOf, enumValues: SymbolVisibility.values)
   ;
 
   @$core.Deprecated(
@@ -1210,6 +1240,16 @@ class EnumDescriptorProto extends $pb.GeneratedMessage {
   /// be reserved once.
   @$pb.TagNumber(5)
   $core.List<$core.String> get reservedName => $_getList(4);
+
+  /// Support for `export` and `local` keywords on enums.
+  @$pb.TagNumber(6)
+  SymbolVisibility get visibility => $_getN(5);
+  @$pb.TagNumber(6)
+  set visibility(SymbolVisibility v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasVisibility() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearVisibility() => clearField(6);
 }
 
 /// Describes a value within an enum.
@@ -3229,6 +3269,38 @@ class UninterpretedOption extends $pb.GeneratedMessage {
   void clearAggregateValue() => clearField(8);
 }
 
+class FeatureSet_VisibilityFeature extends $pb.GeneratedMessage {
+  factory FeatureSet_VisibilityFeature() => create();
+  FeatureSet_VisibilityFeature._() : super();
+  factory FeatureSet_VisibilityFeature.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory FeatureSet_VisibilityFeature.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FeatureSet.VisibilityFeature', package: const $pb.PackageName(_omitMessageNames ? '' : 'google.protobuf'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  FeatureSet_VisibilityFeature clone() => FeatureSet_VisibilityFeature()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  FeatureSet_VisibilityFeature copyWith(void Function(FeatureSet_VisibilityFeature) updates) => super.copyWith((message) => updates(message as FeatureSet_VisibilityFeature)) as FeatureSet_VisibilityFeature;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FeatureSet_VisibilityFeature create() => FeatureSet_VisibilityFeature._();
+  FeatureSet_VisibilityFeature createEmptyInstance() => create();
+  static $pb.PbList<FeatureSet_VisibilityFeature> createRepeated() => $pb.PbList<FeatureSet_VisibilityFeature>();
+  @$core.pragma('dart2js:noInline')
+  static FeatureSet_VisibilityFeature getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FeatureSet_VisibilityFeature>(create);
+  static FeatureSet_VisibilityFeature? _defaultInstance;
+}
+
 /// TODO Enums in C++ gencode (and potentially other languages) are
 /// not well scoped.  This means that each of the feature enums below can clash
 /// with each other.  The short names we've chosen maximize call-site
@@ -3244,6 +3316,7 @@ class FeatureSet extends $pb.GeneratedMessage {
     FeatureSet_MessageEncoding? messageEncoding,
     FeatureSet_JsonFormat? jsonFormat,
     FeatureSet_EnforceNamingStyle? enforceNamingStyle,
+    FeatureSet_VisibilityFeature_DefaultSymbolVisibility? defaultSymbolVisibility,
   }) {
     final $result = create();
     if (fieldPresence != null) {
@@ -3267,6 +3340,9 @@ class FeatureSet extends $pb.GeneratedMessage {
     if (enforceNamingStyle != null) {
       $result.enforceNamingStyle = enforceNamingStyle;
     }
+    if (defaultSymbolVisibility != null) {
+      $result.defaultSymbolVisibility = defaultSymbolVisibility;
+    }
     return $result;
   }
   FeatureSet._() : super();
@@ -3281,6 +3357,7 @@ class FeatureSet extends $pb.GeneratedMessage {
     ..e<FeatureSet_MessageEncoding>(5, _omitFieldNames ? '' : 'messageEncoding', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_MessageEncoding.MESSAGE_ENCODING_UNKNOWN, valueOf: FeatureSet_MessageEncoding.valueOf, enumValues: FeatureSet_MessageEncoding.values)
     ..e<FeatureSet_JsonFormat>(6, _omitFieldNames ? '' : 'jsonFormat', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_JsonFormat.JSON_FORMAT_UNKNOWN, valueOf: FeatureSet_JsonFormat.valueOf, enumValues: FeatureSet_JsonFormat.values)
     ..e<FeatureSet_EnforceNamingStyle>(7, _omitFieldNames ? '' : 'enforceNamingStyle', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_EnforceNamingStyle.ENFORCE_NAMING_STYLE_UNKNOWN, valueOf: FeatureSet_EnforceNamingStyle.valueOf, enumValues: FeatureSet_EnforceNamingStyle.values)
+    ..e<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(8, _omitFieldNames ? '' : 'defaultSymbolVisibility', $pb.PbFieldType.OE, defaultOrMaker: FeatureSet_VisibilityFeature_DefaultSymbolVisibility.DEFAULT_SYMBOL_VISIBILITY_UNKNOWN, valueOf: FeatureSet_VisibilityFeature_DefaultSymbolVisibility.valueOf, enumValues: FeatureSet_VisibilityFeature_DefaultSymbolVisibility.values)
     ..hasExtensions = true
   ;
 
@@ -3367,6 +3444,15 @@ class FeatureSet extends $pb.GeneratedMessage {
   $core.bool hasEnforceNamingStyle() => $_has(6);
   @$pb.TagNumber(7)
   void clearEnforceNamingStyle() => clearField(7);
+
+  @$pb.TagNumber(8)
+  FeatureSet_VisibilityFeature_DefaultSymbolVisibility get defaultSymbolVisibility => $_getN(7);
+  @$pb.TagNumber(8)
+  set defaultSymbolVisibility(FeatureSet_VisibilityFeature_DefaultSymbolVisibility v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasDefaultSymbolVisibility() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDefaultSymbolVisibility() => clearField(8);
 }
 
 /// A map from every known edition with a unique set of defaults to its

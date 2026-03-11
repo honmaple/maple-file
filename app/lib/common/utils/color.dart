@@ -1,5 +1,6 @@
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class ColorUtil {
   static Color backgroundColorWithString(String value) {
@@ -20,5 +21,26 @@ class ColorUtil {
             186
         ? Colors.black
         : Colors.white;
+  }
+
+  static Color scaffoldBackgroundColor(BuildContext context) {
+    return CupertinoDynamicColor.resolve(
+      CupertinoColors.systemGroupedBackground,
+      context,
+    );
+  }
+
+  static Color backgroundColor(BuildContext context) {
+    return CupertinoDynamicColor.resolve(
+      CupertinoColors.secondarySystemGroupedBackground,
+      context,
+    );
+  }
+
+  static Color secondaryBackgroundColor(BuildContext context) {
+    return CupertinoDynamicColor.resolve(
+      CupertinoColors.secondarySystemGroupedBackground,
+      context,
+    );
   }
 }

@@ -14,20 +14,20 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import '../../google/protobuf/timestamp.pb.dart' as $2;
-import 'repo.pb.dart' as $1;
+import '../../google/protobuf/timestamp.pb.dart' as $3;
+import 'repo.pb.dart' as $2;
 
 class File extends $pb.GeneratedMessage {
   factory File({
     $core.int? id,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? updatedAt,
+    $3.Timestamp? createdAt,
+    $3.Timestamp? updatedAt,
     $core.String? name,
     $core.String? type,
     $fixnum.Int64? size,
     $core.String? hash,
     $core.String? path,
-    $1.Repo? repo,
+    $2.Repo? repo,
     $core.int? repoId,
   }) {
     final $result = create();
@@ -69,14 +69,14 @@ class File extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'File', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.O3)
-    ..aOM<$2.Timestamp>(2, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$3.Timestamp>(2, _omitFieldNames ? '' : 'createdAt', subBuilder: $3.Timestamp.create)
+    ..aOM<$3.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $3.Timestamp.create)
     ..aOS(4, _omitFieldNames ? '' : 'name')
     ..aOS(5, _omitFieldNames ? '' : 'type')
     ..aInt64(6, _omitFieldNames ? '' : 'size')
     ..aOS(7, _omitFieldNames ? '' : 'hash')
     ..aOS(8, _omitFieldNames ? '' : 'path')
-    ..aOM<$1.Repo>(10, _omitFieldNames ? '' : 'repo', subBuilder: $1.Repo.create)
+    ..aOM<$2.Repo>(10, _omitFieldNames ? '' : 'repo', subBuilder: $2.Repo.create)
     ..a<$core.int>(11, _omitFieldNames ? '' : 'repoId', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
@@ -114,27 +114,27 @@ class File extends $pb.GeneratedMessage {
 
   /// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
   @$pb.TagNumber(2)
-  $2.Timestamp get createdAt => $_getN(1);
+  $3.Timestamp get createdAt => $_getN(1);
   @$pb.TagNumber(2)
-  set createdAt($2.Timestamp v) { setField(2, v); }
+  set createdAt($3.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCreatedAt() => $_has(1);
   @$pb.TagNumber(2)
   void clearCreatedAt() => clearField(2);
   @$pb.TagNumber(2)
-  $2.Timestamp ensureCreatedAt() => $_ensure(1);
+  $3.Timestamp ensureCreatedAt() => $_ensure(1);
 
   /// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
   @$pb.TagNumber(3)
-  $2.Timestamp get updatedAt => $_getN(2);
+  $3.Timestamp get updatedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set updatedAt($2.Timestamp v) { setField(3, v); }
+  set updatedAt($3.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUpdatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearUpdatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $2.Timestamp ensureUpdatedAt() => $_ensure(2);
+  $3.Timestamp ensureUpdatedAt() => $_ensure(2);
 
   /// @gotags: gorm:"not null;"
   @$pb.TagNumber(4)
@@ -184,15 +184,15 @@ class File extends $pb.GeneratedMessage {
   void clearPath() => clearField(8);
 
   @$pb.TagNumber(10)
-  $1.Repo get repo => $_getN(8);
+  $2.Repo get repo => $_getN(8);
   @$pb.TagNumber(10)
-  set repo($1.Repo v) { setField(10, v); }
+  set repo($2.Repo v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasRepo() => $_has(8);
   @$pb.TagNumber(10)
   void clearRepo() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Repo ensureRepo() => $_ensure(8);
+  $2.Repo ensureRepo() => $_ensure(8);
 
   /// @gotags: gorm:"not null"
   @$pb.TagNumber(11)

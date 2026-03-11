@@ -1,8 +1,11 @@
+import 'package:path/path.dart' as filepath;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/time.dart';
@@ -15,6 +18,9 @@ import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
 import 'file_action.dart';
 import 'file_breadcrumb.dart';
+
+import 'preview/image.dart';
+import 'preview/source.dart';
 
 import '../providers/file.dart';
 import '../providers/file_setting.dart';
@@ -242,29 +248,61 @@ class FileIcon extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final setting = ref.watch(fileSettingProvider);
-    if (setting.icon == FileListIcon.circle) {
-      return Container(
-        height: 48 * size,
-        width: 48 * size,
-        decoration: BoxDecoration(
-          color: setting.iconColor == null
-              ? Theme.of(context).primaryColor
-              : setting.scheme.primaryColor(context),
-          borderRadius: BorderRadius.all(Radius.circular(24 * size)),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          PathUtil.icon(file.name, type: file.type),
-          color: ColorUtil.foregroundColorWithString(file.name),
-        ),
-      );
+    switch (setting.icon) {
+      case FileListIcon.thumb:
+        return SizedBox(
+          width: 64 * size,
+          height: 64 * size,
+          child: file.type.startsWith("image/")
+              ? _buildThumb(context, setting)
+              : _build(context, setting),
+        );
+      case FileListIcon.circle:
+        return Container(
+          height: 48 * size,
+          width: 48 * size,
+          decoration: BoxDecoration(
+            color: setting.iconColor == null
+                ? Theme.of(context).primaryColor
+                : setting.scheme.primaryColor(context),
+            borderRadius: BorderRadius.all(Radius.circular(24 * size)),
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            PathUtil.icon(file.name, type: file.type),
+            color: ColorUtil.foregroundColorWithString(file.name),
+          ),
+        );
+      case FileListIcon.rectangle:
+        return SizedBox(
+          width: 64 * size,
+          height: 64 * size,
+          child: _build(context, setting),
+        );
     }
+  }
+
+  _build(BuildContext context, FileSetting setting) {
     return Icon(
       PathUtil.icon(file.name, type: file.type),
       size: 64 * size,
       color: setting.iconColor == null
           ? Theme.of(context).primaryColor
           : setting.scheme.primaryColor(context),
+    );
+  }
+
+  _buildThumb(BuildContext context, FileSetting setting) {
+    return ImagePreview(
+      source: PreviewSource.network(
+        Grpc.instance.thumbURL(
+          filepath.posix.join(file.path, file.name),
+        ),
+        name: file.name,
+      ),
+      errorBuilder: (context) {
+        return _build(context, setting);
+      },
     );
   }
 }

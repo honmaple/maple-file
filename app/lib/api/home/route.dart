@@ -12,12 +12,7 @@ Future<void> init(CustomRouter router) async {
       if (Breakpoint.isSmall(context)) {
         return const Index();
       }
-      return DesktopIndex(
-        initialRoute: "/file/list",
-        onGenerateRoute: router.replaceRoute(replace: {
-          "/": null,
-        }),
-      );
+      return const DesktopIndex();
     },
     '/help': (context) {
       return const Help();

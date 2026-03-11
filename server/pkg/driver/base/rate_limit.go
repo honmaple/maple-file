@@ -9,11 +9,6 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const (
-	RateLimitActionWait   = "wait"
-	RateLimitActionReturn = "return"
-)
-
 type RateLimitOption struct {
 	Wait  bool          `json:"wait"`
 	Burst int           `json:"burst"`

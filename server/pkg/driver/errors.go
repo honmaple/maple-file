@@ -2,6 +2,7 @@ package driver
 
 import (
 	"errors"
+	"os"
 
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
@@ -17,3 +18,19 @@ var (
 
 	VerifyOption = util.VerifyOption
 )
+
+func UnderlyingError(err error) error {
+	for err != nil {
+		switch e := err.(type) {
+		case *os.PathError:
+			err = e.Err
+		case *os.LinkError:
+			err = e.Err
+		case *os.SyscallError:
+			err = e.Err
+		default:
+			return err
+		}
+	}
+	return err
+}

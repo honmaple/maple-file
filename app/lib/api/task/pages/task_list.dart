@@ -287,9 +287,12 @@ class _DesktopTaskState extends State<DesktopTask> {
       menu: menu,
       navigatorKey: _navigatorKey,
       initialRoute: "/task/list",
-      onGenerateRoute: App.router.replaceRoute(replace: {
-        "/": null,
-      }),
+      onGenerateRoute: App.router.onGenerateRouteReplace(
+        context: context,
+        replace: {
+          "/": null,
+        },
+      ),
     );
   }
 }

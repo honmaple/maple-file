@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/custom.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 import 'package:maple_file/common/widgets/tree.dart';
 
@@ -35,6 +38,10 @@ List<HelpLink> features = [
   HelpLink(
     name: "文件加密".tr(),
     link: "https://fileapp.honmaple.com/guide/features/encrypt.html",
+  ),
+  HelpLink(
+    name: "访问频率限制".tr(),
+    link: "https://fileapp.honmaple.com/guide/features/ratelimit.html",
   ),
   HelpLink(
     name: "回收站".tr(),
@@ -90,63 +97,64 @@ class Help extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    final themeData = Theme.of(context);
+    return PlatformScaffold(
+      iosContentPadding: true,
+      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
+      appBar: PlatformAppBar(
         title: Text("帮助".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),
-      body: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: ListView(
-          children: [
-            ListTile(
-              dense: true,
-              title: Text("功能列表".tr()),
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          CustomListSection(
+            hasLeading: false,
+            dividerMargin: 20,
+            header: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("功能列表".tr(), style: themeData.textTheme.bodySmall),
             ),
-            Card(
-              child: Column(
-                children: [
-                  for (final item in features)
-                    ListTile(
-                      title: Text(item.name),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () async {
-                        await launchUrl(
-                          Uri.parse(
-                            item.link,
-                          ),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      },
-                    ),
-                ],
-              ),
+            children: [
+              for (final item in features)
+                PlatformListTile(
+                  title: Text(item.name),
+                  trailing: PlatformListTileChevron(),
+                  onTap: () async {
+                    await launchUrl(
+                      Uri.parse(
+                        item.link,
+                      ),
+                      mode: LaunchMode.externalApplication,
+                    );
+                  },
+                ),
+            ],
+          ),
+          CustomListSection(
+            hasLeading: false,
+            dividerMargin: 20,
+            header: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("存储类型".tr(), style: themeData.textTheme.bodySmall),
             ),
-            ListTile(
-              dense: true,
-              title: Text("存储类型".tr()),
-            ),
-            Card(
-              child: Column(
-                children: [
-                  for (final item in drivers)
-                    ListTile(
-                      title: Text(item.name),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () async {
-                        await launchUrl(
-                          Uri.parse(
-                            item.link,
-                          ),
-                          mode: LaunchMode.externalApplication,
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+            children: [
+              for (final item in drivers)
+                PlatformListTile(
+                  title: Text(item.name),
+                  trailing: PlatformListTileChevron(),
+                  onTap: () async {
+                    await launchUrl(
+                      Uri.parse(
+                        item.link,
+                      ),
+                      mode: LaunchMode.externalApplication,
+                    );
+                  },
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -224,9 +232,12 @@ class _DesktopHelpState extends State<DesktopHelp> {
       menu: menu,
       navigatorKey: _navigatorKey,
       initialRoute: "/about",
-      onGenerateRoute: App.router.replaceRoute(replace: {
-        "/": null,
-      }),
+      onGenerateRoute: App.router.onGenerateRouteReplace(
+        context: context,
+        replace: {
+          "/": null,
+        },
+      ),
     );
   }
 }

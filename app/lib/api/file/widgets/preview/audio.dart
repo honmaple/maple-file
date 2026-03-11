@@ -219,7 +219,7 @@ class _AudioListPreviewState extends State<AudioListPreview> {
         ),
         IconButton(
           onPressed: () {
-            showListDialog2(
+            showCustomDialog(
               context,
               height: MediaQuery.sizeOf(context).height * 0.618,
               child: AudioPreviewPlaylist(

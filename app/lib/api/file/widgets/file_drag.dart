@@ -46,7 +46,7 @@ class _FileDragState extends ConsumerState<FileDrag> {
           );
         }).toList();
 
-        final result = await showListDialog2<List<File>>(
+        final result = await showCustomDialog<List<File>>(
           context,
           child: FileDragList(files: files),
         );

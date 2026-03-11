@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/form.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 
 part 'upyun.g.dart';
@@ -46,48 +47,48 @@ class _UpyunState extends State<Upyun> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          CustomFormField(
-            label: "存储桶".tr(),
-            value: _option.bucket,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.bucket = result;
-              });
+    return CustomListSection(
+      hasLeading: false,
+      dividerMargin: 20,
+      children: [
+        CustomListTileTextField(
+          label: "存储桶".tr(),
+          value: _option.bucket,
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option.bucket = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          CustomFormField(
-            label: "操作员".tr(),
-            value: _option.operator,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.operator = result;
-              });
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+        CustomListTileTextField(
+          label: "操作员".tr(),
+          value: _option.operator,
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option.operator = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-          CustomFormField(
-            type: CustomFormFieldType.password,
-            label: "操作密码".tr(),
-            value: _option.password,
-            isRequired: true,
-            onTap: (result) {
-              setState(() {
-                _option.password = result;
-              });
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+        CustomListTileTextField(
+          type: CustomListTileTextFieldType.password,
+          label: "操作密码".tr(),
+          value: _option.password,
+          isRequired: true,
+          onChanged: (result) {
+            setState(() {
+              _option.password = result;
+            });
 
-              widget.form.option = jsonEncode(_option);
-            },
-          ),
-        ],
-      ),
+            widget.form.option = jsonEncode(_option);
+          },
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import 'package:path/path.dart' as filepath;
@@ -10,7 +11,9 @@ import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/path.dart';
+import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
+import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
 import 'package:maple_file/api/file/providers/file.dart';
@@ -26,17 +29,16 @@ class SettingBackup extends ConsumerStatefulWidget {
 class _SettingBackupState extends ConsumerState<SettingBackup> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
+      appBar: PlatformAppBar(
         title: Text('备份与恢复'.tr()),
       ),
-      body: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: CustomScrollView(
-          slivers: [
-            buildBody(context),
-          ],
-        ),
+      body: CustomScrollView(
+        slivers: [
+          buildBody(context),
+        ],
       ),
     );
   }
@@ -44,34 +46,41 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
   buildBody(BuildContext context) {
     return SliverList.list(
       children: <Widget>[
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                title: Text('备份文件'.tr()),
-                subtitle: FutureBuilder(
-                  future: PathUtil.getDatabasePath(),
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    } else {
-                      return Text(snapshot.data);
-                    }
-                  },
-                ),
+        CustomListSection(
+          hasLeading: false,
+          dividerMargin: 20,
+          children: [
+            ListTile(
+              title: Text('备份文件'.tr()),
+              subtitle: FutureBuilder(
+                future: PathUtil.getDatabasePath(),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    return Text(
+                      snapshot.data,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: Colors.grey),
+                    );
+                  }
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
-        SizedBox(
+        Container(
+          margin: EdgeInsets.fromLTRB(16, 0, 16, 0),
           width: double.infinity,
-          child: ElevatedButton(
+          child: FilledButton(
             child: Text('备份'.tr()),
             onPressed: () {
-              showListDialog2(
+              showCustomDialog(
                 context,
                 useAlertDialog: true,
                 child: Column(
@@ -106,12 +115,17 @@ class _SettingBackupState extends ConsumerState<SettingBackup> {
           ),
         ),
         const SizedBox(height: 8),
-        SizedBox(
+        Container(
+          margin: EdgeInsets.fromLTRB(16, 0, 16, 0),
           width: double.infinity,
-          child: ElevatedButton(
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: ColorUtil.backgroundColor(context),
+            ),
             child: Text('恢复'.tr()),
             onPressed: () {
-              showListDialog2(
+              showCustomDialog(
                 context,
                 useAlertDialog: true,
                 child: Column(

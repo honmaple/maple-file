@@ -25,5 +25,14 @@ func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) 
 }
 
 func New(app *app.App) *Service {
+	// settings := make([]*pb.Setting, 0)
+	// db.Model(pb.Setting{}).Find(&settings)
+	// for _, set := range settings {
+	//	value := make(map[string]any)
+	//	if err := json.Unmarshal([]byte(set.GetValue()), &value); err != nil {
+	//		continue
+	//	}
+	//	conf.Set(set.GetKey(), value)
+	// }
 	return &Service{app: app}
 }

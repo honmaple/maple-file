@@ -19,177 +19,177 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ServerService_StartServer_FullMethodName  = "/api.file.ServerService/StartServer"
-	ServerService_StopServer_FullMethodName   = "/api.file.ServerService/StopServer"
-	ServerService_ServerStatus_FullMethodName = "/api.file.ServerService/ServerStatus"
+	ExternalServerService_StartServer_FullMethodName  = "/api.file.ExternalServerService/StartServer"
+	ExternalServerService_StopServer_FullMethodName   = "/api.file.ExternalServerService/StopServer"
+	ExternalServerService_ServerStatus_FullMethodName = "/api.file.ExternalServerService/ServerStatus"
 )
 
-// ServerServiceClient is the client API for ServerService service.
+// ExternalServerServiceClient is the client API for ExternalServerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ServerServiceClient interface {
-	StartServer(ctx context.Context, in *Server_StartRequest, opts ...grpc.CallOption) (*Server_StartResponse, error)
-	StopServer(ctx context.Context, in *Server_StopRequest, opts ...grpc.CallOption) (*Server_StopResponse, error)
-	ServerStatus(ctx context.Context, in *Server_GetRequest, opts ...grpc.CallOption) (*Server_GetResponse, error)
+type ExternalServerServiceClient interface {
+	StartServer(ctx context.Context, in *ExternalServer_StartRequest, opts ...grpc.CallOption) (*ExternalServer_StartResponse, error)
+	StopServer(ctx context.Context, in *ExternalServer_StopRequest, opts ...grpc.CallOption) (*ExternalServer_StopResponse, error)
+	ServerStatus(ctx context.Context, in *ExternalServer_GetRequest, opts ...grpc.CallOption) (*ExternalServer_GetResponse, error)
 }
 
-type serverServiceClient struct {
+type externalServerServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewServerServiceClient(cc grpc.ClientConnInterface) ServerServiceClient {
-	return &serverServiceClient{cc}
+func NewExternalServerServiceClient(cc grpc.ClientConnInterface) ExternalServerServiceClient {
+	return &externalServerServiceClient{cc}
 }
 
-func (c *serverServiceClient) StartServer(ctx context.Context, in *Server_StartRequest, opts ...grpc.CallOption) (*Server_StartResponse, error) {
+func (c *externalServerServiceClient) StartServer(ctx context.Context, in *ExternalServer_StartRequest, opts ...grpc.CallOption) (*ExternalServer_StartResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Server_StartResponse)
-	err := c.cc.Invoke(ctx, ServerService_StartServer_FullMethodName, in, out, cOpts...)
+	out := new(ExternalServer_StartResponse)
+	err := c.cc.Invoke(ctx, ExternalServerService_StartServer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serverServiceClient) StopServer(ctx context.Context, in *Server_StopRequest, opts ...grpc.CallOption) (*Server_StopResponse, error) {
+func (c *externalServerServiceClient) StopServer(ctx context.Context, in *ExternalServer_StopRequest, opts ...grpc.CallOption) (*ExternalServer_StopResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Server_StopResponse)
-	err := c.cc.Invoke(ctx, ServerService_StopServer_FullMethodName, in, out, cOpts...)
+	out := new(ExternalServer_StopResponse)
+	err := c.cc.Invoke(ctx, ExternalServerService_StopServer_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *serverServiceClient) ServerStatus(ctx context.Context, in *Server_GetRequest, opts ...grpc.CallOption) (*Server_GetResponse, error) {
+func (c *externalServerServiceClient) ServerStatus(ctx context.Context, in *ExternalServer_GetRequest, opts ...grpc.CallOption) (*ExternalServer_GetResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Server_GetResponse)
-	err := c.cc.Invoke(ctx, ServerService_ServerStatus_FullMethodName, in, out, cOpts...)
+	out := new(ExternalServer_GetResponse)
+	err := c.cc.Invoke(ctx, ExternalServerService_ServerStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// ServerServiceServer is the server API for ServerService service.
-// All implementations must embed UnimplementedServerServiceServer
+// ExternalServerServiceServer is the server API for ExternalServerService service.
+// All implementations must embed UnimplementedExternalServerServiceServer
 // for forward compatibility.
-type ServerServiceServer interface {
-	StartServer(context.Context, *Server_StartRequest) (*Server_StartResponse, error)
-	StopServer(context.Context, *Server_StopRequest) (*Server_StopResponse, error)
-	ServerStatus(context.Context, *Server_GetRequest) (*Server_GetResponse, error)
-	mustEmbedUnimplementedServerServiceServer()
+type ExternalServerServiceServer interface {
+	StartServer(context.Context, *ExternalServer_StartRequest) (*ExternalServer_StartResponse, error)
+	StopServer(context.Context, *ExternalServer_StopRequest) (*ExternalServer_StopResponse, error)
+	ServerStatus(context.Context, *ExternalServer_GetRequest) (*ExternalServer_GetResponse, error)
+	mustEmbedUnimplementedExternalServerServiceServer()
 }
 
-// UnimplementedServerServiceServer must be embedded to have
+// UnimplementedExternalServerServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedServerServiceServer struct{}
+type UnimplementedExternalServerServiceServer struct{}
 
-func (UnimplementedServerServiceServer) StartServer(context.Context, *Server_StartRequest) (*Server_StartResponse, error) {
+func (UnimplementedExternalServerServiceServer) StartServer(context.Context, *ExternalServer_StartRequest) (*ExternalServer_StartResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartServer not implemented")
 }
-func (UnimplementedServerServiceServer) StopServer(context.Context, *Server_StopRequest) (*Server_StopResponse, error) {
+func (UnimplementedExternalServerServiceServer) StopServer(context.Context, *ExternalServer_StopRequest) (*ExternalServer_StopResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopServer not implemented")
 }
-func (UnimplementedServerServiceServer) ServerStatus(context.Context, *Server_GetRequest) (*Server_GetResponse, error) {
+func (UnimplementedExternalServerServiceServer) ServerStatus(context.Context, *ExternalServer_GetRequest) (*ExternalServer_GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ServerStatus not implemented")
 }
-func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}
-func (UnimplementedServerServiceServer) testEmbeddedByValue()                       {}
+func (UnimplementedExternalServerServiceServer) mustEmbedUnimplementedExternalServerServiceServer() {}
+func (UnimplementedExternalServerServiceServer) testEmbeddedByValue()                               {}
 
-// UnsafeServerServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ServerServiceServer will
+// UnsafeExternalServerServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ExternalServerServiceServer will
 // result in compilation errors.
-type UnsafeServerServiceServer interface {
-	mustEmbedUnimplementedServerServiceServer()
+type UnsafeExternalServerServiceServer interface {
+	mustEmbedUnimplementedExternalServerServiceServer()
 }
 
-func RegisterServerServiceServer(s grpc.ServiceRegistrar, srv ServerServiceServer) {
-	// If the following call pancis, it indicates UnimplementedServerServiceServer was
+func RegisterExternalServerServiceServer(s grpc.ServiceRegistrar, srv ExternalServerServiceServer) {
+	// If the following call pancis, it indicates UnimplementedExternalServerServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&ServerService_ServiceDesc, srv)
+	s.RegisterService(&ExternalServerService_ServiceDesc, srv)
 }
 
-func _ServerService_StartServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Server_StartRequest)
+func _ExternalServerService_StartServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExternalServer_StartRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).StartServer(ctx, in)
+		return srv.(ExternalServerServiceServer).StartServer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_StartServer_FullMethodName,
+		FullMethod: ExternalServerService_StartServer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).StartServer(ctx, req.(*Server_StartRequest))
+		return srv.(ExternalServerServiceServer).StartServer(ctx, req.(*ExternalServer_StartRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_StopServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Server_StopRequest)
+func _ExternalServerService_StopServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExternalServer_StopRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).StopServer(ctx, in)
+		return srv.(ExternalServerServiceServer).StopServer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_StopServer_FullMethodName,
+		FullMethod: ExternalServerService_StopServer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).StopServer(ctx, req.(*Server_StopRequest))
+		return srv.(ExternalServerServiceServer).StopServer(ctx, req.(*ExternalServer_StopRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ServerService_ServerStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Server_GetRequest)
+func _ExternalServerService_ServerStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExternalServer_GetRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServerServiceServer).ServerStatus(ctx, in)
+		return srv.(ExternalServerServiceServer).ServerStatus(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ServerService_ServerStatus_FullMethodName,
+		FullMethod: ExternalServerService_ServerStatus_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServerServiceServer).ServerStatus(ctx, req.(*Server_GetRequest))
+		return srv.(ExternalServerServiceServer).ServerStatus(ctx, req.(*ExternalServer_GetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// ServerService_ServiceDesc is the grpc.ServiceDesc for ServerService service.
+// ExternalServerService_ServiceDesc is the grpc.ServiceDesc for ExternalServerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ServerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.file.ServerService",
-	HandlerType: (*ServerServiceServer)(nil),
+var ExternalServerService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.file.ExternalServerService",
+	HandlerType: (*ExternalServerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "StartServer",
-			Handler:    _ServerService_StartServer_Handler,
+			Handler:    _ExternalServerService_StartServer_Handler,
 		},
 		{
 			MethodName: "StopServer",
-			Handler:    _ServerService_StopServer_Handler,
+			Handler:    _ExternalServerService_StopServer_Handler,
 		},
 		{
 			MethodName: "ServerStatus",
-			Handler:    _ServerService_ServerStatus_Handler,
+			Handler:    _ExternalServerService_ServerStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

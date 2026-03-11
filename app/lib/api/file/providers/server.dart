@@ -10,18 +10,19 @@ import 'package:maple_file/generated/proto/api/file/server.pbgrpc.dart'
 
 part 'server.g.dart';
 
-class ServerService {
-  static ServerService get instance => _instance;
-  static final ServerService _instance = ServerService._internal();
-  factory ServerService() => _instance;
-  ServerService._internal();
+class ExternalServerService {
+  static ExternalServerService get instance => _instance;
+  static final ExternalServerService _instance =
+      ExternalServerService._internal();
+  factory ExternalServerService() => _instance;
+  ExternalServerService._internal();
 
-  serverpb.ServerServiceClient? _client;
+  serverpb.ExternalServerServiceClient? _client;
   DateTime _clientTime = DateTime.now();
 
-  serverpb.ServerServiceClient get client {
+  serverpb.ExternalServerServiceClient get client {
     if (_client == null || Grpc.instance.connectTime.isAfter(_clientTime)) {
-      _client = serverpb.ServerServiceClient(
+      _client = serverpb.ExternalServerServiceClient(
         Grpc.instance.client,
         options: CallOptions(
           metadata: {"Authorization": "Bearer ${Grpc.instance.token}"},
@@ -32,9 +33,10 @@ class ServerService {
     return _client!;
   }
 
-  Future<serverpb.Server> start(String type, {Map<String, dynamic>? option}) {
+  Future<serverpb.ExternalServer> start(String type,
+      {Map<String, dynamic>? option}) {
     return doFuture(() async {
-      var request = serverpb.Server_StartRequest(
+      var request = serverpb.ExternalServer_StartRequest(
         type: type,
         option: jsonEncode(option),
       );
@@ -45,14 +47,14 @@ class ServerService {
 
   Future<void> stop(String type) {
     return doFuture(() async {
-      var request = serverpb.Server_StopRequest(type: type);
+      var request = serverpb.ExternalServer_StopRequest(type: type);
       await client.stopServer(request);
     });
   }
 
-  Future<serverpb.Server> status(String type) {
+  Future<serverpb.ExternalServer> status(String type) {
     return doFuture(() async {
-      var request = serverpb.Server_GetRequest(type: type);
+      var request = serverpb.ExternalServer_GetRequest(type: type);
       var response = await client.serverStatus(request);
       return response.result;
     });
@@ -62,7 +64,7 @@ class ServerService {
 @Riverpod(keepAlive: true)
 class ServerNotifier extends _$ServerNotifier {
   @override
-  Future<serverpb.Server> build(String type) {
-    return ServerService.instance.status(type);
+  Future<serverpb.ExternalServer> build(String type) {
+    return ExternalServerService.instance.status(type);
   }
 }

@@ -219,7 +219,7 @@ class _WebdavServerState extends ConsumerState<WebdavServer> {
         return;
       }
       final opt = option.copyWith(host: ip).toJson();
-      ServerService.instance.start("webdav", option: opt).then((_) {
+      ExternalServerService.instance.start("webdav", option: opt).then((_) {
         ref.read(webdavSettingProvider.notifier).update((state) {
           return state.copyWith(enabled: true);
         });
@@ -229,7 +229,7 @@ class _WebdavServerState extends ConsumerState<WebdavServer> {
   }
 
   _handleDisable(WebdavOption option) {
-    ServerService.instance.stop("webdav").then((_) {
+    ExternalServerService.instance.stop("webdav").then((_) {
       ref.read(webdavSettingProvider.notifier).update((state) {
         return state.copyWith(enabled: false);
       });

@@ -4,18 +4,18 @@ package api.file;
 
 option go_package = "api/file";
 
-service ServerService {
-	rpc StartServer (Server.StartRequest) returns (Server.StartResponse) {
+service ExternalServerService {
+	rpc StartServer (ExternalServer.StartRequest) returns (ExternalServer.StartResponse) {
 	}
 
-	rpc StopServer (Server.StopRequest) returns (Server.StopResponse) {
+	rpc StopServer (ExternalServer.StopRequest) returns (ExternalServer.StopResponse) {
 	}
 
-	rpc ServerStatus (Server.GetRequest) returns (Server.GetResponse) {
+	rpc ServerStatus (ExternalServer.GetRequest) returns (ExternalServer.GetResponse) {
 	}
 }
 
-message Server {
+message ExternalServer {
 	string addr = 1;
 	bool   running = 2;
 	string error = 3;
@@ -25,7 +25,7 @@ message Server {
 	}
 
 	message GetResponse {
-		Server result = 1;
+		ExternalServer result = 1;
 	}
 
 	message StartRequest {
@@ -34,7 +34,7 @@ message Server {
 	}
 
 	message StartResponse {
-		Server result = 1;
+		ExternalServer result = 1;
 	}
 
 	message StopRequest {

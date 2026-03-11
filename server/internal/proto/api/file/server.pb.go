@@ -21,7 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Server struct {
+type ExternalServer struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
 	Running       bool                   `protobuf:"varint,2,opt,name=running,proto3" json:"running,omitempty"`
@@ -30,20 +30,20 @@ type Server struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server) Reset() {
-	*x = Server{}
+func (x *ExternalServer) Reset() {
+	*x = ExternalServer{}
 	mi := &file_api_file_server_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server) String() string {
+func (x *ExternalServer) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server) ProtoMessage() {}
+func (*ExternalServer) ProtoMessage() {}
 
-func (x *Server) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -55,53 +55,53 @@ func (x *Server) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server.ProtoReflect.Descriptor instead.
-func (*Server) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer.ProtoReflect.Descriptor instead.
+func (*ExternalServer) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Server) GetAddr() string {
+func (x *ExternalServer) GetAddr() string {
 	if x != nil {
 		return x.Addr
 	}
 	return ""
 }
 
-func (x *Server) GetRunning() bool {
+func (x *ExternalServer) GetRunning() bool {
 	if x != nil {
 		return x.Running
 	}
 	return false
 }
 
-func (x *Server) GetError() string {
+func (x *ExternalServer) GetError() string {
 	if x != nil {
 		return x.Error
 	}
 	return ""
 }
 
-type Server_GetRequest struct {
+type ExternalServer_GetRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server_GetRequest) Reset() {
-	*x = Server_GetRequest{}
+func (x *ExternalServer_GetRequest) Reset() {
+	*x = ExternalServer_GetRequest{}
 	mi := &file_api_file_server_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server_GetRequest) String() string {
+func (x *ExternalServer_GetRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server_GetRequest) ProtoMessage() {}
+func (*ExternalServer_GetRequest) ProtoMessage() {}
 
-func (x *Server_GetRequest) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer_GetRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -113,39 +113,39 @@ func (x *Server_GetRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server_GetRequest.ProtoReflect.Descriptor instead.
-func (*Server_GetRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer_GetRequest.ProtoReflect.Descriptor instead.
+func (*ExternalServer_GetRequest) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (x *Server_GetRequest) GetType() string {
+func (x *ExternalServer_GetRequest) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-type Server_GetResponse struct {
+type ExternalServer_GetResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        *Server                `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	Result        *ExternalServer        `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server_GetResponse) Reset() {
-	*x = Server_GetResponse{}
+func (x *ExternalServer_GetResponse) Reset() {
+	*x = ExternalServer_GetResponse{}
 	mi := &file_api_file_server_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server_GetResponse) String() string {
+func (x *ExternalServer_GetResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server_GetResponse) ProtoMessage() {}
+func (*ExternalServer_GetResponse) ProtoMessage() {}
 
-func (x *Server_GetResponse) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer_GetResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -157,19 +157,19 @@ func (x *Server_GetResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server_GetResponse.ProtoReflect.Descriptor instead.
-func (*Server_GetResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer_GetResponse.ProtoReflect.Descriptor instead.
+func (*ExternalServer_GetResponse) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *Server_GetResponse) GetResult() *Server {
+func (x *ExternalServer_GetResponse) GetResult() *ExternalServer {
 	if x != nil {
 		return x.Result
 	}
 	return nil
 }
 
-type Server_StartRequest struct {
+type ExternalServer_StartRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	Option        string                 `protobuf:"bytes,2,opt,name=option,proto3" json:"option,omitempty"`
@@ -177,20 +177,20 @@ type Server_StartRequest struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server_StartRequest) Reset() {
-	*x = Server_StartRequest{}
+func (x *ExternalServer_StartRequest) Reset() {
+	*x = ExternalServer_StartRequest{}
 	mi := &file_api_file_server_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server_StartRequest) String() string {
+func (x *ExternalServer_StartRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server_StartRequest) ProtoMessage() {}
+func (*ExternalServer_StartRequest) ProtoMessage() {}
 
-func (x *Server_StartRequest) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer_StartRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -202,46 +202,46 @@ func (x *Server_StartRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server_StartRequest.ProtoReflect.Descriptor instead.
-func (*Server_StartRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer_StartRequest.ProtoReflect.Descriptor instead.
+func (*ExternalServer_StartRequest) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0, 2}
 }
 
-func (x *Server_StartRequest) GetType() string {
+func (x *ExternalServer_StartRequest) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-func (x *Server_StartRequest) GetOption() string {
+func (x *ExternalServer_StartRequest) GetOption() string {
 	if x != nil {
 		return x.Option
 	}
 	return ""
 }
 
-type Server_StartResponse struct {
+type ExternalServer_StartResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        *Server                `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	Result        *ExternalServer        `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server_StartResponse) Reset() {
-	*x = Server_StartResponse{}
+func (x *ExternalServer_StartResponse) Reset() {
+	*x = ExternalServer_StartResponse{}
 	mi := &file_api_file_server_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server_StartResponse) String() string {
+func (x *ExternalServer_StartResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server_StartResponse) ProtoMessage() {}
+func (*ExternalServer_StartResponse) ProtoMessage() {}
 
-func (x *Server_StartResponse) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer_StartResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -253,39 +253,39 @@ func (x *Server_StartResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server_StartResponse.ProtoReflect.Descriptor instead.
-func (*Server_StartResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer_StartResponse.ProtoReflect.Descriptor instead.
+func (*ExternalServer_StartResponse) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0, 3}
 }
 
-func (x *Server_StartResponse) GetResult() *Server {
+func (x *ExternalServer_StartResponse) GetResult() *ExternalServer {
 	if x != nil {
 		return x.Result
 	}
 	return nil
 }
 
-type Server_StopRequest struct {
+type ExternalServer_StopRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server_StopRequest) Reset() {
-	*x = Server_StopRequest{}
+func (x *ExternalServer_StopRequest) Reset() {
+	*x = ExternalServer_StopRequest{}
 	mi := &file_api_file_server_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server_StopRequest) String() string {
+func (x *ExternalServer_StopRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server_StopRequest) ProtoMessage() {}
+func (*ExternalServer_StopRequest) ProtoMessage() {}
 
-func (x *Server_StopRequest) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer_StopRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -297,38 +297,38 @@ func (x *Server_StopRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server_StopRequest.ProtoReflect.Descriptor instead.
-func (*Server_StopRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer_StopRequest.ProtoReflect.Descriptor instead.
+func (*ExternalServer_StopRequest) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0, 4}
 }
 
-func (x *Server_StopRequest) GetType() string {
+func (x *ExternalServer_StopRequest) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-type Server_StopResponse struct {
+type ExternalServer_StopResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Server_StopResponse) Reset() {
-	*x = Server_StopResponse{}
+func (x *ExternalServer_StopResponse) Reset() {
+	*x = ExternalServer_StopResponse{}
 	mi := &file_api_file_server_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Server_StopResponse) String() string {
+func (x *ExternalServer_StopResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Server_StopResponse) ProtoMessage() {}
+func (*ExternalServer_StopResponse) ProtoMessage() {}
 
-func (x *Server_StopResponse) ProtoReflect() protoreflect.Message {
+func (x *ExternalServer_StopResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_api_file_server_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -340,8 +340,8 @@ func (x *Server_StopResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Server_StopResponse.ProtoReflect.Descriptor instead.
-func (*Server_StopResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalServer_StopResponse.ProtoReflect.Descriptor instead.
+func (*ExternalServer_StopResponse) Descriptor() ([]byte, []int) {
 	return file_api_file_server_proto_rawDescGZIP(), []int{0, 5}
 }
 
@@ -349,29 +349,29 @@ var File_api_file_server_proto protoreflect.FileDescriptor
 
 const file_api_file_server_proto_rawDesc = "" +
 	"\n" +
-	"\x15api/file/server.proto\x12\bapi.file\"\xd1\x02\n" +
-	"\x06Server\x12\x12\n" +
+	"\x15api/file/server.proto\x12\bapi.file\"\xe9\x02\n" +
+	"\x0eExternalServer\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x18\n" +
 	"\arunning\x18\x02 \x01(\bR\arunning\x12\x14\n" +
 	"\x05error\x18\x03 \x01(\tR\x05error\x1a \n" +
 	"\n" +
 	"GetRequest\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x1a7\n" +
-	"\vGetResponse\x12(\n" +
-	"\x06result\x18\x01 \x01(\v2\x10.api.file.ServerR\x06result\x1a:\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x1a?\n" +
+	"\vGetResponse\x120\n" +
+	"\x06result\x18\x01 \x01(\v2\x18.api.file.ExternalServerR\x06result\x1a:\n" +
 	"\fStartRequest\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x16\n" +
-	"\x06option\x18\x02 \x01(\tR\x06option\x1a9\n" +
-	"\rStartResponse\x12(\n" +
-	"\x06result\x18\x01 \x01(\v2\x10.api.file.ServerR\x06result\x1a!\n" +
+	"\x06option\x18\x02 \x01(\tR\x06option\x1aA\n" +
+	"\rStartResponse\x120\n" +
+	"\x06result\x18\x01 \x01(\v2\x18.api.file.ExternalServerR\x06result\x1a!\n" +
 	"\vStopRequest\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x1a\x0e\n" +
-	"\fStopResponse2\xf9\x01\n" +
-	"\rServerService\x12N\n" +
-	"\vStartServer\x12\x1d.api.file.Server.StartRequest\x1a\x1e.api.file.Server.StartResponse\"\x00\x12K\n" +
+	"\fStopResponse2\xb1\x02\n" +
+	"\x15ExternalServerService\x12^\n" +
+	"\vStartServer\x12%.api.file.ExternalServer.StartRequest\x1a&.api.file.ExternalServer.StartResponse\"\x00\x12[\n" +
 	"\n" +
-	"StopServer\x12\x1c.api.file.Server.StopRequest\x1a\x1d.api.file.Server.StopResponse\"\x00\x12K\n" +
-	"\fServerStatus\x12\x1b.api.file.Server.GetRequest\x1a\x1c.api.file.Server.GetResponse\"\x00B\x9b\x01\n" +
+	"StopServer\x12$.api.file.ExternalServer.StopRequest\x1a%.api.file.ExternalServer.StopResponse\"\x00\x12[\n" +
+	"\fServerStatus\x12#.api.file.ExternalServer.GetRequest\x1a$.api.file.ExternalServer.GetResponse\"\x00B\x9b\x01\n" +
 	"\fcom.api.fileB\vServerProtoP\x01Z=github.com/honmaple/maple-file/server/internal/proto/api/file\xa2\x02\x03AFX\xaa\x02\bApi.File\xca\x02\bApi\\File\xe2\x02\x14Api\\File\\GPBMetadata\xea\x02\tApi::Fileb\x06proto3"
 
 var (
@@ -388,23 +388,23 @@ func file_api_file_server_proto_rawDescGZIP() []byte {
 
 var file_api_file_server_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_api_file_server_proto_goTypes = []any{
-	(*Server)(nil),               // 0: api.file.Server
-	(*Server_GetRequest)(nil),    // 1: api.file.Server.GetRequest
-	(*Server_GetResponse)(nil),   // 2: api.file.Server.GetResponse
-	(*Server_StartRequest)(nil),  // 3: api.file.Server.StartRequest
-	(*Server_StartResponse)(nil), // 4: api.file.Server.StartResponse
-	(*Server_StopRequest)(nil),   // 5: api.file.Server.StopRequest
-	(*Server_StopResponse)(nil),  // 6: api.file.Server.StopResponse
+	(*ExternalServer)(nil),               // 0: api.file.ExternalServer
+	(*ExternalServer_GetRequest)(nil),    // 1: api.file.ExternalServer.GetRequest
+	(*ExternalServer_GetResponse)(nil),   // 2: api.file.ExternalServer.GetResponse
+	(*ExternalServer_StartRequest)(nil),  // 3: api.file.ExternalServer.StartRequest
+	(*ExternalServer_StartResponse)(nil), // 4: api.file.ExternalServer.StartResponse
+	(*ExternalServer_StopRequest)(nil),   // 5: api.file.ExternalServer.StopRequest
+	(*ExternalServer_StopResponse)(nil),  // 6: api.file.ExternalServer.StopResponse
 }
 var file_api_file_server_proto_depIdxs = []int32{
-	0, // 0: api.file.Server.GetResponse.result:type_name -> api.file.Server
-	0, // 1: api.file.Server.StartResponse.result:type_name -> api.file.Server
-	3, // 2: api.file.ServerService.StartServer:input_type -> api.file.Server.StartRequest
-	5, // 3: api.file.ServerService.StopServer:input_type -> api.file.Server.StopRequest
-	1, // 4: api.file.ServerService.ServerStatus:input_type -> api.file.Server.GetRequest
-	4, // 5: api.file.ServerService.StartServer:output_type -> api.file.Server.StartResponse
-	6, // 6: api.file.ServerService.StopServer:output_type -> api.file.Server.StopResponse
-	2, // 7: api.file.ServerService.ServerStatus:output_type -> api.file.Server.GetResponse
+	0, // 0: api.file.ExternalServer.GetResponse.result:type_name -> api.file.ExternalServer
+	0, // 1: api.file.ExternalServer.StartResponse.result:type_name -> api.file.ExternalServer
+	3, // 2: api.file.ExternalServerService.StartServer:input_type -> api.file.ExternalServer.StartRequest
+	5, // 3: api.file.ExternalServerService.StopServer:input_type -> api.file.ExternalServer.StopRequest
+	1, // 4: api.file.ExternalServerService.ServerStatus:input_type -> api.file.ExternalServer.GetRequest
+	4, // 5: api.file.ExternalServerService.StartServer:output_type -> api.file.ExternalServer.StartResponse
+	6, // 6: api.file.ExternalServerService.StopServer:output_type -> api.file.ExternalServer.StopResponse
+	2, // 7: api.file.ExternalServerService.ServerStatus:output_type -> api.file.ExternalServer.GetResponse
 	5, // [5:8] is the sub-list for method output_type
 	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

@@ -22,19 +22,19 @@ import (
 type Service struct {
 	app.BaseService
 	pb.UnimplementedFileServiceServer
-	pb.UnimplementedServerServiceServer
+	pb.UnimplementedExternalServerServiceServer
 	fs      fs.FS
 	app     *app.App
 	servers util.Cache[string, server.Server]
 }
 
-func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) {
-	pb.RegisterFileServiceHandlerServer(ctx, mux, srv)
-}
-
 func (srv *Service) Register(grpc *grpc.Server) {
 	pb.RegisterFileServiceServer(grpc, srv)
-	pb.RegisterServerServiceServer(grpc, srv)
+	pb.RegisterExternalServerServiceServer(grpc, srv)
+}
+
+func (srv *Service) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) {
+	pb.RegisterFileServiceHandlerServer(ctx, mux, srv)
 }
 
 func (srv *Service) RegisterHTTP(e *echo.Echo) {

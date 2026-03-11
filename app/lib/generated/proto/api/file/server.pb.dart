@@ -13,8 +13,8 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-class Server_GetRequest extends $pb.GeneratedMessage {
-  factory Server_GetRequest({
+class ExternalServer_GetRequest extends $pb.GeneratedMessage {
+  factory ExternalServer_GetRequest({
     $core.String? type,
   }) {
     final $result = create();
@@ -23,11 +23,11 @@ class Server_GetRequest extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Server_GetRequest._() : super();
-  factory Server_GetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server_GetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ExternalServer_GetRequest._() : super();
+  factory ExternalServer_GetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer_GetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server.GetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer.GetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'type')
     ..hasRequiredFields = false
   ;
@@ -36,22 +36,22 @@ class Server_GetRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server_GetRequest clone() => Server_GetRequest()..mergeFromMessage(this);
+  ExternalServer_GetRequest clone() => ExternalServer_GetRequest()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server_GetRequest copyWith(void Function(Server_GetRequest) updates) => super.copyWith((message) => updates(message as Server_GetRequest)) as Server_GetRequest;
+  ExternalServer_GetRequest copyWith(void Function(ExternalServer_GetRequest) updates) => super.copyWith((message) => updates(message as ExternalServer_GetRequest)) as ExternalServer_GetRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server_GetRequest create() => Server_GetRequest._();
-  Server_GetRequest createEmptyInstance() => create();
-  static $pb.PbList<Server_GetRequest> createRepeated() => $pb.PbList<Server_GetRequest>();
+  static ExternalServer_GetRequest create() => ExternalServer_GetRequest._();
+  ExternalServer_GetRequest createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer_GetRequest> createRepeated() => $pb.PbList<ExternalServer_GetRequest>();
   @$core.pragma('dart2js:noInline')
-  static Server_GetRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server_GetRequest>(create);
-  static Server_GetRequest? _defaultInstance;
+  static ExternalServer_GetRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer_GetRequest>(create);
+  static ExternalServer_GetRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get type => $_getSZ(0);
@@ -63,9 +63,9 @@ class Server_GetRequest extends $pb.GeneratedMessage {
   void clearType() => clearField(1);
 }
 
-class Server_GetResponse extends $pb.GeneratedMessage {
-  factory Server_GetResponse({
-    Server? result,
+class ExternalServer_GetResponse extends $pb.GeneratedMessage {
+  factory ExternalServer_GetResponse({
+    ExternalServer? result,
   }) {
     final $result = create();
     if (result != null) {
@@ -73,12 +73,12 @@ class Server_GetResponse extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Server_GetResponse._() : super();
-  factory Server_GetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server_GetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ExternalServer_GetResponse._() : super();
+  factory ExternalServer_GetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer_GetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server.GetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
-    ..aOM<Server>(1, _omitFieldNames ? '' : 'result', subBuilder: Server.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer.GetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+    ..aOM<ExternalServer>(1, _omitFieldNames ? '' : 'result', subBuilder: ExternalServer.create)
     ..hasRequiredFields = false
   ;
 
@@ -86,37 +86,37 @@ class Server_GetResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server_GetResponse clone() => Server_GetResponse()..mergeFromMessage(this);
+  ExternalServer_GetResponse clone() => ExternalServer_GetResponse()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server_GetResponse copyWith(void Function(Server_GetResponse) updates) => super.copyWith((message) => updates(message as Server_GetResponse)) as Server_GetResponse;
+  ExternalServer_GetResponse copyWith(void Function(ExternalServer_GetResponse) updates) => super.copyWith((message) => updates(message as ExternalServer_GetResponse)) as ExternalServer_GetResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server_GetResponse create() => Server_GetResponse._();
-  Server_GetResponse createEmptyInstance() => create();
-  static $pb.PbList<Server_GetResponse> createRepeated() => $pb.PbList<Server_GetResponse>();
+  static ExternalServer_GetResponse create() => ExternalServer_GetResponse._();
+  ExternalServer_GetResponse createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer_GetResponse> createRepeated() => $pb.PbList<ExternalServer_GetResponse>();
   @$core.pragma('dart2js:noInline')
-  static Server_GetResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server_GetResponse>(create);
-  static Server_GetResponse? _defaultInstance;
+  static ExternalServer_GetResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer_GetResponse>(create);
+  static ExternalServer_GetResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  Server get result => $_getN(0);
+  ExternalServer get result => $_getN(0);
   @$pb.TagNumber(1)
-  set result(Server v) { setField(1, v); }
+  set result(ExternalServer v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasResult() => $_has(0);
   @$pb.TagNumber(1)
   void clearResult() => clearField(1);
   @$pb.TagNumber(1)
-  Server ensureResult() => $_ensure(0);
+  ExternalServer ensureResult() => $_ensure(0);
 }
 
-class Server_StartRequest extends $pb.GeneratedMessage {
-  factory Server_StartRequest({
+class ExternalServer_StartRequest extends $pb.GeneratedMessage {
+  factory ExternalServer_StartRequest({
     $core.String? type,
     $core.String? option,
   }) {
@@ -129,11 +129,11 @@ class Server_StartRequest extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Server_StartRequest._() : super();
-  factory Server_StartRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server_StartRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ExternalServer_StartRequest._() : super();
+  factory ExternalServer_StartRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer_StartRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server.StartRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer.StartRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'type')
     ..aOS(2, _omitFieldNames ? '' : 'option')
     ..hasRequiredFields = false
@@ -143,22 +143,22 @@ class Server_StartRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server_StartRequest clone() => Server_StartRequest()..mergeFromMessage(this);
+  ExternalServer_StartRequest clone() => ExternalServer_StartRequest()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server_StartRequest copyWith(void Function(Server_StartRequest) updates) => super.copyWith((message) => updates(message as Server_StartRequest)) as Server_StartRequest;
+  ExternalServer_StartRequest copyWith(void Function(ExternalServer_StartRequest) updates) => super.copyWith((message) => updates(message as ExternalServer_StartRequest)) as ExternalServer_StartRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server_StartRequest create() => Server_StartRequest._();
-  Server_StartRequest createEmptyInstance() => create();
-  static $pb.PbList<Server_StartRequest> createRepeated() => $pb.PbList<Server_StartRequest>();
+  static ExternalServer_StartRequest create() => ExternalServer_StartRequest._();
+  ExternalServer_StartRequest createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer_StartRequest> createRepeated() => $pb.PbList<ExternalServer_StartRequest>();
   @$core.pragma('dart2js:noInline')
-  static Server_StartRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server_StartRequest>(create);
-  static Server_StartRequest? _defaultInstance;
+  static ExternalServer_StartRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer_StartRequest>(create);
+  static ExternalServer_StartRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get type => $_getSZ(0);
@@ -179,9 +179,9 @@ class Server_StartRequest extends $pb.GeneratedMessage {
   void clearOption() => clearField(2);
 }
 
-class Server_StartResponse extends $pb.GeneratedMessage {
-  factory Server_StartResponse({
-    Server? result,
+class ExternalServer_StartResponse extends $pb.GeneratedMessage {
+  factory ExternalServer_StartResponse({
+    ExternalServer? result,
   }) {
     final $result = create();
     if (result != null) {
@@ -189,12 +189,12 @@ class Server_StartResponse extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Server_StartResponse._() : super();
-  factory Server_StartResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server_StartResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ExternalServer_StartResponse._() : super();
+  factory ExternalServer_StartResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer_StartResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server.StartResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
-    ..aOM<Server>(1, _omitFieldNames ? '' : 'result', subBuilder: Server.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer.StartResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+    ..aOM<ExternalServer>(1, _omitFieldNames ? '' : 'result', subBuilder: ExternalServer.create)
     ..hasRequiredFields = false
   ;
 
@@ -202,37 +202,37 @@ class Server_StartResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server_StartResponse clone() => Server_StartResponse()..mergeFromMessage(this);
+  ExternalServer_StartResponse clone() => ExternalServer_StartResponse()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server_StartResponse copyWith(void Function(Server_StartResponse) updates) => super.copyWith((message) => updates(message as Server_StartResponse)) as Server_StartResponse;
+  ExternalServer_StartResponse copyWith(void Function(ExternalServer_StartResponse) updates) => super.copyWith((message) => updates(message as ExternalServer_StartResponse)) as ExternalServer_StartResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server_StartResponse create() => Server_StartResponse._();
-  Server_StartResponse createEmptyInstance() => create();
-  static $pb.PbList<Server_StartResponse> createRepeated() => $pb.PbList<Server_StartResponse>();
+  static ExternalServer_StartResponse create() => ExternalServer_StartResponse._();
+  ExternalServer_StartResponse createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer_StartResponse> createRepeated() => $pb.PbList<ExternalServer_StartResponse>();
   @$core.pragma('dart2js:noInline')
-  static Server_StartResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server_StartResponse>(create);
-  static Server_StartResponse? _defaultInstance;
+  static ExternalServer_StartResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer_StartResponse>(create);
+  static ExternalServer_StartResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  Server get result => $_getN(0);
+  ExternalServer get result => $_getN(0);
   @$pb.TagNumber(1)
-  set result(Server v) { setField(1, v); }
+  set result(ExternalServer v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasResult() => $_has(0);
   @$pb.TagNumber(1)
   void clearResult() => clearField(1);
   @$pb.TagNumber(1)
-  Server ensureResult() => $_ensure(0);
+  ExternalServer ensureResult() => $_ensure(0);
 }
 
-class Server_StopRequest extends $pb.GeneratedMessage {
-  factory Server_StopRequest({
+class ExternalServer_StopRequest extends $pb.GeneratedMessage {
+  factory ExternalServer_StopRequest({
     $core.String? type,
   }) {
     final $result = create();
@@ -241,11 +241,11 @@ class Server_StopRequest extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Server_StopRequest._() : super();
-  factory Server_StopRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server_StopRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ExternalServer_StopRequest._() : super();
+  factory ExternalServer_StopRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer_StopRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server.StopRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer.StopRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'type')
     ..hasRequiredFields = false
   ;
@@ -254,22 +254,22 @@ class Server_StopRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server_StopRequest clone() => Server_StopRequest()..mergeFromMessage(this);
+  ExternalServer_StopRequest clone() => ExternalServer_StopRequest()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server_StopRequest copyWith(void Function(Server_StopRequest) updates) => super.copyWith((message) => updates(message as Server_StopRequest)) as Server_StopRequest;
+  ExternalServer_StopRequest copyWith(void Function(ExternalServer_StopRequest) updates) => super.copyWith((message) => updates(message as ExternalServer_StopRequest)) as ExternalServer_StopRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server_StopRequest create() => Server_StopRequest._();
-  Server_StopRequest createEmptyInstance() => create();
-  static $pb.PbList<Server_StopRequest> createRepeated() => $pb.PbList<Server_StopRequest>();
+  static ExternalServer_StopRequest create() => ExternalServer_StopRequest._();
+  ExternalServer_StopRequest createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer_StopRequest> createRepeated() => $pb.PbList<ExternalServer_StopRequest>();
   @$core.pragma('dart2js:noInline')
-  static Server_StopRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server_StopRequest>(create);
-  static Server_StopRequest? _defaultInstance;
+  static ExternalServer_StopRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer_StopRequest>(create);
+  static ExternalServer_StopRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get type => $_getSZ(0);
@@ -281,13 +281,13 @@ class Server_StopRequest extends $pb.GeneratedMessage {
   void clearType() => clearField(1);
 }
 
-class Server_StopResponse extends $pb.GeneratedMessage {
-  factory Server_StopResponse() => create();
-  Server_StopResponse._() : super();
-  factory Server_StopResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server_StopResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+class ExternalServer_StopResponse extends $pb.GeneratedMessage {
+  factory ExternalServer_StopResponse() => create();
+  ExternalServer_StopResponse._() : super();
+  factory ExternalServer_StopResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer_StopResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server.StopResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer.StopResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
@@ -295,26 +295,26 @@ class Server_StopResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server_StopResponse clone() => Server_StopResponse()..mergeFromMessage(this);
+  ExternalServer_StopResponse clone() => ExternalServer_StopResponse()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server_StopResponse copyWith(void Function(Server_StopResponse) updates) => super.copyWith((message) => updates(message as Server_StopResponse)) as Server_StopResponse;
+  ExternalServer_StopResponse copyWith(void Function(ExternalServer_StopResponse) updates) => super.copyWith((message) => updates(message as ExternalServer_StopResponse)) as ExternalServer_StopResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server_StopResponse create() => Server_StopResponse._();
-  Server_StopResponse createEmptyInstance() => create();
-  static $pb.PbList<Server_StopResponse> createRepeated() => $pb.PbList<Server_StopResponse>();
+  static ExternalServer_StopResponse create() => ExternalServer_StopResponse._();
+  ExternalServer_StopResponse createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer_StopResponse> createRepeated() => $pb.PbList<ExternalServer_StopResponse>();
   @$core.pragma('dart2js:noInline')
-  static Server_StopResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server_StopResponse>(create);
-  static Server_StopResponse? _defaultInstance;
+  static ExternalServer_StopResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer_StopResponse>(create);
+  static ExternalServer_StopResponse? _defaultInstance;
 }
 
-class Server extends $pb.GeneratedMessage {
-  factory Server({
+class ExternalServer extends $pb.GeneratedMessage {
+  factory ExternalServer({
     $core.String? addr,
     $core.bool? running,
     $core.String? error,
@@ -331,11 +331,11 @@ class Server extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Server._() : super();
-  factory Server.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Server.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ExternalServer._() : super();
+  factory ExternalServer.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExternalServer.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Server', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExternalServer', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'addr')
     ..aOB(2, _omitFieldNames ? '' : 'running')
     ..aOS(3, _omitFieldNames ? '' : 'error')
@@ -346,22 +346,22 @@ class Server extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Server clone() => Server()..mergeFromMessage(this);
+  ExternalServer clone() => ExternalServer()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Server copyWith(void Function(Server) updates) => super.copyWith((message) => updates(message as Server)) as Server;
+  ExternalServer copyWith(void Function(ExternalServer) updates) => super.copyWith((message) => updates(message as ExternalServer)) as ExternalServer;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Server create() => Server._();
-  Server createEmptyInstance() => create();
-  static $pb.PbList<Server> createRepeated() => $pb.PbList<Server>();
+  static ExternalServer create() => ExternalServer._();
+  ExternalServer createEmptyInstance() => create();
+  static $pb.PbList<ExternalServer> createRepeated() => $pb.PbList<ExternalServer>();
   @$core.pragma('dart2js:noInline')
-  static Server getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Server>(create);
-  static Server? _defaultInstance;
+  static ExternalServer getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExternalServer>(create);
+  static ExternalServer? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get addr => $_getSZ(0);

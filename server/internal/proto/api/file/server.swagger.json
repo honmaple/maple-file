@@ -6,7 +6,7 @@
   },
   "tags": [
     {
-      "name": "ServerService"
+      "name": "ExternalServerService"
     }
   ],
   "consumes": [
@@ -17,26 +17,26 @@
   ],
   "paths": {},
   "definitions": {
-    "ServerGetResponse": {
+    "ExternalServerGetResponse": {
       "type": "object",
       "properties": {
         "result": {
-          "$ref": "#/definitions/fileServer"
+          "$ref": "#/definitions/fileExternalServer"
         }
       }
     },
-    "ServerStartResponse": {
+    "ExternalServerStartResponse": {
       "type": "object",
       "properties": {
         "result": {
-          "$ref": "#/definitions/fileServer"
+          "$ref": "#/definitions/fileExternalServer"
         }
       }
     },
-    "ServerStopResponse": {
+    "ExternalServerStopResponse": {
       "type": "object"
     },
-    "fileServer": {
+    "fileExternalServer": {
       "type": "object",
       "properties": {
         "addr": {

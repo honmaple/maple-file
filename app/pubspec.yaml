@@ -59,6 +59,7 @@ dependencies:
   video_player: ^2.9.1
   video_player_platform_interface: ^6.2.2
   audioplayers: ^6.1.0
+  audioplayers_darwin: 6.0.0
   file_picker: ^8.1.2
   external_path: ^2.0.1
   permission_handler: ^11.3.1

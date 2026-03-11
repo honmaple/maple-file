@@ -51,3 +51,6 @@ app.*.map.json
 **/android/app/libs/
 
 .cxx/
+
+# FVM Version Cache
+.fvm/

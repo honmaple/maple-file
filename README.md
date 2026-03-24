@@ -4,14 +4,14 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/honmaple/maple-file/releases/tag/v1.1.0" target="_blank">
-    <img src="https://img.shields.io/badge/release-1.1.0-brightgreen.svg">
+  <a href="https://github.com/honmaple/maple-file/releases/tag/v1.2.0" target="_blank">
+    <img src="https://img.shields.io/badge/Release-1.2.0-brightgreen.svg">
   </a>
-  <a href="https://apps.apple.com/us/app/maplefile/id6743229674" target="_blank">
-    <img src="https://img.shields.io/badge/app%20store-black.svg?logo=apple">
+  <a href="https://apps.apple.com/cn/app/红枫云盘/id6743229674" target="_blank">
+    <img src="https://img.shields.io/badge/App%20Store-black.svg?logo=apple">
   </a>
   <a href="https://github.com/honmaple/maple-file/blob/master/LICENSE" target="_blank">
-    <img src="https://img.shields.io/badge/license-GPL3.0-blue.svg">
+    <img src="https://img.shields.io/badge/License-GPL3.0-blue.svg">
   </a>
 
  [主页][home] | [下载][download] | [帮助文档][document]
@@ -19,7 +19,7 @@
 
 [home]: https://fileapp.honmaple.com
 [document]: https://fileapp.honmaple.com/guide/introduction.html
-[download]: https://github.com/honmaple/maple-file/releases/tag/v1.1.0
+[download]: https://github.com/honmaple/maple-file/releases/tag/v1.2.0
 
 > 使用 **Flutter** 实现的无服务端多协议云盘文件上传和管理APP
 
@@ -30,6 +30,7 @@
    - [X] S3
    - [X] SMB
    - [X] Webdav
+   - [X] Foxel
    - [X] Alist
    - [X] 又拍云
    - [X] 115网盘
@@ -46,6 +47,7 @@
 | S3             | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | SMB            | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | Webdav         | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
+| Foxel    | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | ALIST          | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | 又拍云          | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | 115网盘         | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ❌  | ✅  |

@@ -7,7 +7,6 @@ import (
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 
 	_ "github.com/honmaple/cloudfs/driver/all"
-	_ "github.com/honmaple/maple-file/server/pkg/driver/mirror"
 )
 
 func init() {

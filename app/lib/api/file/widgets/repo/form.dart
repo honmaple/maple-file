@@ -12,8 +12,10 @@ import "advance.dart";
 import "alist.dart";
 import "foxel.dart";
 import "ftp.dart";
+import "gdrive.dart";
 import "local.dart";
 import "mirror.dart";
+import "onedrive.dart";
 import "s3.dart";
 import "sftp.dart";
 import "smb.dart";
@@ -39,6 +41,8 @@ enum DriverType {
   mirror,
   github,
   githubRelease,
+  gdrive,
+  onedrive,
 }
 
 extension DriverTypeTypeExtension on DriverType {
@@ -58,6 +62,8 @@ extension DriverTypeTypeExtension on DriverType {
       DriverType.mirror: "Mirror",
       DriverType.github: "Github",
       DriverType.githubRelease: "Github Release",
+      DriverType.gdrive: "Google Drive",
+      DriverType.onedrive: "OneDrive",
     };
     return labels[this] ?? "unknown";
   }
@@ -169,6 +175,10 @@ class _DriverFormState extends State<DriverForm> {
         return Github(form: widget.form);
       case "githubRelease":
         return GithubRelease(form: widget.form);
+      case "gdrive":
+        return GDrive(form: widget.form);
+      case "onedrive":
+        return OneDrive(form: widget.form);
       default:
         return const SizedBox.shrink();
     }

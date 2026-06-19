@@ -5,6 +5,7 @@ import (
 	"io"
 	filepath "path"
 
+	"github.com/honmaple/cloudfs"
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
@@ -21,7 +22,15 @@ func (opt *UploadTask) String() string {
 }
 
 func (opt *UploadTask) Execute(task runner.Task, fs FS) error {
-	dst, err := fs.Create(filepath.Join(opt.Path, opt.Filename))
+	dstFS, dstPath, err := fs.GetFS(filepath.Join(opt.Path, opt.Filename))
+	if err != nil {
+		return err
+	}
+	return opt.upload(task, dstFS, dstPath)
+}
+
+func (opt *UploadTask) upload(task runner.Task, fs cloudfs.FS, path string) error {
+	dst, err := fs.Create(task.Context(), path)
 	if err != nil {
 		return err
 	}

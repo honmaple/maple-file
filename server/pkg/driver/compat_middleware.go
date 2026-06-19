@@ -17,18 +17,18 @@ import (
 const recycleName = ".maplerecycle"
 
 type CommonOption struct {
-	RootPath        string                           `json:"root_path" validate:"omitempty,startswith=/"`
-	HiddenFiles     []string                         `json:"hidden_files"`
-	Encrypt         bool                             `json:"encrypt"`
-	EncryptOption   cloudmiddleware.EncryptOption    `json:"encrypt_option"`
-	Compress        bool                             `json:"compress"`
-	CompressOption  cloudmiddleware.CompressOption   `json:"compress_option"`
-	Recycle         bool                             `json:"recycle"`
-	RecycleOption   recycleOption                    `json:"recycle_option"`
-	Cache           bool                             `json:"cache"`
-	CacheOption     cloudmiddleware.CacheOption      `json:"cache_option"`
-	RateLimit       bool                             `json:"rate_limit"`
-	RateLimitOption cloudmiddleware.RateLimitOption  `json:"rate_limit_option"`
+	RootPath        string                          `json:"root_path" validate:"omitempty,startswith=/"`
+	HiddenFiles     []string                        `json:"hidden_files"`
+	Encrypt         bool                            `json:"encrypt"`
+	EncryptOption   cloudmiddleware.EncryptOption   `json:"encrypt_option"`
+	Compress        bool                            `json:"compress"`
+	CompressOption  cloudmiddleware.CompressOption  `json:"compress_option"`
+	Recycle         bool                            `json:"recycle"`
+	RecycleOption   recycleOption                   `json:"recycle_option"`
+	Cache           bool                            `json:"cache"`
+	CacheOption     cloudmiddleware.CacheOption     `json:"cache_option"`
+	RateLimit       bool                            `json:"rate_limit"`
+	RateLimitOption cloudmiddleware.RateLimitOption `json:"rate_limit_option"`
 }
 
 type recycleOption struct {
@@ -169,13 +169,10 @@ func (d *recycleFS) List(ctx context.Context, path string, opts ...cloudfs.ListO
 			}
 		}
 		if !exists {
-			files = append(files, (&FileInfo{
-				Path:  path,
-				Name:  filepath.Base(d.opt.Path),
-				Type:  "RECYCLE",
-				IsDir: true,
-				Mode:  fs.ModeDir,
-			}).File())
+			files = append(files, NewDir(path, filepath.Base(d.opt.Path), func(entry *cloudfs.Entry) {
+				entry.Type = "RECYCLE"
+				entry.Mode = fs.ModeDir
+			}))
 		}
 	}
 	return files, nil

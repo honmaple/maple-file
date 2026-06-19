@@ -80,7 +80,7 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 		}
 
 		rctx := c.Request().Context()
-		info, err := srv.fs.Get(rctx, path)
+		info, err := srv.fs.Stat(rctx, path)
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 			return nil
 		}
 
-		file, err := srv.fs.Open(path)
+		file, err := srv.fs.Open(rctx, path)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 			return c.JSON(400, "path is required")
 		}
 
-		info, err := srv.fs.Get(c.Request().Context(), path)
+		info, err := srv.fs.Stat(c.Request().Context(), path)
 		if err != nil {
 			return err
 		}
@@ -139,7 +139,7 @@ func (srv *Service) RegisterHTTP(e *echo.Echo) {
 			return errors.New("can't download dir")
 		}
 
-		file, err := srv.fs.Open(path)
+		file, err := srv.fs.Open(c.Request().Context(), path)
 		if err != nil {
 			return err
 		}

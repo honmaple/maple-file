@@ -4,24 +4,26 @@ import (
 	"context"
 	"strings"
 
+	"github.com/honmaple/cloudfs"
+
 	filepath "path"
 )
 
 type rootFS struct {
-	Base
+	cloudfs.BaseFS
 	fn     func(string) (FS, string, error)
-	fileFn func(string, File) File
+	fileFn func(string, cloudfs.FileInfo) cloudfs.FileInfo
 }
 
 var _ FS = (*rootFS)(nil)
 
-func (d *rootFS) List(ctx context.Context, path string, metas ...Meta) ([]File, error) {
+func (d *rootFS) List(ctx context.Context, path string, opts ...cloudfs.ListOption) ([]cloudfs.FileInfo, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {
 		return nil, err
 	}
 
-	files, err := dstFS.List(ctx, dstPath, metas...)
+	files, err := dstFS.List(ctx, dstPath, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -32,13 +34,13 @@ func (d *rootFS) List(ctx context.Context, path string, metas ...Meta) ([]File, 
 	return files, nil
 }
 
-func (d *rootFS) Get(ctx context.Context, path string) (File, error) {
+func (d *rootFS) Stat(ctx context.Context, path string) (cloudfs.FileInfo, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := dstFS.Get(ctx, dstPath)
+	file, err := dstFS.Stat(ctx, dstPath)
 	if err != nil {
 		return nil, err
 	}
@@ -46,20 +48,20 @@ func (d *rootFS) Get(ctx context.Context, path string) (File, error) {
 	return file, nil
 }
 
-func (d *rootFS) Open(path string) (FileReader, error) {
+func (d *rootFS) Open(ctx context.Context, path string) (cloudfs.File, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {
 		return nil, err
 	}
-	return dstFS.Open(dstPath)
+	return dstFS.Open(ctx, dstPath)
 }
 
-func (d *rootFS) Create(path string) (FileWriter, error) {
+func (d *rootFS) Create(ctx context.Context, path string) (cloudfs.FileWriter, error) {
 	dstFS, dstPath, err := d.fn(path)
 	if err != nil {
 		return nil, err
 	}
-	return dstFS.Create(dstPath)
+	return dstFS.Create(ctx, dstPath)
 }
 
 func (d *rootFS) Copy(ctx context.Context, src string, dst string) error {
@@ -116,10 +118,10 @@ func (d *rootFS) MakeDir(ctx context.Context, path string) error {
 	return dstFS.MakeDir(ctx, dstPath)
 }
 
-func NewFS(fn func(string) (FS, string, error), fileFn func(string, File) File) FS {
+func NewFS(fn func(string) (FS, string, error), fileFn func(string, cloudfs.FileInfo) cloudfs.FileInfo) FS {
 	fs := &rootFS{}
 	if fileFn == nil {
-		fileFn = func(root string, file File) File {
+		fileFn = func(root string, file cloudfs.FileInfo) cloudfs.FileInfo {
 			return NewFile(filepath.Join(root, file.Path()), file)
 		}
 	}

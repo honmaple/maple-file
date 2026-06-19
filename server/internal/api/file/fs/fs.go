@@ -26,7 +26,7 @@ type (
 	}
 
 	FS interface {
-		driver.FS
+		cloudfs.FS
 		GetFS(string) (cloudfs.FS, string, error)
 		GetRepo(string) *pb.Repo
 		CreateRepo(*pb.Repo)
@@ -36,31 +36,18 @@ type (
 	}
 )
 
-type repoFS struct {
-	driver.FS
-	repo *pb.Repo
-}
-
-func (d *repoFS) Repo() *pb.Repo {
-	return d.repo
-}
-
-func (d *repoFS) MountPath() string {
-	return filepath.Join(d.repo.GetPath(), d.repo.GetName())
-}
-
 type defaultFS struct {
-	driver.FS
+	cloudfs.FS
 	app   *app.App
 	cache util.Cache[string, cloudfs.FS]
 	repos util.Cache[string, *pb.Repo]
 }
 
-func (d *defaultFS) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
-	results := make([]driver.File, 0)
+func (d *defaultFS) List(ctx context.Context, path string, opts ...cloudfs.ListOption) ([]cloudfs.FileInfo, error) {
+	results := make([]cloudfs.FileInfo, 0)
 	repoMap := make(map[string]bool)
 	if path != "/" && d.GetRepo(path) != nil {
-		files, err := d.FS.List(ctx, path, metas...)
+		files, err := d.FS.List(ctx, path, opts...)
 		if err != nil {
 			return nil, err
 		}
@@ -78,13 +65,9 @@ func (d *defaultFS) List(ctx context.Context, path string, metas ...driver.Meta)
 		}
 		if path == repo.GetPath() {
 			if name := repo.GetName(); !repoMap[name] {
-				info := &driver.FileInfo{
-					Path:    path,
-					Name:    name,
-					IsDir:   true,
-					ModTime: repo.UpdatedAt.AsTime(),
-				}
-				results = append(results, info.File())
+				results = append(results, driver.NewDir(path, name, func(entry *cloudfs.Entry) {
+					entry.ModTime = repo.UpdatedAt.AsTime()
+				}))
 				repoMap[name] = true
 			}
 		} else if util.IsSubPath(path, repo.GetPath()) {
@@ -95,13 +78,9 @@ func (d *defaultFS) List(ctx context.Context, path string, metas ...driver.Meta)
 				relPath = strings.TrimPrefix(repo.GetPath(), path+"/")
 			}
 			if root := strings.SplitN(relPath, "/", 2); len(root) > 0 && !repoMap[root[0]] {
-				info := &driver.FileInfo{
-					Path:    path,
-					Name:    root[0],
-					IsDir:   true,
-					ModTime: repo.UpdatedAt.AsTime(),
-				}
-				results = append(results, info.File())
+				results = append(results, driver.NewDir(path, root[0], func(entry *cloudfs.Entry) {
+					entry.ModTime = repo.UpdatedAt.AsTime()
+				}))
 				repoMap[root[0]] = true
 			}
 		}
@@ -109,16 +88,12 @@ func (d *defaultFS) List(ctx context.Context, path string, metas ...driver.Meta)
 	return results, nil
 }
 
-func (d *defaultFS) Get(ctx context.Context, path string) (driver.File, error) {
+func (d *defaultFS) Stat(ctx context.Context, path string) (cloudfs.FileInfo, error) {
 	// webdav server必须先获取目录信息，所以这里需要特殊处理一下
 	if path == "/" {
-		info := &driver.FileInfo{
-			Path:    "/",
-			Name:    "/",
-			IsDir:   true,
-			ModTime: time.Now(),
-		}
-		return info.File(), nil
+		return driver.NewDir("/", "/", func(entry *cloudfs.Entry) {
+			entry.ModTime = time.Now()
+		}), nil
 	}
 
 	repo := d.GetRepo(path)
@@ -130,27 +105,19 @@ func (d *defaultFS) Get(ctx context.Context, path string) (driver.File, error) {
 			}
 			// /a/b:/a/b/c
 			if util.IsSubPath(path, repo.Path) {
-				info := &driver.FileInfo{
-					Path:    filepath.Dir(path),
-					Name:    filepath.Base(path),
-					IsDir:   true,
-					ModTime: repo.UpdatedAt.AsTime(),
-				}
-				return info.File(), nil
+				return driver.NewDir(filepath.Dir(path), filepath.Base(path), func(entry *cloudfs.Entry) {
+					entry.ModTime = repo.UpdatedAt.AsTime()
+				}), nil
 			}
 		}
 		return nil, os.ErrNotExist
 	}
 	if path == filepath.Join(repo.Path, repo.Name) {
-		info := &driver.FileInfo{
-			Path:    repo.Path,
-			Name:    repo.Name,
-			IsDir:   true,
-			ModTime: repo.UpdatedAt.AsTime(),
-		}
-		return info.File(), nil
+		return driver.NewDir(repo.Path, repo.Name, func(entry *cloudfs.Entry) {
+			entry.ModTime = repo.UpdatedAt.AsTime()
+		}), nil
 	}
-	return d.FS.Get(ctx, path)
+	return d.FS.Stat(ctx, path)
 }
 
 func (d *defaultFS) GetFS(path string) (cloudfs.FS, string, error) {
@@ -175,14 +142,6 @@ func (d *defaultFS) GetFS(path string) (cloudfs.FS, string, error) {
 	}
 	d.cache.Store(rootPath, fs)
 	return fs, realPath, nil
-}
-
-func (d *defaultFS) getDriverFS(path string) (driver.FS, string, error) {
-	fs, realPath, err := d.GetFS(path)
-	if err != nil {
-		return nil, "", err
-	}
-	return driver.AsDriverFS(fs), realPath, nil
 }
 
 func (d *defaultFS) GetRepo(path string) *pb.Repo {
@@ -248,7 +207,7 @@ func New(app *app.App) FS {
 		cache: util.NewCache[string, cloudfs.FS](),
 		repos: util.NewCache[string, *pb.Repo](),
 	}
-	d.FS = driver.NewFS(d.getDriverFS, nil)
+	d.FS = driver.NewFS(d.GetFS, nil)
 
 	d.loadRepos()
 	return d

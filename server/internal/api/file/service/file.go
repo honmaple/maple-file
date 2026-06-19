@@ -150,7 +150,7 @@ func (srv *Service) upload(ctx context.Context, req *pb.FileRequest, reader io.R
 		return nil, err
 	}
 
-	info, err := srv.fs.Get(ctx, filepath.Join(req.GetPath(), filename))
+	info, err := srv.fs.Stat(ctx, filepath.Join(req.GetPath(), filename))
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func (srv *Service) Upload(stream pb.FileService_UploadServer) error {
 }
 
 func (srv *Service) Preview(req *pb.PreviewFileRequest, stream pb.FileService_PreviewServer) error {
-	info, err := srv.fs.Get(stream.Context(), req.GetPath())
+	info, err := srv.fs.Stat(stream.Context(), req.GetPath())
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (srv *Service) Preview(req *pb.PreviewFileRequest, stream pb.FileService_Pr
 		return errors.New("can't preview dir")
 	}
 
-	file, err := srv.fs.Open(req.GetPath())
+	file, err := srv.fs.Open(stream.Context(), req.GetPath())
 	if err != nil {
 		return err
 	}

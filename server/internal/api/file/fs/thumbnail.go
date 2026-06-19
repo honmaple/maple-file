@@ -12,7 +12,6 @@ import (
 	"github.com/djherbis/times"
 
 	"github.com/honmaple/cloudfs"
-	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/thumbnail"
 	"github.com/honmaple/maple-file/server/pkg/util"
@@ -32,11 +31,11 @@ func (opt *ThumbTaskOption) String() string {
 }
 
 func (opt *ThumbTaskOption) Execute(task runner.Task, fs FS) error {
-	info, err := fs.Get(task.Context(), opt.Path)
+	info, err := fs.Stat(task.Context(), opt.Path)
 	if err != nil {
 		return err
 	}
-	return opt.generateThumb(task, driver.AsCloudFS(fs), info)
+	return opt.generateThumb(task, fs, info)
 }
 
 func (opt *ThumbTaskOption) generateThumb(task runner.Task, fs cloudfs.FS, info cloudfs.FileInfo) error {

@@ -19,7 +19,7 @@ func (opt *DownloadTask) String() string {
 }
 
 func (opt *DownloadTask) Execute(task runner.Task, fs FS) error {
-	info, err := fs.Get(task.Context(), opt.Path)
+	info, err := fs.Stat(task.Context(), opt.Path)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (opt *DownloadTask) Execute(task runner.Task, fs FS) error {
 		return errors.New("can't download dir")
 	}
 
-	src, err := fs.Open(opt.Path)
+	src, err := fs.Open(task.Context(), opt.Path)
 	if err != nil {
 		return err
 	}

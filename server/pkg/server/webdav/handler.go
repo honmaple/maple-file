@@ -10,21 +10,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/cloudfs"
 	"golang.org/x/net/webdav"
 )
 
 type (
 	FS struct {
-		fs driver.FS
+		fs cloudfs.FS
 	}
 	File struct {
-		fs     driver.FS
+		fs     cloudfs.FS
 		path   string
-		info   driver.File
-		files  []driver.File
-		reader driver.FileReader
-		writer driver.FileWriter
+		info   cloudfs.FileInfo
+		files  []cloudfs.FileInfo
+		reader cloudfs.File
+		writer cloudfs.FileWriter
 	}
 )
 
@@ -37,20 +37,20 @@ func slashClean(name string) string {
 
 func (f *File) Stat() (fs.FileInfo, error) {
 	if f.path == "" || f.path == "/" {
-		info := &driver.FileInfo{
+		info := &cloudfs.Entry{
 			Path:    "/",
 			Name:    "/",
 			IsDir:   true,
 			Type:    "DIR",
 			ModTime: time.Now(),
 		}
-		return info.File(), nil
+		return info.FileInfo(), nil
 	}
 
 	if f.info != nil {
 		return f.info, nil
 	}
-	info, err := f.fs.Get(context.TODO(), f.path)
+	info, err := f.fs.Stat(context.TODO(), f.path)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 				Err:  fs.ErrInvalid,
 			}
 		}
-		r, err := f.fs.Open(f.path)
+		r, err := f.fs.Open(context.TODO(), f.path)
 		if err != nil {
 			return 0, err
 		}
@@ -112,7 +112,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 				Err:  fs.ErrInvalid,
 			}
 		}
-		r, err := f.fs.Open(f.path)
+		r, err := f.fs.Open(context.TODO(), f.path)
 		if err != nil {
 			return 0, err
 		}
@@ -155,7 +155,7 @@ func (d FS) Stat(ctx context.Context, name string) (fs.FileInfo, error) {
 	if name = d.resolve(name); name == "" {
 		return nil, os.ErrNotExist
 	}
-	info, err := d.fs.Get(ctx, name)
+	info, err := d.fs.Stat(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func (d FS) OpenFile(ctx context.Context, name string, flag int, perm os.FileMod
 			return nil, err
 		}
 		// 创建
-		w, err := d.fs.Create(name)
+		w, err := d.fs.Create(ctx, name)
 		if err != nil {
 			return nil, err
 		}
@@ -210,5 +210,16 @@ func (d FS) Rename(ctx context.Context, oldName, newName string) error {
 	if newName = d.resolve(newName); newName == "" {
 		return os.ErrNotExist
 	}
-	return d.fs.Rename(ctx, oldName, newName)
+	if path.Dir(oldName) == path.Dir(newName) {
+		return d.fs.Rename(ctx, oldName, path.Base(newName))
+	}
+
+	currentPath := oldName
+	if path.Base(oldName) != path.Base(newName) {
+		if err := d.fs.Rename(ctx, oldName, path.Base(newName)); err != nil {
+			return err
+		}
+		currentPath = path.Join(path.Dir(oldName), path.Base(newName))
+	}
+	return d.fs.Move(ctx, currentPath, path.Dir(newName))
 }

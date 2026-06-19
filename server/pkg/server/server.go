@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/cloudfs"
 )
 
 type (
@@ -20,12 +20,12 @@ type (
 	}
 
 	Option interface {
-		NewServer(fs driver.FS) (Server, error)
+		NewServer(fs cloudfs.FS) (Server, error)
 	}
 	OptionCreator func() Option
 )
 
-func New(fs driver.FS, typ string, option string) (Server, error) {
+func New(fs cloudfs.FS, typ string, option string) (Server, error) {
 	creator, ok := allOptions[typ]
 	if !ok {
 		return nil, fmt.Errorf("unknown server type: %s", typ)

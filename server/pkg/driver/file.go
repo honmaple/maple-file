@@ -3,26 +3,15 @@ package driver
 import (
 	"io"
 	"io/fs"
-	"mime"
-	"os"
-	filepath "path"
 	"time"
+
+	"github.com/honmaple/cloudfs"
 )
 
 type (
-	File interface {
-		fs.FileInfo
-		Type() string
-		Path() string
-		ExtraInfo() map[string]any
-	}
-	FileReader interface {
-		io.Seeker
-		io.ReadCloser
-	}
-	FileWriter interface {
-		io.WriteCloser
-	}
+	File       = cloudfs.FileInfo
+	FileReader = cloudfs.File
+	FileWriter = cloudfs.FileWriter
 )
 
 type FileInfo struct {
@@ -37,108 +26,30 @@ type FileInfo struct {
 }
 
 func (info *FileInfo) File() File {
-	if info.Path == "" || info.Path == "." {
-		info.Path = "/"
-	}
-	return &emptyFile{
-		FileInfo: *info,
-	}
+	return cloudfs.NewFileInfo(fileInfoAdapter{info}, func(entry *cloudfs.Entry) {
+		entry.Name = info.Name
+		entry.Type = info.Type
+		entry.Size = info.Size
+		entry.Path = info.Path
+		entry.Mode = info.Mode
+		entry.IsDir = info.IsDir
+		entry.ModTime = info.ModTime
+		entry.ExtraInfo = info.ExtraInfo
+	})
 }
 
-type emptyFile struct {
-	FileInfo
+type fileInfoAdapter struct {
+	info *FileInfo
 }
 
-func (f *emptyFile) Type() string {
-	if f.FileInfo.Type != "" {
-		return f.FileInfo.Type
-	}
-	if f.FileInfo.IsDir {
-		return "DIR"
-	}
-	return mime.TypeByExtension(filepath.Ext(f.FileInfo.Name))
-}
-func (f *emptyFile) Path() string              { return f.FileInfo.Path }
-func (f *emptyFile) Name() string              { return f.FileInfo.Name }
-func (f *emptyFile) Size() int64               { return f.FileInfo.Size }
-func (f *emptyFile) Mode() fs.FileMode         { return f.FileInfo.Mode }
-func (f *emptyFile) IsDir() bool               { return f.FileInfo.IsDir }
-func (f *emptyFile) ModTime() time.Time        { return f.FileInfo.ModTime }
-func (f *emptyFile) Sys() any                  { return nil }
-func (f *emptyFile) ExtraInfo() map[string]any { return f.FileInfo.ExtraInfo }
-
-type seeker struct {
-	r            io.ReadCloser
-	offset       int64
-	readAtOffset int64
-	size         int64
-	rangeFunc    func(int64, int64) (io.ReadCloser, error)
-}
-
-func (s *seeker) Read(buf []byte) (n int, err error) {
-	n, err = s.ReadAt(buf, s.offset)
-	s.offset += int64(n)
-	return
-}
-
-func (s *seeker) ReadAt(buf []byte, off int64) (n int, err error) {
-	if off < 0 {
-		return -1, os.ErrInvalid
-	}
-
-	if off != s.readAtOffset && s.r != nil {
-		_ = s.r.Close()
-		s.r = nil
-	}
-
-	if s.r == nil {
-		s.r, err = s.rangeFunc(int64(off), 0)
-		s.readAtOffset = off
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	n, err = s.r.Read(buf)
-	s.readAtOffset += int64(n)
-	return
-}
-
-func (s *seeker) Seek(offset int64, whence int) (int64, error) {
-	oldOffset := s.offset
-	var newOffset int64
-	switch whence {
-	case io.SeekStart:
-		newOffset = offset
-	case io.SeekCurrent:
-		newOffset = oldOffset + offset
-	case io.SeekEnd:
-		return s.size, nil
-	default:
-		return -1, os.ErrInvalid
-	}
-
-	if newOffset < 0 {
-		return oldOffset, os.ErrInvalid
-	}
-	if newOffset == oldOffset {
-		return oldOffset, nil
-	}
-	s.offset = newOffset
-	return newOffset, nil
-}
-
-func (s *seeker) Close() error {
-	if s.r != nil {
-		return s.r.Close()
-	}
-	return nil
-}
+func (f fileInfoAdapter) Name() string       { return f.info.Name }
+func (f fileInfoAdapter) Size() int64        { return f.info.Size }
+func (f fileInfoAdapter) Mode() fs.FileMode  { return f.info.Mode }
+func (f fileInfoAdapter) ModTime() time.Time { return f.info.ModTime }
+func (f fileInfoAdapter) IsDir() bool        { return f.info.IsDir }
+func (f fileInfoAdapter) Sys() any           { return nil }
 
 func NewFile(path string, info fs.FileInfo, opts ...func(*FileInfo)) File {
-	if path == "" || path == "." {
-		path = "/"
-	}
 	fi := &FileInfo{
 		Path:    path,
 		Name:    info.Name(),
@@ -150,14 +61,18 @@ func NewFile(path string, info fs.FileInfo, opts ...func(*FileInfo)) File {
 	for _, opt := range opts {
 		opt(fi)
 	}
-	return &emptyFile{
-		FileInfo: *fi,
-	}
+	return cloudfs.NewFileInfo(info, func(entry *cloudfs.Entry) {
+		entry.Name = fi.Name
+		entry.Type = fi.Type
+		entry.Size = fi.Size
+		entry.Path = fi.Path
+		entry.Mode = fi.Mode
+		entry.IsDir = fi.IsDir
+		entry.ModTime = fi.ModTime
+		entry.ExtraInfo = fi.ExtraInfo
+	})
 }
 
 func NewFileReader(size int64, rangeFunc func(int64, int64) (io.ReadCloser, error)) (FileReader, error) {
-	return &seeker{
-		size:      size,
-		rangeFunc: rangeFunc,
-	}, nil
+	return cloudfs.NewFile(size, rangeFunc)
 }

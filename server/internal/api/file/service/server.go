@@ -5,6 +5,7 @@ import (
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 
+	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/server"
 	_ "github.com/honmaple/maple-file/server/pkg/server/webdav"
 )
@@ -31,7 +32,7 @@ func (srv *Service) StartServer(ctx context.Context, req *pb.ExternalServer_Star
 		s.Stop()
 	}
 
-	s, err := server.New(srv.fs, req.GetType(), req.GetOption())
+	s, err := server.New(driver.AsCloudFS(srv.fs), req.GetType(), req.GetOption())
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/honmaple/cloudfs"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/context"
@@ -13,8 +14,8 @@ import (
 	"golang.org/x/net/http2/h2c"
 	"golang.org/x/net/webdav"
 
-	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/server"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Option struct {
@@ -24,12 +25,12 @@ type Option struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func (opt *Option) NewServer(fs driver.FS) (server.Server, error) {
+func (opt *Option) NewServer(fs cloudfs.FS) (server.Server, error) {
 	return New(fs, opt)
 }
 
 type Webdav struct {
-	fs       driver.FS
+	fs       cloudfs.FS
 	opt      *Option
 	server   *http.Server
 	listener net.Listener
@@ -135,8 +136,8 @@ func (d *Webdav) Stop() error {
 	return nil
 }
 
-func New(fs driver.FS, opt *Option) (server.Server, error) {
-	if err := driver.VerifyOption(opt); err != nil {
+func New(fs cloudfs.FS, opt *Option) (server.Server, error) {
+	if err := util.VerifyOption(opt); err != nil {
 		return nil, err
 	}
 	return &Webdav{fs: fs, opt: opt}, nil

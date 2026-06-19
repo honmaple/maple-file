@@ -3,7 +3,9 @@ package driver
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+
+	"github.com/honmaple/cloudfs"
+	cloudfsdriver "github.com/honmaple/cloudfs/driver"
 )
 
 type (
@@ -39,35 +41,132 @@ func (Base) Open(string) (FileReader, error)                       { return nil,
 func (Base) Create(string) (FileWriter, error)                     { return nil, ErrNotSupport }
 func (Base) Close() error                                          { return nil }
 
-var allOptions map[string]OptionCreator
+type cloudFS struct {
+	raw cloudfs.FS
+}
 
-func DriverFS(driver string, option string) (FS, error) {
-	creator, ok := allOptions[driver]
-	if !ok {
-		return nil, fmt.Errorf("The driver %s not found", driver)
-	}
-	opt := creator()
-	if err := json.Unmarshal([]byte(option), opt); err != nil {
+func (d *cloudFS) List(ctx context.Context, path string, metas ...Meta) ([]File, error) {
+	files, err := d.raw.List(ctx, path, newMeta(metas...).listOptions()...)
+	if err != nil {
 		return nil, err
 	}
-	return opt.NewFS()
+	results := make([]File, len(files))
+	for i, file := range files {
+		results[i] = file
+	}
+	return results, nil
 }
 
-func Verify(driver string, option string) error {
-	creator, ok := allOptions[driver]
-	if !ok {
-		return fmt.Errorf("The driver %s not found", driver)
+func (d *cloudFS) Move(ctx context.Context, src, dst string) error { return d.raw.Move(ctx, src, dst) }
+func (d *cloudFS) Copy(ctx context.Context, src, dst string) error { return d.raw.Copy(ctx, src, dst) }
+func (d *cloudFS) Rename(ctx context.Context, path, newName string) error {
+	return d.raw.Rename(ctx, path, newName)
+}
+func (d *cloudFS) Remove(ctx context.Context, path string) error { return d.raw.Remove(ctx, path) }
+func (d *cloudFS) MakeDir(ctx context.Context, path string) error { return d.raw.MakeDir(ctx, path) }
+
+func (d *cloudFS) Get(ctx context.Context, path string) (File, error) {
+	return d.raw.Stat(ctx, path)
+}
+
+func (d *cloudFS) Open(path string) (FileReader, error) {
+	return d.raw.Open(context.Background(), path)
+}
+
+func (d *cloudFS) Create(path string) (FileWriter, error) {
+	return d.raw.Create(context.Background(), path)
+}
+
+func (d *cloudFS) Close() error { return d.raw.Close() }
+
+var allOptions map[string]OptionCreator
+
+func wrapCloudFS(fs cloudfs.FS) FS {
+	return &cloudFS{raw: fs}
+}
+
+func normalizeDriverName(name string) string {
+	switch name {
+	case "alist":
+		return "openlist"
+	case "githubRelease":
+		return "github-release"
+	default:
+		return name
 	}
-	opt := creator()
-	if err := json.Unmarshal([]byte(option), opt); err != nil {
+}
+
+func driverFromCloudFS(name, option string) (FS, error) {
+	raw, err := NewCloudFS(name, option)
+	if err != nil {
+		return nil, err
+	}
+	return wrapCloudFS(raw), nil
+}
+
+func NewCloudFS(name, option string) (cloudfs.FS, error) {
+	if creator, ok := allOptions[name]; ok {
+		opt := creator()
+		if err := json.Unmarshal([]byte(option), opt); err != nil {
+			return nil, err
+		}
+		fs, err := opt.NewFS()
+		if err != nil {
+			return nil, err
+		}
+		return AsCloudFS(fs), nil
+	}
+
+	raw, err := cloudfsdriver.NewFromString(normalizeDriverName(name), option)
+	if err != nil {
+		return nil, err
+	}
+
+	wraps, err := wrapFuncsFromJSON(option)
+	if err != nil {
+		_ = raw.Close()
+		return nil, err
+	}
+	if len(wraps) > 0 {
+		raw, err = cloudfs.New(raw, wraps...)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return raw, nil
+}
+
+func DriverFS(name string, option string) (FS, error) {
+	if creator, ok := allOptions[name]; ok {
+		opt := creator()
+		if err := json.Unmarshal([]byte(option), opt); err != nil {
+			return nil, err
+		}
+		return opt.NewFS()
+	}
+	return driverFromCloudFS(name, option)
+}
+
+func Verify(name string, option string) error {
+	if creator, ok := allOptions[name]; ok {
+		opt := creator()
+		if err := json.Unmarshal([]byte(option), opt); err != nil {
+			return err
+		}
+		return VerifyOption(opt)
+	}
+
+	if err := cloudfsdriver.VerifyOption(normalizeDriverName(name), option); err != nil {
 		return err
 	}
-	return VerifyOption(opt)
+	return verifyWrapOptionJSON(option)
 }
 
-func Exists(driver string) bool {
-	_, ok := allOptions[driver]
-	return ok
+func Exists(name string) bool {
+	if _, ok := allOptions[name]; ok {
+		return true
+	}
+	return cloudfsdriver.Exists(normalizeDriverName(name))
 }
 
 func Register(typ string, creator OptionCreator) {

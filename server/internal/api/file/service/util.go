@@ -4,8 +4,8 @@ import (
 	filepath "path"
 	"time"
 
+	"github.com/honmaple/cloudfs"
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
-	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/util"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -49,7 +49,7 @@ func renameFile(format, filename string) string {
 	})
 }
 
-func infoToFile(m driver.File) *pb.File {
+func infoToFile(m cloudfs.FileInfo) *pb.File {
 	file := &pb.File{
 		Path:      m.Path(),
 		Name:      m.Name(),

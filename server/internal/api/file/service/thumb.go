@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/honmaple/cloudfs"
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	"github.com/honmaple/maple-file/server/internal/app/config"
-	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/spf13/viper"
 )
 
@@ -25,7 +25,7 @@ func (srv *Service) thumbPath() string {
 	return filepath.Join(srv.app.Config.GetString(config.ApplicationPath), "thumbnail")
 }
 
-func (srv *Service) thumbFile(ctx context.Context, path string, info driver.File) (string, error) {
+func (srv *Service) thumbFile(ctx context.Context, path string, info cloudfs.FileInfo) (string, error) {
 	if info.IsDir() {
 		return "", errors.New("can't generate thumb for dir")
 	}

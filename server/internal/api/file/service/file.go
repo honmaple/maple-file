@@ -13,7 +13,6 @@ import (
 	"github.com/honmaple/maple-file/server/internal/api/file/fs"
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
 	settingpb "github.com/honmaple/maple-file/server/internal/proto/api/setting"
-	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/util"
 	"github.com/spf13/viper"
 )
@@ -40,12 +39,10 @@ func (srv *Service) getSetting(ctx context.Context, key string) (*viper.Viper, e
 func (srv *Service) List(ctx context.Context, req *pb.ListFilesRequest) (*pb.ListFilesResponse, error) {
 	filter := util.NewFilter(req.GetFilter())
 
-	metas := []driver.Meta{
-		driver.WithOrder(filter.GetString("order"), filter.GetBool("desc")),
-		driver.WithPagination(filter.GetInt("page"), filter.GetInt("page_size")),
-	}
-
-	files, err := srv.fs.List(ctx, util.CleanPath(filter.GetString("path")), metas...)
+	files, err := srv.fs.List(ctx, util.CleanPath(filter.GetString("path")),
+		fs.WithOrder(filter.GetString("order"), filter.GetBool("desc")),
+		fs.WithPagination(filter.GetInt("page"), filter.GetInt("page_size")),
+	)
 	if err != nil {
 		return nil, err
 	}

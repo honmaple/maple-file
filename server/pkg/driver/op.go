@@ -2,11 +2,8 @@ package driver
 
 import (
 	"context"
-	"errors"
-	"io/fs"
-	filepath "path"
 
-	"github.com/honmaple/maple-file/server/pkg/util"
+	"github.com/honmaple/cloudfs"
 )
 
 type (
@@ -14,119 +11,92 @@ type (
 )
 
 func CopyFile(ctx context.Context, srcFS FS, src, dst string) error {
-	srcFile, err := srcFS.Open(src)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	dstFile, err := srcFS.Create(dst)
-	if err != nil {
-		return err
-	}
-
-	if _, err := util.CopyWithContext(ctx, dstFile, srcFile); err != nil {
-		dstFile.Close()
-		return err
-	}
-	return dstFile.Close()
+	return cloudfs.CopyFile(ctx, unwrapFS(srcFS), src, dst)
 }
 
 func CopyDir(ctx context.Context, srcFS FS, src, dst string) error {
-	if err := srcFS.MakeDir(ctx, dst); err != nil {
-		return err
-	}
-
-	files, err := srcFS.List(ctx, src)
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		srcPath := filepath.Join(src, file.Name())
-		dstPath := filepath.Join(dst, file.Name())
-
-		if file.IsDir() {
-			err = CopyDir(ctx, srcFS, srcPath, dstPath)
-		} else {
-			err = CopyFile(ctx, srcFS, srcPath, dstPath)
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return cloudfs.CopyDir(ctx, unwrapFS(srcFS), src, dst)
 }
 
 func Copy(ctx context.Context, srcFS FS, src, dst string, metas ...Meta) error {
-	meta := NewMeta(metas...)
-
-	dstFile, err := srcFS.Get(ctx, dst)
-	if err != nil {
-		// 复制并重命名
-		if !meta.GetBool("auto_rename") {
-			return err
-		}
-		_, err = srcFS.Get(ctx, filepath.Dir(dst))
-		if err != nil {
-			return err
-		}
-	} else if !dstFile.IsDir() {
-		return &fs.PathError{Op: "copy", Path: dst, Err: errors.New("copy dst must be a dir")}
-	} else {
-		dst = filepath.Join(dst, filepath.Base(src))
-	}
-
-	srcFile, err := srcFS.Get(ctx, src)
-	if err != nil {
-		return err
-	}
-	if srcFile.IsDir() {
-		return CopyDir(ctx, srcFS, src, dst)
-	}
-	return CopyFile(ctx, srcFS, src, dst)
-}
-
-func walkDir(ctx context.Context, srcFS FS, root string, d File, walkDirFn WalkDirFunc) error {
-	if err := walkDirFn(root, d, nil); err != nil || !d.IsDir() {
-		if err == fs.SkipDir && d.IsDir() {
-			err = nil
-		}
-		return err
-	}
-
-	files, err := srcFS.List(ctx, filepath.Join(d.Path(), d.Name()))
-	if err != nil {
-		err = walkDirFn(root, d, err)
-		if err != nil {
-			if err == fs.SkipDir && d.IsDir() {
-				err = nil
-			}
-			return err
-		}
-		return err
-	}
-	for _, file := range files {
-		name := filepath.Join(root, file.Name())
-		if err := walkDir(ctx, srcFS, name, file, walkDirFn); err != nil {
-			if err == fs.SkipDir {
-				break
-			}
-			return err
-		}
-	}
-	return nil
+	return cloudfs.Copy(ctx, unwrapFS(srcFS), src, dst, newMeta(metas...).mapValue())
 }
 
 func WalkDir(ctx context.Context, srcFS FS, root string, walkDirFn WalkDirFunc) error {
-	info, err := srcFS.Get(ctx, root)
-	if err != nil {
-		err = walkDirFn(root, nil, err)
-	} else {
-		err = walkDir(ctx, srcFS, root, info, walkDirFn)
-	}
-	if err == fs.SkipDir || err == fs.SkipAll {
-		return nil
-	}
-	return err
+	return cloudfs.WalkDir(ctx, unwrapFS(srcFS), root, func(path string, info cloudfs.FileInfo, err error) error {
+		if info == nil {
+			return walkDirFn(path, nil, err)
+		}
+		return walkDirFn(path, info, err)
+	})
 }
+
+func unwrapFS(srcFS FS) cloudfs.FS {
+	if fs, ok := srcFS.(*cloudFS); ok {
+		return fs.raw
+	}
+
+	return &fsAdapter{FS: srcFS}
+}
+
+func AsCloudFS(srcFS FS) cloudfs.FS {
+	return unwrapFS(srcFS)
+}
+
+func AsDriverFS(srcFS cloudfs.FS) FS {
+	return wrapCloudFS(srcFS)
+}
+
+type fsAdapter struct {
+	FS
+}
+
+func (d *fsAdapter) List(ctx context.Context, path string, _ ...cloudfs.ListOption) ([]cloudfs.FileInfo, error) {
+	files, err := d.FS.List(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	results := make([]cloudfs.FileInfo, len(files))
+	for i, file := range files {
+		results[i] = file
+	}
+	return results, nil
+}
+
+func (d *fsAdapter) Stat(ctx context.Context, path string) (cloudfs.FileInfo, error) {
+	return d.FS.Get(ctx, path)
+}
+
+func (d *fsAdapter) Open(ctx context.Context, path string) (cloudfs.File, error) {
+	return d.FS.Open(path)
+}
+
+func (d *fsAdapter) Create(ctx context.Context, path string) (cloudfs.FileWriter, error) {
+	return d.FS.Create(path)
+}
+
+func (d *fsAdapter) Rename(ctx context.Context, path, newName string) error {
+	return d.FS.Rename(ctx, path, newName)
+}
+
+func (d *fsAdapter) Move(ctx context.Context, src, dst string) error {
+	return d.FS.Move(ctx, src, dst)
+}
+
+func (d *fsAdapter) Copy(ctx context.Context, src, dst string) error {
+	return d.FS.Copy(ctx, src, dst)
+}
+
+func (d *fsAdapter) Remove(ctx context.Context, path string) error {
+	return d.FS.Remove(ctx, path)
+}
+
+func (d *fsAdapter) MakeDir(ctx context.Context, path string) error {
+	return d.FS.MakeDir(ctx, path)
+}
+
+func (d *fsAdapter) Close() error {
+	return d.FS.Close()
+}
+
+var _ cloudfs.FS = (*fsAdapter)(nil)

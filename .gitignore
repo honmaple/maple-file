@@ -18,3 +18,6 @@ _tmp
 
 .DS_Store
 docs/
+dist/
+*.svg
+appstore.md

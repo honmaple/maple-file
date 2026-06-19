@@ -5,7 +5,7 @@ import (
 	"os"
 	filepath "path"
 
-	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/cloudfs"
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
@@ -37,10 +37,10 @@ func (opt *MoveTaskOption) Execute(task runner.Task, fs FS) error {
 	return move(task, srcFS, srcPath, dstFS, dstPath)
 }
 
-func move(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, dstPath string) error {
+func move(task runner.Task, srcFS cloudfs.FS, srcPath string, dstFS cloudfs.FS, dstPath string) error {
 	ctx := task.Context()
 
-	dstFile, err := dstFS.Get(ctx, dstPath)
+	dstFile, err := dstFS.Stat(ctx, dstPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -53,19 +53,19 @@ func move(task runner.Task, srcFS driver.FS, srcPath string, dstFS driver.FS, ds
 		return fmt.Errorf("无法复制文件")
 	}
 
-	srcFile, err := srcFS.Get(ctx, srcPath)
+	srcFile, err := srcFS.Stat(ctx, srcPath)
 	if err != nil {
 		return err
 	}
 
 	if !srcFile.IsDir() {
-		src, err := srcFS.Open(srcPath)
+		src, err := srcFS.Open(ctx, srcPath)
 		if err != nil {
 			return err
 		}
 		defer src.Close()
 
-		dst, err := dstFS.Create(filepath.Join(dstPath, srcFile.Name()))
+		dst, err := dstFS.Create(ctx, filepath.Join(dstPath, srcFile.Name()))
 		if err != nil {
 			return err
 		}

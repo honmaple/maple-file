@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/honmaple/maple-file/server/pkg/driver"
+	"github.com/honmaple/cloudfs"
 )
 
 type fileinfo struct {
@@ -21,12 +21,18 @@ type fileinfo struct {
 func (f *fileinfo) Name() string       { return f.name }
 func (f *fileinfo) Size() int64        { return f.size }
 func (f *fileinfo) Mode() fs.FileMode  { return f.mode }
-func (f *fileinfo) IsDir() bool        { return f.isDir }
 func (f *fileinfo) ModTime() time.Time { return f.modTime }
+func (f *fileinfo) IsDir() bool        { return f.isDir }
 func (f *fileinfo) Sys() any           { return nil }
 
-func parseNginx(path string, doc *goquery.Document) []driver.File {
-	files := make([]driver.File, 0)
+func newFile(path string, info fs.FileInfo) cloudfs.FileInfo {
+	return cloudfs.NewFileInfo(info, func(entry *cloudfs.Entry) {
+		entry.Path = path
+	})
+}
+
+func parseNginx(path string, doc *goquery.Document) []cloudfs.FileInfo {
+	files := make([]cloudfs.FileInfo, 0)
 
 	doc.Find("pre a").Each(func(i int, s *goquery.Selection) {
 		if i == 0 {
@@ -46,13 +52,13 @@ func parseNginx(path string, doc *goquery.Document) []driver.File {
 				info.modTime = modTime
 			}
 		}
-		files = append(files, driver.NewFile(path, info))
+		files = append(files, newFile(path, info))
 	})
 	return files
 }
 
-func parseAliyun(path string, doc *goquery.Document) []driver.File {
-	files := make([]driver.File, 0)
+func parseAliyun(path string, doc *goquery.Document) []cloudfs.FileInfo {
+	files := make([]cloudfs.FileInfo, 0)
 
 	doc.Find("tbody tr").Each(func(i int, s *goquery.Selection) {
 		if i == 0 {
@@ -83,13 +89,13 @@ func parseAliyun(path string, doc *goquery.Document) []driver.File {
 				}
 			}
 		}
-		files = append(files, driver.NewFile(path, info))
+		files = append(files, newFile(path, info))
 	})
 	return files
 }
 
-func parseTuna(path string, doc *goquery.Document) []driver.File {
-	files := make([]driver.File, 0)
+func parseTuna(path string, doc *goquery.Document) []cloudfs.FileInfo {
+	files := make([]cloudfs.FileInfo, 0)
 
 	doc.Find("tbody tr").Each(func(i int, s *goquery.Selection) {
 		if i == 0 {
@@ -120,7 +126,7 @@ func parseTuna(path string, doc *goquery.Document) []driver.File {
 				}
 			}
 		}
-		files = append(files, driver.NewFile(path, info))
+		files = append(files, newFile(path, info))
 	})
 	return files
 }

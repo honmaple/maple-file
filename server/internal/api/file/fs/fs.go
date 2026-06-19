@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/honmaple/cloudfs"
 	"github.com/honmaple/maple-file/server/internal/app"
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/runner"
@@ -26,7 +27,7 @@ type (
 
 	FS interface {
 		driver.FS
-		GetFS(string) (driver.FS, string, error)
+		GetFS(string) (cloudfs.FS, string, error)
 		GetRepo(string) *pb.Repo
 		CreateRepo(*pb.Repo)
 		UpdateRepo(*pb.Repo, *pb.Repo)
@@ -51,7 +52,7 @@ func (d *repoFS) MountPath() string {
 type defaultFS struct {
 	driver.FS
 	app   *app.App
-	cache util.Cache[string, driver.FS]
+	cache util.Cache[string, cloudfs.FS]
 	repos util.Cache[string, *pb.Repo]
 }
 
@@ -152,7 +153,7 @@ func (d *defaultFS) Get(ctx context.Context, path string) (driver.File, error) {
 	return d.FS.Get(ctx, path)
 }
 
-func (d *defaultFS) GetFS(path string) (driver.FS, string, error) {
+func (d *defaultFS) GetFS(path string) (cloudfs.FS, string, error) {
 	repo := d.GetRepo(path)
 	if repo == nil {
 		return nil, "", os.ErrNotExist
@@ -168,12 +169,20 @@ func (d *defaultFS) GetFS(path string) (driver.FS, string, error) {
 		return v, realPath, nil
 	}
 
-	fs, err := driver.DriverFS(repo.Driver, repo.Option)
+	fs, err := driver.NewCloudFS(repo.Driver, repo.Option)
 	if err != nil {
 		return nil, "", err
 	}
 	d.cache.Store(rootPath, fs)
 	return fs, realPath, nil
+}
+
+func (d *defaultFS) getDriverFS(path string) (driver.FS, string, error) {
+	fs, realPath, err := d.GetFS(path)
+	if err != nil {
+		return nil, "", err
+	}
+	return driver.AsDriverFS(fs), realPath, nil
 }
 
 func (d *defaultFS) GetRepo(path string) *pb.Repo {
@@ -236,10 +245,10 @@ func (d *defaultFS) loadRepos() error {
 func New(app *app.App) FS {
 	d := &defaultFS{
 		app:   app,
-		cache: util.NewCache[string, driver.FS](),
+		cache: util.NewCache[string, cloudfs.FS](),
 		repos: util.NewCache[string, *pb.Repo](),
 	}
-	d.FS = driver.NewFS(d.GetFS, nil)
+	d.FS = driver.NewFS(d.getDriverFS, nil)
 
 	d.loadRepos()
 	return d

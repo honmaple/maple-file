@@ -13,34 +13,36 @@ import (
 	filepath "path"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/honmaple/maple-file/server/pkg/driver"
-	"github.com/honmaple/maple-file/server/pkg/driver/base"
+	"github.com/honmaple/cloudfs"
+	cloudfsdriver "github.com/honmaple/cloudfs/driver"
+	mapledriver "github.com/honmaple/maple-file/server/pkg/driver"
 	httputil "github.com/honmaple/maple-file/server/pkg/util/http"
+	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
 type Option struct {
-	base.Option
+	mapledriver.CommonOption
 	Endpoint string `json:"endpoint"  validate:"required"`
 	Format   string `json:"format"`
 }
 
-func (opt *Option) NewFS() (driver.FS, error) {
+func (opt *Option) NewFS() (cloudfs.FS, error) {
 	return New(opt)
 }
 
 type Mirror struct {
-	driver.Base
+	cloudfs.BaseFS
 	opt    *Option
 	client *httputil.Client
 }
 
-var _ driver.FS = (*Mirror)(nil)
+var _ cloudfs.FS = (*Mirror)(nil)
 
 func (d *Mirror) getURL(path string) string {
 	return strings.TrimSuffix(d.opt.Endpoint, "/") + path
 }
 
-func (d *Mirror) List(ctx context.Context, path string, metas ...driver.Meta) ([]driver.File, error) {
+func (d *Mirror) List(ctx context.Context, path string, _ ...cloudfs.ListOption) ([]cloudfs.FileInfo, error) {
 	resp, err := d.client.Request(http.MethodGet, d.getURL(path), httputil.WithContext(ctx))
 	if err != nil {
 		return nil, err
@@ -56,7 +58,7 @@ func (d *Mirror) List(ctx context.Context, path string, metas ...driver.Meta) ([
 		return nil, err
 	}
 
-	var files []driver.File
+	var files []cloudfs.FileInfo
 
 	switch d.opt.Format {
 	case "tuna":
@@ -69,7 +71,7 @@ func (d *Mirror) List(ctx context.Context, path string, metas ...driver.Meta) ([
 	return files, nil
 }
 
-func (d *Mirror) Get(ctx context.Context, path string) (driver.File, error) {
+func (d *Mirror) Stat(ctx context.Context, path string) (cloudfs.FileInfo, error) {
 	resp, err := d.client.Request(http.MethodHead, d.getURL(path), httputil.WithContext(ctx))
 	if err != nil {
 		return nil, err
@@ -85,7 +87,7 @@ func (d *Mirror) Get(ctx context.Context, path string) (driver.File, error) {
 	}
 	if typ := resp.Header.Get("Content-Type"); strings.HasPrefix(typ, "text/html") {
 		info.isDir = true
-		return driver.NewFile(filepath.Dir(path), info), nil
+		return newFile(path, info), nil
 	}
 
 	size, err := strconv.Atoi(resp.Header.Get("Content-Length"))
@@ -98,11 +100,11 @@ func (d *Mirror) Get(ctx context.Context, path string) (driver.File, error) {
 	}
 	info.size = int64(size)
 	info.modTime = modTime
-	return driver.NewFile(filepath.Dir(path), info), nil
+	return newFile(path, info), nil
 }
 
-func (d *Mirror) Open(path string) (driver.FileReader, error) {
-	info, err := d.Get(context.Background(), path)
+func (d *Mirror) Open(ctx context.Context, path string) (cloudfs.File, error) {
+	info, err := d.Stat(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -123,19 +125,27 @@ func (d *Mirror) Open(path string) (driver.FileReader, error) {
 		}
 		return resp.Body, nil
 	}
-	return driver.NewFileReader(info.Size(), rangeFunc)
+	return cloudfs.NewFile(info.Size(), rangeFunc)
 }
 
-func New(opt *Option) (driver.FS, error) {
-	d := &Mirror{
+func New(opt *Option) (cloudfs.FS, error) {
+	if err := util.VerifyOption(opt); err != nil {
+		return nil, err
+	}
+
+	raw := &Mirror{
 		opt:    opt,
 		client: httputil.New(),
 	}
-	return opt.Option.NewFS(d)
+	wraps, err := mapledriver.NewCommonWraps(&opt.CommonOption)
+	if err != nil {
+		return nil, err
+	}
+	return cloudfs.New(raw, wraps...)
 }
 
 func init() {
-	driver.Register("mirror", func() driver.Option {
+	cloudfsdriver.Register("mirror", func() cloudfsdriver.Option {
 		return &Option{}
 	})
 }

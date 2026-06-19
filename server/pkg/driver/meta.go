@@ -1,8 +1,10 @@
 package driver
 
 import (
-	"github.com/spf13/viper"
 	"sort"
+
+	"github.com/honmaple/cloudfs"
+	"github.com/spf13/viper"
 )
 
 type (
@@ -68,12 +70,28 @@ func (m *meta) Paginator(files []File) []File {
 	return files[start:end]
 }
 
-func NewMeta(metas ...Meta) *meta {
+func (m *meta) mapValue() map[string]any {
+	results := make(map[string]any)
+	for _, key := range m.AllKeys() {
+		results[key] = m.Get(key)
+	}
+	return results
+}
+
+func (m *meta) listOptions() []cloudfs.ListOption {
+	return []cloudfs.ListOption{cloudfs.ListOption(m.mapValue())}
+}
+
+func newMeta(metas ...Meta) *meta {
 	m := &meta{viper.New()}
 	for _, meta := range metas {
 		meta(m)
 	}
 	return m
+}
+
+func NewMeta(metas ...Meta) *meta {
+	return newMeta(metas...)
 }
 
 func WithMeta(m map[string]any) Meta {

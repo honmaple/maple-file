@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	pb "github.com/honmaple/maple-file/server/internal/proto/api/file"
-	"github.com/honmaple/maple-file/server/pkg/driver"
+	mapledriver "github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/util"
 )
 
@@ -36,7 +36,7 @@ func (srv *Service) verifyRepo(repo *pb.Repo) error {
 		return errors.New("重复挂载")
 	}
 	// TODO: 禁止挂载到不存在的目录
-	return driver.Verify(repo.GetDriver(), repo.GetOption())
+	return mapledriver.Verify(repo.GetDriver(), repo.GetOption())
 }
 
 func (srv *Service) ListRepos(ctx context.Context, req *pb.ListReposRequest) (*pb.ListReposResponse, error) {
@@ -133,7 +133,7 @@ func (srv *Service) TestRepo(ctx context.Context, req *pb.TestRepoRequest) (*pb.
 		return nil, err
 	}
 
-	fs, err := driver.DriverFS(opt.Driver, opt.Option)
+	fs, err := mapledriver.NewCloudFS(opt.Driver, opt.Option)
 	if err != nil {
 		return nil, err
 	}

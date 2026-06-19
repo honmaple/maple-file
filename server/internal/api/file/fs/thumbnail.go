@@ -11,6 +11,7 @@ import (
 
 	"github.com/djherbis/times"
 
+	"github.com/honmaple/cloudfs"
 	"github.com/honmaple/maple-file/server/pkg/driver"
 	"github.com/honmaple/maple-file/server/pkg/runner"
 	"github.com/honmaple/maple-file/server/pkg/thumbnail"
@@ -35,10 +36,10 @@ func (opt *ThumbTaskOption) Execute(task runner.Task, fs FS) error {
 	if err != nil {
 		return err
 	}
-	return opt.generateThumb(task, fs, info)
+	return opt.generateThumb(task, driver.AsCloudFS(fs), info)
 }
 
-func (opt *ThumbTaskOption) generateThumb(task runner.Task, fs driver.FS, info driver.File) error {
+func (opt *ThumbTaskOption) generateThumb(task runner.Task, fs cloudfs.FS, info cloudfs.FileInfo) error {
 	ctx := task.Context()
 
 	// 临时限制,只生成图片缩略图
@@ -60,7 +61,7 @@ func (opt *ThumbTaskOption) generateThumb(task runner.Task, fs driver.FS, info d
 		}
 	}
 
-	file, err := fs.Open(opt.Path)
+	file, err := fs.Open(ctx, opt.Path)
 	if err != nil {
 		return err
 	}

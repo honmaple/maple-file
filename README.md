@@ -23,6 +23,12 @@
 
 > 使用 **Flutter** 实现的无服务端多协议云盘文件上传和管理APP
 
+## 技术说明
+
+- 客户端基于 `Flutter`，文件管理能力由内嵌的 Go 服务提供。
+- Go 侧存储驱动当前统一基于 [`github.com/honmaple/cloudfs`](https://github.com/honmaple/cloudfs) 构建。
+- 仓库内已不再维护大批本地协议驱动实现，优先直接复用 `cloudfs` 原生驱动与中间件能力。
+
 ## 支持的存储
    - [X] 本地文件
    - [X] FTP
@@ -31,7 +37,9 @@
    - [X] SMB
    - [X] Webdav
    - [X] Foxel
-   - [X] Alist
+   - [X] Alist/OpenList
+   - [X] Google Drive
+   - [X] OneDrive
    - [X] 又拍云
    - [X] 115网盘
    - [X] 夸克网盘
@@ -48,7 +56,9 @@
 | SMB            | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | Webdav         | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | Foxel    | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
-| ALIST          | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
+| Alist/OpenList | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
+| Google Drive   | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
+| OneDrive       | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | 又拍云          | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ✅  | ✅  |
 | 115网盘         | ✅     | ✅     | ✅    | ✅  | ✅  | ✅  | ❌  | ✅  |
 | 夸克网盘         | ✅     | ✅     | ✅    | ✅  | ❌  | ✅  | ❌  | ✅  |

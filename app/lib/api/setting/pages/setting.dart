@@ -76,17 +76,6 @@ class SettingScreen extends StatelessWidget {
                   navigatorState(context).pushNamed('/setting/backup');
                 },
               ),
-              PlatformListTile(
-                leading: Icon(
-                  Icons.sync,
-                  color: themeData.colorScheme.primary,
-                ),
-                title: Text("同步与备份".tr()),
-                trailing: PlatformListTileChevron(),
-                onTap: () {
-                  navigatorState(context).pushNamed('/setting/syncing');
-                },
-              ),
             ],
           ),
           CustomListSection(
@@ -148,6 +137,25 @@ class SettingScreen extends StatelessWidget {
                 trailing: PlatformListTileChevron(),
                 onTap: () {
                   navigatorState(context).pushNamed('/file/setting/server');
+                },
+              ),
+            ],
+          ),
+          CustomListSection(
+            header: Container(
+              alignment: Alignment.centerLeft,
+              child: Text("同步备份".tr(), style: themeData.textTheme.bodySmall),
+            ),
+            children: [
+              PlatformListTile(
+                leading: Icon(
+                  Icons.sync,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("同步备份".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/setting/syncing');
                 },
               ),
             ],

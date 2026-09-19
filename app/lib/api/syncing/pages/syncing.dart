@@ -12,8 +12,6 @@ import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
-enum _ProfileType { albumBackup }
-
 class SyncingScreen extends ConsumerWidget {
   const SyncingScreen({super.key});
 
@@ -41,10 +39,6 @@ class SyncingScreen extends ConsumerWidget {
                               : Icons.sync,
                         ),
                         title: Text(profile.name),
-                        subtitle: Text(
-                          profile.enabled ? '已启用'.tr() : '已停用'.tr(),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
                         trailing: PlatformSwitch(
                           value: profile.enabled,
                           activeTrackColor: Theme.of(context).primaryColor,
@@ -57,12 +51,12 @@ class SyncingScreen extends ConsumerWidget {
                             ref.invalidate(syncProfilesProvider);
                           },
                         ),
-                        onTap: () => _openProfile(context, ref, profile),
+                        onTap: () => _handleOpenProfile(context, ref, profile),
                       ),
                     PlatformListTile(
                       leading: const Icon(Icons.add),
                       title: Text('添加同步或备份'.tr()),
-                      onTap: () => _createProfile(context),
+                      onTap: () => _handleCreateProfile(context),
                     ),
                   ],
                 ),
@@ -74,59 +68,75 @@ class SyncingScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openProfile(
+  Future<void> _handleOpenProfile(
     BuildContext context,
     WidgetRef ref,
     SyncProfile profile,
   ) async {
     try {
-      final type = _profileType(profile);
-      if (type == null) {
+      final sourceType = _supportedSourceType(profile);
+      if (sourceType == null) {
         SmartDialog.showNotify(
           msg: '暂不支持编辑此类型配置'.tr(),
           notifyType: NotifyType.warning,
         );
         return;
       }
-      await _openEditor(context, type, profile);
+      await _handleOpenDetail(context, sourceType, profile);
+      ref.invalidate(syncProfilesProvider);
     } catch (error) {
       SmartDialog.showNotify(msg: '$error', notifyType: NotifyType.error);
     }
   }
 
-  Future<void> _createProfile(BuildContext context) async {
-    final type = await showCustomListOptions<_ProfileType>(
+  Future<void> _handleCreateProfile(BuildContext context) async {
+    final sourceType = await showCustomListOptions<SyncSourceType>(
       context: context,
       options: [
         CustomOption(
           icon: const Icon(Icons.photo_library_outlined),
           label: '相册备份'.tr(),
-          value: _ProfileType.albumBackup,
+          value: SyncSourceType.album,
         ),
       ],
     );
-    if (type != null && context.mounted) {
-      await _openEditor(context, type);
+    if (sourceType != null && context.mounted) {
+      await _handleOpenEditor(context, sourceType);
     }
   }
 
-  _ProfileType? _profileType(SyncProfile profile) {
-    if (profile.sourceType == 'album' &&
+  SyncSourceType? _supportedSourceType(SyncProfile profile) {
+    final sourceType = SyncSourceType.fromValue(profile.sourceType);
+    if (sourceType == SyncSourceType.album &&
         profile.mode == SyncProfile_Mode.MODE_BACKUP &&
-        profile.targetType == 'repo_directory') {
-      return _ProfileType.albumBackup;
+        SyncTargetType.fromValue(profile.targetType) ==
+            SyncTargetType.repoDirectory) {
+      return sourceType;
     }
     return null;
   }
 
-  Future<void> _openEditor(
+  Future<void> _handleOpenEditor(
     BuildContext context,
-    _ProfileType type, [
+    SyncSourceType sourceType, [
     SyncProfile? profile,
   ]) {
     return Navigator.of(context).pushNamed(
-      switch (type) {
-        _ProfileType.albumBackup => '/setting/syncing/album-backup/edit',
+      switch (sourceType) {
+        SyncSourceType.album => '/setting/syncing/album-backup/edit',
+      },
+      arguments: profile,
+    );
+  }
+
+  Future<void> _handleOpenDetail(
+    BuildContext context,
+    SyncSourceType sourceType,
+    SyncProfile profile,
+  ) {
+    return Navigator.of(context).pushNamed(
+      switch (sourceType) {
+        SyncSourceType.album => '/setting/syncing/album-backup/detail',
       },
       arguments: profile,
     );

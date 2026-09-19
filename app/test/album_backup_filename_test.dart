@@ -1,10 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fixnum/fixnum.dart' as fixnum;
-import 'package:maple_file/api/syncing/providers/service.dart';
+import 'package:maple_file/api/syncing/providers/album.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
 void main() {
+  test('destination layout supports year and month folders', () {
+    final date = DateTime(2026, 9, 19);
+
+    expect(
+      AlbumDestinationLayout.fromValue('year_month'),
+      AlbumDestinationLayout.yearMonth,
+    );
+    expect(
+      AlbumDestinationLayout.yearMonth.pathParts(date),
+      ['2026', '09'],
+    );
+    expect(
+      AlbumDestinationLayout.yearMonthDay.pathParts(date),
+      ['2026', '09', '19'],
+    );
+    expect(AlbumDestinationLayout.filenameAssetId.pathParts(date), isEmpty);
+  });
+
   test('iOS asset identifier cannot create subdirectories in upload name', () {
     expect(
       albumBackupFilename('IMG_1565.HEIC', 'F6A1B2C3/L0/001'),

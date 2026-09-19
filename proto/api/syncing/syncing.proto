@@ -1,0 +1,273 @@
+syntax = "proto3";
+
+package api.syncing;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "api/syncing";
+
+service SyncService {
+	rpc ListProfiles (SyncProfile.ListRequest) returns (SyncProfile.ListResponse) {
+		option (google.api.http) = {get: "/api/syncing/profiles"};
+	}
+	rpc CreateProfile (SyncProfile.CreateRequest) returns (SyncProfile.CreateResponse) {
+		option (google.api.http) = {post: "/api/syncing/profiles" body: "*"};
+	}
+	rpc UpdateProfile (SyncProfile.UpdateRequest) returns (SyncProfile.UpdateResponse) {
+		option (google.api.http) = {put: "/api/syncing/profiles/{payload.id}" body: "payload"};
+	}
+	rpc DeleteProfile (SyncProfile.DeleteRequest) returns (SyncProfile.DeleteResponse) {
+		option (google.api.http) = {delete: "/api/syncing/profiles/{id}"};
+	}
+
+	rpc ListRecords (SyncRecord.ListRequest) returns (SyncRecord.ListResponse) {}
+	rpc UpsertRecords (SyncRecord.UpsertRequest) returns (SyncRecord.UpsertResponse) {}
+	rpc ListHistories (SyncHistory.ListRequest) returns (SyncHistory.ListResponse) {}
+	rpc CreateHistory (SyncHistory.CreateRequest) returns (SyncHistory.CreateResponse) {}
+	rpc StartHistory (SyncHistory.StartRequest) returns (SyncHistory.StartResponse) {}
+	rpc FinishHistory (SyncHistory.FinishRequest) returns (SyncHistory.FinishResponse) {}
+	rpc ListHistoryIssues (SyncHistoryIssue.ListRequest) returns (SyncHistoryIssue.ListResponse) {}
+}
+
+message SyncProfile {
+	enum Mode {
+		MODE_UNSPECIFIED = 0;
+		MODE_BACKUP = 1;
+		MODE_ONE_WAY = 2;
+		MODE_TWO_WAY = 3;
+	}
+
+	// @gotags: gorm:"primary_key;auto_increment"
+	int32 id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp created_at = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp updated_at = 3;
+	// @gotags: gorm:"not null;unique"
+	string name = 4;
+	bool enabled = 5;
+	Mode mode = 6;
+	// Current value: album. Determines the source_config schema.
+	// @gotags: gorm:"not null;index"
+	string source_type = 7;
+	// JSON object. Album uses {"album_ids":["album_001","album_002"]}.
+	// @gotags: gorm:"not null"
+	string source_config = 8;
+	// Current value: repo_directory.
+	// @gotags: gorm:"not null"
+	string target_type = 9;
+	// JSON object. Album backup uses {"path":"/repo/path","layout":"year_month_day"}.
+	// @gotags: gorm:"not null"
+	string target_config = 10;
+	// Mode-specific execution policy. Album backup currently uses {}.
+	// @gotags: gorm:"not null"
+	string policy_config = 11;
+	// Destination mapping generation. Starts at 1 and increases when target_type
+	// Name, enabled, source_config, and policy_config do not increase it.
+	// A file record is reusable only when its config_version matches this value.
+	// @gotags: gorm:"not null;default:1"
+	int64 config_version = 12;
+
+	message ListRequest {}
+	message ListResponse {
+		repeated SyncProfile results = 1;
+	}
+	message CreateRequest {
+		SyncProfile payload = 1;
+	}
+	message CreateResponse {
+		SyncProfile result = 1;
+	}
+	message UpdateRequest {
+		SyncProfile payload = 1;
+	}
+	message UpdateResponse {
+		SyncProfile result = 1;
+	}
+	message DeleteRequest {
+		int32 id = 1;
+	}
+	message DeleteResponse {}
+}
+
+message SyncRecord {
+	enum State {
+		STATE_UNSPECIFIED = 0;
+		STATE_ACTIVE = 1;
+		STATE_TOMBSTONE = 2;
+	}
+
+	// @gotags: gorm:"primary_key;auto_increment"
+	int64 id = 1;
+	// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:1"
+	int32 profile_id = 2;
+	State state = 3;
+	// SyncProfile.config_version when this source item last completed successfully.
+	// An older version cannot be used as a skip baseline.
+	int64 config_version = 4;
+
+	// Source container identifier. Album backup uses the album ID; a directory
+	// source can use the parent directory path.
+	// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:2"
+	string source_path = 5;
+	// Stable item identifier within source_path. Album backup uses the asset ID,
+	// not the photo name, because names can repeat or change.
+	// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:3"
+	string source_key = 6;
+	optional int64 source_size = 7;
+	string source_hash = 8;
+	string source_hash_algorithm = 9;
+	string source_revision = 10;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp source_modified_at = 11;
+
+	// Full path of the uploaded destination file.
+	// @gotags: gorm:"not null"
+	string target_path = 12;
+	optional int64 target_size = 13;
+	string target_hash = 14;
+	string target_hash_algorithm = 15;
+	string target_revision = 16;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp target_modified_at = 17;
+
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp synced_at = 18;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp tombstone_at = 19;
+
+	message ListRequest {
+		repeated string source_keys = 1;
+		int32 profile_id = 2;
+		string source_path = 3;
+	}
+	message ListResponse {
+		repeated SyncRecord results = 1;
+	}
+	message UpsertRequest {
+		repeated SyncRecord results = 1;
+	}
+	message UpsertResponse {}
+}
+
+// One execution. SyncRecord is the durable state of each source item.
+message SyncHistory {
+	enum Status {
+		STATUS_UNSPECIFIED = 0;
+		STATUS_RUNNING = 1;
+		STATUS_SUCCEEDED = 2;
+		STATUS_PARTIAL = 3;
+		STATUS_FAILED = 4;
+		STATUS_INTERRUPTED = 5;
+		STATUS_CANCELED = 6;
+	}
+
+	enum Trigger {
+		TRIGGER_UNSPECIFIED = 0;
+		TRIGGER_MANUAL = 1;
+		TRIGGER_SCHEDULED = 2;
+		TRIGGER_RETRY = 3;
+	}
+
+	// @gotags: gorm:"primary_key;auto_increment"
+	int64 id = 1;
+	// @gotags: gorm:"not null;index"
+	int32 profile_id = 2;
+	// @gotags: gorm:"not null;uniqueIndex"
+	string run_id = 3;
+	Status status = 4;
+	Trigger trigger = 5;
+	int64 config_version = 6;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp started_at = 7;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp finished_at = 8;
+	int32 synced = 9;
+	int32 skipped = 10;
+	int32 scanned = 11;
+	int32 failed = 12;
+	int32 conflicted = 13;
+	string error_summary = 14;
+
+	// @gotags: gorm:"-"
+	repeated SyncHistoryIssue issues = 15;
+
+	message ListRequest {
+		int32 profile_id = 1;
+		int64 before_id = 2;
+		int32 limit = 3;
+	}
+	message ListResponse {
+		repeated SyncHistory results = 1;
+	}
+	message CreateRequest {
+		SyncHistory payload = 1;
+	}
+	message CreateResponse {
+		SyncHistory result = 1;
+	}
+	message StartRequest {
+		SyncHistory payload = 1;
+	}
+	message StartResponse {
+		SyncHistory result = 1;
+	}
+	message FinishRequest {
+		SyncHistory payload = 1;
+	}
+	message FinishResponse {
+		SyncHistory result = 1;
+	}
+}
+
+message SyncHistoryIssue {
+	enum Kind {
+		KIND_UNSPECIFIED = 0;
+		KIND_ERROR = 1;
+		KIND_CONFLICT = 2;
+	}
+
+	enum Operation {
+		OPERATION_UNSPECIFIED = 0;
+		OPERATION_SCAN = 1;
+		OPERATION_UPLOAD = 2;
+		OPERATION_DOWNLOAD = 3;
+		OPERATION_DELETE = 4;
+		OPERATION_VERIFY = 5;
+	}
+
+	// @gotags: gorm:"primary_key;auto_increment"
+	int64 id = 1;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp created_at = 2;
+	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
+	google.protobuf.Timestamp updated_at = 3;
+	// @gotags: gorm:"not null;index:idx_sync_issue_history_kind"
+	int64 history_id = 4;
+	// @gotags: gorm:"index"
+	string error_code = 5;
+	string error_message = 6;
+	Operation error_operation = 7;
+	// @gotags: gorm:"index:idx_sync_issue_history_kind"
+	Kind kind = 8;
+	string context = 9;
+
+	string source_key = 10;
+	string source_path = 11;
+	string source_label = 12;
+	string target_path = 13;
+
+	message ListRequest {
+		string error_code = 1;
+		Operation error_operation = 2;
+		string source_key = 3;
+		int64 before_id = 4;
+		int64 history_id = 5;
+		Kind kind = 6;
+		int32 limit = 7;
+	}
+	message ListResponse {
+		repeated SyncHistoryIssue results = 1;
+	}
+}

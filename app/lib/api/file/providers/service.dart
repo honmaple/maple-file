@@ -119,6 +119,7 @@ class FileService {
     String path,
     io.File file, {
     String? newName,
+    bool preserveFilename = false,
   }) async* {
     const int chunkSize = 1024 * 32;
 
@@ -130,35 +131,50 @@ class FileService {
       path: path,
       size: fixnum.Int64(size),
       filename: name,
+      preserveFilename: preserveFilename,
     );
 
     var index = 0;
-    var readFile = file.openSync();
-    var readSize = math.min(chunkSize, size);
-
-    var chunk = readFile.readSync(readSize);
-    while (chunk.length >= readSize) {
-      index++;
-
-      yield File_UploadRequest(
-        path: path,
-        size: fixnum.Int64(size),
-        index: index,
-        chunk: chunk.toList(),
-        filename: name,
-      );
-
-      chunk = readFile.readSync(readSize);
+    final readFile = file.openSync();
+    try {
+      while (true) {
+        final chunk = readFile.readSync(math.min(chunkSize, size));
+        if (chunk.isEmpty) break;
+        index++;
+        yield File_UploadRequest(
+          path: path,
+          size: fixnum.Int64(size),
+          index: index,
+          chunk: chunk,
+          filename: name,
+          preserveFilename: preserveFilename,
+        );
+      }
+    } finally {
+      readFile.closeSync();
     }
-    if (chunk.isNotEmpty) {
-      yield File_UploadRequest(
-        path: path,
-        size: fixnum.Int64(size),
-        index: index + 1,
-        chunk: chunk.toList(),
-        filename: name,
+  }
+
+  Future<(File, String, String)> uploadFilePreservingName(
+      String path, io.File file, String name) async {
+    return doFuture(() async {
+      final stream = await IsolateUtil.streamCompute<(String, String, String),
+          File_UploadRequest>(
+        ((String, String, String) args) => _upload(
+          args.$1,
+          io.File(args.$2),
+          newName: args.$3,
+          preserveFilename: true,
+        ),
+        (path, file.path, name),
       );
-    }
+      final response = await client.upload(stream);
+      return (
+        response.result,
+        response.sourceHashAlgorithm,
+        response.sourceHash
+      );
+    });
   }
 
   Future<List<File>> _uploadDir(

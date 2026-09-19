@@ -91,11 +91,14 @@ message File {
 		string path = 3;
 		string filename = 4;
 		bytes  chunk = 2;
+		bool preserve_filename = 6;
 	}
 
 	message UploadResponse {
 		File result = 1;
 		string message = 2;
+		string source_hash_algorithm = 3;
+		string source_hash = 4;
 	}
 
 	message ListRequest {

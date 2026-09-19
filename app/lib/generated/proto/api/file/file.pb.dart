@@ -24,6 +24,7 @@ class File_UploadRequest extends $pb.GeneratedMessage {
     $core.String? path,
     $core.String? filename,
     $fixnum.Int64? size,
+    $core.bool? preserveFilename,
   }) {
     final $result = create();
     if (index != null) {
@@ -41,6 +42,9 @@ class File_UploadRequest extends $pb.GeneratedMessage {
     if (size != null) {
       $result.size = size;
     }
+    if (preserveFilename != null) {
+      $result.preserveFilename = preserveFilename;
+    }
     return $result;
   }
   File_UploadRequest._() : super();
@@ -53,6 +57,7 @@ class File_UploadRequest extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'path')
     ..aOS(4, _omitFieldNames ? '' : 'filename')
     ..aInt64(5, _omitFieldNames ? '' : 'size')
+    ..aOB(6, _omitFieldNames ? '' : 'preserveFilename')
     ..hasRequiredFields = false
   ;
 
@@ -121,12 +126,23 @@ class File_UploadRequest extends $pb.GeneratedMessage {
   $core.bool hasSize() => $_has(4);
   @$pb.TagNumber(5)
   void clearSize() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get preserveFilename => $_getBF(5);
+  @$pb.TagNumber(6)
+  set preserveFilename($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPreserveFilename() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPreserveFilename() => clearField(6);
 }
 
 class File_UploadResponse extends $pb.GeneratedMessage {
   factory File_UploadResponse({
     File? result,
     $core.String? message,
+    $core.String? sourceHashAlgorithm,
+    $core.String? sourceHash,
   }) {
     final $result = create();
     if (result != null) {
@@ -134,6 +150,12 @@ class File_UploadResponse extends $pb.GeneratedMessage {
     }
     if (message != null) {
       $result.message = message;
+    }
+    if (sourceHashAlgorithm != null) {
+      $result.sourceHashAlgorithm = sourceHashAlgorithm;
+    }
+    if (sourceHash != null) {
+      $result.sourceHash = sourceHash;
     }
     return $result;
   }
@@ -144,6 +166,8 @@ class File_UploadResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'File.UploadResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.file'), createEmptyInstance: create)
     ..aOM<File>(1, _omitFieldNames ? '' : 'result', subBuilder: File.create)
     ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOS(3, _omitFieldNames ? '' : 'sourceHashAlgorithm')
+    ..aOS(4, _omitFieldNames ? '' : 'sourceHash')
     ..hasRequiredFields = false
   ;
 
@@ -187,6 +211,24 @@ class File_UploadResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
   void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get sourceHashAlgorithm => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set sourceHashAlgorithm($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSourceHashAlgorithm() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSourceHashAlgorithm() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sourceHash => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sourceHash($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSourceHash() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSourceHash() => clearField(4);
 }
 
 class File_ListRequest extends $pb.GeneratedMessage {

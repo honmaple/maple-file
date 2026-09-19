@@ -13,6 +13,7 @@ import 'common/utils/util.dart';
 
 import 'api/file/route.dart' as file;
 import 'api/home/route.dart' as home;
+import 'api/syncing/route.dart' as syncing;
 import 'api/task/route.dart' as task;
 import 'api/setting/route.dart' as setting;
 import 'api/file/providers/repo.dart';
@@ -23,6 +24,7 @@ Future<void> init() async {
 
   await home.init(App.router);
   await file.init(App.router);
+  await syncing.init(App.router);
   await task.init(App.router);
   await setting.init(App.router);
 }

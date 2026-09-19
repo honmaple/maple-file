@@ -1,0 +1,646 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api/syncing/syncing.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "SyncService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/syncing/profiles": {
+      "get": {
+        "operationId": "SyncService_ListProfiles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/syncingSyncProfileListResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "SyncService"
+        ]
+      },
+      "post": {
+        "operationId": "SyncService_CreateProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/syncingSyncProfileCreateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/syncingSyncProfileCreateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SyncService"
+        ]
+      }
+    },
+    "/api/syncing/profiles/{id}": {
+      "delete": {
+        "operationId": "SyncService_DeleteProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SyncProfileDeleteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SyncService"
+        ]
+      }
+    },
+    "/api/syncing/profiles/{payload.id}": {
+      "put": {
+        "operationId": "SyncService_UpdateProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SyncProfileUpdateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "payload.id",
+            "description": "@gotags: gorm:\"primary_key;auto_increment\"",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+                },
+                "name": {
+                  "type": "string",
+                  "title": "@gotags: gorm:\"not null;unique\""
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "mode": {
+                  "$ref": "#/definitions/SyncProfileMode"
+                },
+                "sourceType": {
+                  "type": "string",
+                  "title": "Current value: album. Determines the source_config schema.\n@gotags: gorm:\"not null;index\""
+                },
+                "sourceConfig": {
+                  "type": "string",
+                  "title": "JSON object. Album uses {\"album_ids\":[\"album_001\",\"album_002\"]}.\n@gotags: gorm:\"not null\""
+                },
+                "targetType": {
+                  "type": "string",
+                  "title": "Current value: repo_directory.\n@gotags: gorm:\"not null\""
+                },
+                "targetConfig": {
+                  "type": "string",
+                  "title": "JSON object. Album backup uses {\"path\":\"/repo/path\",\"layout\":\"year_month_day\"}.\n@gotags: gorm:\"not null\""
+                },
+                "policyConfig": {
+                  "type": "string",
+                  "title": "Mode-specific execution policy. Album backup currently uses {}.\n@gotags: gorm:\"not null\""
+                },
+                "configVersion": {
+                  "type": "string",
+                  "format": "int64",
+                  "title": "Destination mapping generation. Starts at 1 and increases when target_type\nName, enabled, source_config, and policy_config do not increase it.\nA file record is reusable only when its config_version matches this value.\n@gotags: gorm:\"not null;default:1\""
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "SyncService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "SyncHistoryFinishResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/syncingSyncHistory"
+        }
+      }
+    },
+    "SyncHistoryIssueKind": {
+      "type": "string",
+      "enum": [
+        "KIND_UNSPECIFIED",
+        "KIND_ERROR",
+        "KIND_CONFLICT"
+      ],
+      "default": "KIND_UNSPECIFIED"
+    },
+    "SyncHistoryIssueOperation": {
+      "type": "string",
+      "enum": [
+        "OPERATION_UNSPECIFIED",
+        "OPERATION_SCAN",
+        "OPERATION_UPLOAD",
+        "OPERATION_DOWNLOAD",
+        "OPERATION_DELETE",
+        "OPERATION_VERIFY"
+      ],
+      "default": "OPERATION_UNSPECIFIED"
+    },
+    "SyncHistoryStartResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/syncingSyncHistory"
+        }
+      }
+    },
+    "SyncHistoryTrigger": {
+      "type": "string",
+      "enum": [
+        "TRIGGER_UNSPECIFIED",
+        "TRIGGER_MANUAL",
+        "TRIGGER_SCHEDULED",
+        "TRIGGER_RETRY"
+      ],
+      "default": "TRIGGER_UNSPECIFIED"
+    },
+    "SyncProfileDeleteResponse": {
+      "type": "object"
+    },
+    "SyncProfileMode": {
+      "type": "string",
+      "enum": [
+        "MODE_UNSPECIFIED",
+        "MODE_BACKUP",
+        "MODE_ONE_WAY",
+        "MODE_TWO_WAY"
+      ],
+      "default": "MODE_UNSPECIFIED"
+    },
+    "SyncProfileUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/syncingSyncProfile"
+        }
+      }
+    },
+    "SyncRecordState": {
+      "type": "string",
+      "enum": [
+        "STATE_UNSPECIFIED",
+        "STATE_ACTIVE",
+        "STATE_TOMBSTONE"
+      ],
+      "default": "STATE_UNSPECIFIED"
+    },
+    "SyncRecordUpsertResponse": {
+      "type": "object"
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "syncingSyncHistory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "profileId": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"not null;index\""
+        },
+        "runId": {
+          "type": "string",
+          "title": "@gotags: gorm:\"not null;uniqueIndex\""
+        },
+        "status": {
+          "$ref": "#/definitions/syncingSyncHistoryStatus"
+        },
+        "trigger": {
+          "$ref": "#/definitions/SyncHistoryTrigger"
+        },
+        "configVersion": {
+          "type": "string",
+          "format": "int64"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "finishedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "synced": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "skipped": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "scanned": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failed": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "conflicted": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "errorSummary": {
+          "type": "string"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/syncingSyncHistoryIssue"
+          },
+          "title": "@gotags: gorm:\"-\""
+        }
+      },
+      "description": "One execution. SyncRecord is the durable state of each source item."
+    },
+    "syncingSyncHistoryCreateResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/syncingSyncHistory"
+        }
+      }
+    },
+    "syncingSyncHistoryIssue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "historyId": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: gorm:\"not null;index:idx_sync_issue_history_kind\""
+        },
+        "errorCode": {
+          "type": "string",
+          "title": "@gotags: gorm:\"index\""
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "errorOperation": {
+          "$ref": "#/definitions/SyncHistoryIssueOperation"
+        },
+        "kind": {
+          "$ref": "#/definitions/SyncHistoryIssueKind",
+          "title": "@gotags: gorm:\"index:idx_sync_issue_history_kind\""
+        },
+        "context": {
+          "type": "string"
+        },
+        "sourceKey": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceLabel": {
+          "type": "string"
+        },
+        "targetPath": {
+          "type": "string"
+        }
+      }
+    },
+    "syncingSyncHistoryIssueListResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/syncingSyncHistoryIssue"
+          }
+        }
+      }
+    },
+    "syncingSyncHistoryListResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/syncingSyncHistory"
+          }
+        }
+      }
+    },
+    "syncingSyncHistoryStatus": {
+      "type": "string",
+      "enum": [
+        "STATUS_UNSPECIFIED",
+        "STATUS_RUNNING",
+        "STATUS_SUCCEEDED",
+        "STATUS_PARTIAL",
+        "STATUS_FAILED",
+        "STATUS_INTERRUPTED",
+        "STATUS_CANCELED"
+      ],
+      "default": "STATUS_UNSPECIFIED"
+    },
+    "syncingSyncProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "name": {
+          "type": "string",
+          "title": "@gotags: gorm:\"not null;unique\""
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "mode": {
+          "$ref": "#/definitions/SyncProfileMode"
+        },
+        "sourceType": {
+          "type": "string",
+          "title": "Current value: album. Determines the source_config schema.\n@gotags: gorm:\"not null;index\""
+        },
+        "sourceConfig": {
+          "type": "string",
+          "title": "JSON object. Album uses {\"album_ids\":[\"album_001\",\"album_002\"]}.\n@gotags: gorm:\"not null\""
+        },
+        "targetType": {
+          "type": "string",
+          "title": "Current value: repo_directory.\n@gotags: gorm:\"not null\""
+        },
+        "targetConfig": {
+          "type": "string",
+          "title": "JSON object. Album backup uses {\"path\":\"/repo/path\",\"layout\":\"year_month_day\"}.\n@gotags: gorm:\"not null\""
+        },
+        "policyConfig": {
+          "type": "string",
+          "title": "Mode-specific execution policy. Album backup currently uses {}.\n@gotags: gorm:\"not null\""
+        },
+        "configVersion": {
+          "type": "string",
+          "format": "int64",
+          "title": "Destination mapping generation. Starts at 1 and increases when target_type\nName, enabled, source_config, and policy_config do not increase it.\nA file record is reusable only when its config_version matches this value.\n@gotags: gorm:\"not null;default:1\""
+        }
+      }
+    },
+    "syncingSyncProfileCreateRequest": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/definitions/syncingSyncProfile"
+        }
+      }
+    },
+    "syncingSyncProfileCreateResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/syncingSyncProfile"
+        }
+      }
+    },
+    "syncingSyncProfileListResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/syncingSyncProfile"
+          }
+        }
+      }
+    },
+    "syncingSyncRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "@gotags: gorm:\"primary_key;auto_increment\""
+        },
+        "profileId": {
+          "type": "integer",
+          "format": "int32",
+          "title": "@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:1\""
+        },
+        "state": {
+          "$ref": "#/definitions/SyncRecordState"
+        },
+        "configVersion": {
+          "type": "string",
+          "format": "int64",
+          "description": "SyncProfile.config_version when this source item last completed successfully.\nAn older version cannot be used as a skip baseline."
+        },
+        "sourcePath": {
+          "type": "string",
+          "title": "Source container identifier. Album backup uses the album ID; a directory\nsource can use the parent directory path.\n@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:2\""
+        },
+        "sourceKey": {
+          "type": "string",
+          "title": "Stable item identifier within source_path. Album backup uses the asset ID,\nnot the photo name, because names can repeat or change.\n@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:3\""
+        },
+        "sourceSize": {
+          "type": "string",
+          "format": "int64"
+        },
+        "sourceHash": {
+          "type": "string"
+        },
+        "sourceHashAlgorithm": {
+          "type": "string"
+        },
+        "sourceRevision": {
+          "type": "string"
+        },
+        "sourceModifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "targetPath": {
+          "type": "string",
+          "title": "Full path of the uploaded destination file.\n@gotags: gorm:\"not null\""
+        },
+        "targetSize": {
+          "type": "string",
+          "format": "int64"
+        },
+        "targetHash": {
+          "type": "string"
+        },
+        "targetHashAlgorithm": {
+          "type": "string"
+        },
+        "targetRevision": {
+          "type": "string"
+        },
+        "targetModifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "syncedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        },
+        "tombstoneAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "@gotags: gorm:\"serializer:protobuf_timestamp;type:datetime\""
+        }
+      }
+    },
+    "syncingSyncRecordListResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/syncingSyncRecord"
+          }
+        }
+      }
+    }
+  }
+}

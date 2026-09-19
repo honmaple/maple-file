@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -94,45 +96,49 @@ func (srv *serviceImpl) Remove(ctx context.Context, req *pb.File_RemoveRequest) 
 	return &pb.File_RemoveResponse{}, nil
 }
 
-func (srv *serviceImpl) upload(ctx context.Context, req *pb.File_UploadRequest, reader io.Reader) (*pb.File, error) {
+func (srv *serviceImpl) upload(ctx context.Context, req *pb.File_UploadRequest, reader io.Reader) (*pb.File, string, error) {
 	filename := req.GetFilename()
 
 	setting := srv.getFileSetting(ctx)
 
 	if limitSize := setting.UploadLimitSize; limitSize > 0 && req.GetSize() > limitSize*1024*1024 {
-		return nil, errors.New("上传限制大小")
+		return nil, "", errors.New("上传限制大小")
 	}
 
 	if limitType := setting.UploadLimitType; limitType != "" {
 		fileExt := stdpath.Ext(filename)
 
 		if slices.Contains(strings.Split(limitType, ","), fileExt) {
-			return nil, errors.New("上传限制类型")
+			return nil, "", errors.New("上传限制类型")
 		}
 	}
 
 	// 自动重命名
-	if setting.UploadRename {
+	if setting.UploadRename && !req.GetPreserveFilename() {
 		filename = renameFile(setting.UploadFormat, filename)
 	}
+	hash := sha256.New()
 
 	task := srv.fs.SubmitTask(&fs.UploadTask{
 		Path:     req.GetPath(),
 		Size:     int64(req.GetSize()),
 		Filename: filename,
-		Reader:   reader,
+		Reader:   io.TeeReader(reader, hash),
 	})
 	<-task.Done()
 
 	if err := task.Err(); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	info, err := srv.fs.Stat(ctx, stdpath.Join(req.GetPath(), filename))
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return infoToFile(info), nil
+	if info.Size() != int64(req.GetSize()) {
+		return nil, "", errors.New("上传后文件大小不匹配")
+	}
+	return infoToFile(info), hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 func (srv *serviceImpl) Upload(stream pb.FileService_UploadServer) error {
@@ -144,11 +150,11 @@ func (srv *serviceImpl) Upload(stream pb.FileService_UploadServer) error {
 		return err
 	}
 
-	result, err := srv.upload(ctx, firstReq, readFunc(stream.Recv))
+	result, sourceHash, err := srv.upload(ctx, firstReq, readFunc(stream.Recv))
 	if err != nil {
 		return err
 	}
-	return stream.SendAndClose(&pb.File_UploadResponse{Result: result})
+	return stream.SendAndClose(&pb.File_UploadResponse{Result: result, SourceHashAlgorithm: "sha256", SourceHash: sourceHash})
 }
 
 func (srv *serviceImpl) Preview(req *pb.File_PreviewRequest, stream pb.FileService_PreviewServer) error {

@@ -467,6 +467,9 @@
         "chunk": {
           "type": "string",
           "format": "byte"
+        },
+        "preserveFilename": {
+          "type": "boolean"
         }
       }
     },
@@ -477,6 +480,12 @@
           "$ref": "#/definitions/fileFile"
         },
         "message": {
+          "type": "string"
+        },
+        "sourceHashAlgorithm": {
+          "type": "string"
+        },
+        "sourceHash": {
           "type": "string"
         }
       }

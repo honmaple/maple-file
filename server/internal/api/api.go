@@ -4,6 +4,7 @@ import (
 	"github.com/honmaple/maple-file/server/internal/api/base"
 	"github.com/honmaple/maple-file/server/internal/api/file"
 	"github.com/honmaple/maple-file/server/internal/api/shared"
+	"github.com/honmaple/maple-file/server/internal/api/syncing"
 	"github.com/samber/do/v2"
 )
 
@@ -13,6 +14,7 @@ type Services = shared.Services
 func Provide(i do.Injector) {
 	base.Provide(i)
 	file.Provide(i)
+	syncing.Provide(i)
 
 	do.Provide(i, func(i do.Injector) (Services, error) {
 		baseService, err := do.Invoke[base.Service](i)
@@ -23,6 +25,10 @@ func Provide(i do.Injector) {
 		if err != nil {
 			return nil, err
 		}
-		return Services{baseService, fileService}, nil
+		syncingService, err := do.Invoke[syncing.Service](i)
+		if err != nil {
+			return nil, err
+		}
+		return Services{baseService, fileService, syncingService}, nil
 	})
 }

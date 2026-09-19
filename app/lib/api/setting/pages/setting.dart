@@ -76,6 +76,17 @@ class SettingScreen extends StatelessWidget {
                   navigatorState(context).pushNamed('/setting/backup');
                 },
               ),
+              PlatformListTile(
+                leading: Icon(
+                  Icons.sync,
+                  color: themeData.colorScheme.primary,
+                ),
+                title: Text("同步与备份".tr()),
+                trailing: PlatformListTileChevron(),
+                onTap: () {
+                  navigatorState(context).pushNamed('/setting/syncing');
+                },
+              ),
             ],
           ),
           CustomListSection(
@@ -223,6 +234,13 @@ class _DesktopSettingState extends State<DesktopSettingScreen> {
             label: "备份与恢复".tr(),
             onTap: () {
               _navigatorPush('/setting/backup');
+            },
+          ),
+          CustomTreeMenu(
+            icon: Icons.sync,
+            label: "同步与备份".tr(),
+            onTap: () {
+              _navigatorPush('/setting/syncing');
             },
           ),
         ],

@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 
 dependencies:
+  fixnum: ^1.1.1
   flutter:
     sdk: flutter
 
@@ -54,6 +55,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   image_picker: ^1.1.0
+  photo_manager: ^3.6.4
   extended_image: ^9.1.0
   chewie: ^1.10.0
   video_player: ^2.9.1

@@ -121,8 +121,6 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () {
-                List<String> list = widget.path.split('/');
-
                 final result = ref
                     .read(fileSelectionProvider)
                     .selected
@@ -132,16 +130,14 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
                 _resetProvider();
 
                 final nav = Navigator.of(context);
-                for (int i = 0; i < list.length; i++) {
-                  if (widget.selectDir) {
-                    nav.pop(widget.path);
-                  } else {
-                    if (widget.multiple) {
-                      nav.pop(result);
-                    } else {
-                      nav.pop(result.first);
-                    }
-                  }
+                if (widget.selectDir) {
+                  nav.pop(widget.path);
+                  return;
+                }
+                if (widget.multiple) {
+                  nav.pop(result);
+                } else if (result.isNotEmpty) {
+                  nav.pop(result.first);
                 }
               },
               child: Text('确定'.tr()),

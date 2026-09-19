@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	stdpath "path"
@@ -34,17 +35,19 @@ func (opt *UploadTask) upload(task runner.Task, fs cloudfs.FS, path string) erro
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
 
 	fsize := ioutil.PrettyByteSize(int(opt.Size))
 
 	task.SetProgressState(fmt.Sprintf("0/%s", fsize))
 
-	_, err = ioutil.Copy(task.Context(), dst, opt.Reader, func(progress int64) {
+	written, err := ioutil.Copy(task.Context(), dst, opt.Reader, func(progress int64) {
 		if size := opt.Size; size > 0 {
 			task.SetProgress(float64(progress) / float64(size))
 		}
 		task.SetProgressState(fmt.Sprintf("%s/%s", ioutil.PrettyByteSize(int(progress)), fsize))
 	})
-	return err
+	if err == nil && written != opt.Size {
+		err = fmt.Errorf("上传数据长度不匹配：收到 %d 字节，预期 %d 字节", written, opt.Size)
+	}
+	return errors.Join(err, dst.Close())
 }

@@ -146,14 +146,15 @@ func (x *File) GetRepoId() int32 {
 }
 
 type File_UploadRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Index         int32                  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
-	Size          int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
-	Path          string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-	Filename      string                 `protobuf:"bytes,4,opt,name=filename,proto3" json:"filename,omitempty"`
-	Chunk         []byte                 `protobuf:"bytes,2,opt,name=chunk,proto3" json:"chunk,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Index            int32                  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
+	Size             int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
+	Path             string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
+	Filename         string                 `protobuf:"bytes,4,opt,name=filename,proto3" json:"filename,omitempty"`
+	Chunk            []byte                 `protobuf:"bytes,2,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	PreserveFilename bool                   `protobuf:"varint,6,opt,name=preserve_filename,json=preserveFilename,proto3" json:"preserve_filename,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *File_UploadRequest) Reset() {
@@ -221,12 +222,21 @@ func (x *File_UploadRequest) GetChunk() []byte {
 	return nil
 }
 
+func (x *File_UploadRequest) GetPreserveFilename() bool {
+	if x != nil {
+		return x.PreserveFilename
+	}
+	return false
+}
+
 type File_UploadResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        *File                  `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Result              *File                  `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	Message             string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	SourceHashAlgorithm string                 `protobuf:"bytes,3,opt,name=source_hash_algorithm,json=sourceHashAlgorithm,proto3" json:"source_hash_algorithm,omitempty"`
+	SourceHash          string                 `protobuf:"bytes,4,opt,name=source_hash,json=sourceHash,proto3" json:"source_hash,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *File_UploadResponse) Reset() {
@@ -269,6 +279,20 @@ func (x *File_UploadResponse) GetResult() *File {
 func (x *File_UploadResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
+	}
+	return ""
+}
+
+func (x *File_UploadResponse) GetSourceHashAlgorithm() string {
+	if x != nil {
+		return x.SourceHashAlgorithm
+	}
+	return ""
+}
+
+func (x *File_UploadResponse) GetSourceHash() string {
+	if x != nil {
+		return x.SourceHash
 	}
 	return ""
 }
@@ -1005,8 +1029,7 @@ var File_api_file_file_proto protoreflect.FileDescriptor
 
 const file_api_file_file_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/file/file.proto\x12\bapi.file\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13api/file/repo.proto\"\xab\n" +
-	"\n" +
+	"\x13api/file/file.proto\x12\bapi.file\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13api/file/repo.proto\"\xaf\v\n" +
 	"\x04File\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x129\n" +
 	"\n" +
@@ -1020,16 +1043,20 @@ const file_api_file_file_proto_rawDesc = "" +
 	"\x04path\x18\b \x01(\tR\x04path\x12\"\n" +
 	"\x04repo\x18\n" +
 	" \x01(\v2\x0e.api.file.RepoR\x04repo\x12\x17\n" +
-	"\arepo_id\x18\v \x01(\x05R\x06repoId\x1a\x7f\n" +
+	"\arepo_id\x18\v \x01(\x05R\x06repoId\x1a\xac\x01\n" +
 	"\rUploadRequest\x12\x14\n" +
 	"\x05index\x18\x01 \x01(\x05R\x05index\x12\x12\n" +
 	"\x04size\x18\x05 \x01(\x03R\x04size\x12\x12\n" +
 	"\x04path\x18\x03 \x01(\tR\x04path\x12\x1a\n" +
 	"\bfilename\x18\x04 \x01(\tR\bfilename\x12\x14\n" +
-	"\x05chunk\x18\x02 \x01(\fR\x05chunk\x1aR\n" +
+	"\x05chunk\x18\x02 \x01(\fR\x05chunk\x12+\n" +
+	"\x11preserve_filename\x18\x06 \x01(\bR\x10preserveFilename\x1a\xa7\x01\n" +
 	"\x0eUploadResponse\x12&\n" +
 	"\x06result\x18\x01 \x01(\v2\x0e.api.file.FileR\x06result\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x1a\x88\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x122\n" +
+	"\x15source_hash_algorithm\x18\x03 \x01(\tR\x13sourceHashAlgorithm\x12\x1f\n" +
+	"\vsource_hash\x18\x04 \x01(\tR\n" +
+	"sourceHash\x1a\x88\x01\n" +
 	"\vListRequest\x12>\n" +
 	"\x06filter\x18\x01 \x03(\v2&.api.file.File.ListRequest.FilterEntryR\x06filter\x1a9\n" +
 	"\vFilterEntry\x12\x10\n" +

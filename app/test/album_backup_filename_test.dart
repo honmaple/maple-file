@@ -5,22 +5,61 @@ import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
 void main() {
-  test('destination layout supports year and month folders', () {
+  group('album backup target path', () {
+    const base = AlbumBackupTargetConfig(path: '/photos/backup');
+
+    test('appends the device model when enabled', () {
+      expect(
+        albumBackupTargetPath(base, 'iPhone 16 Pro'),
+        '/photos/backup/iPhone 16 Pro',
+      );
+    });
+
+    test('does not append an existing device model twice', () {
+      const target = AlbumBackupTargetConfig(
+        path: '/photos/backup/iPhone 16 Pro',
+      );
+      expect(
+        albumBackupTargetPath(target, 'iPhone 16 Pro'),
+        '/photos/backup/iPhone 16 Pro',
+      );
+    });
+
+    test('keeps the selected path when appending is disabled', () {
+      const target = AlbumBackupTargetConfig(
+        path: '/photos/backup',
+        appendDeviceModel: false,
+      );
+      expect(
+        albumBackupTargetPath(target, 'iPhone 16 Pro'),
+        '/photos/backup',
+      );
+    });
+
+    test('sanitizes invalid path characters in the device model', () {
+      expect(
+        albumBackupTargetPath(base, r'Phone/Pro:1'),
+        '/photos/backup/Phone_Pro_1',
+      );
+    });
+  });
+
+  test('target layout supports year and month folders', () {
     final date = DateTime(2026, 9, 19);
 
     expect(
-      AlbumDestinationLayout.fromValue('year_month'),
-      AlbumDestinationLayout.yearMonth,
+      AlbumTargetLayout.fromValue('year_month'),
+      AlbumTargetLayout.yearMonth,
     );
     expect(
-      AlbumDestinationLayout.yearMonth.pathParts(date),
+      AlbumTargetLayout.yearMonth.pathParts(date),
       ['2026', '09'],
     );
     expect(
-      AlbumDestinationLayout.yearMonthDay.pathParts(date),
+      AlbumTargetLayout.yearMonthDay.pathParts(date),
       ['2026', '09', '19'],
     );
-    expect(AlbumDestinationLayout.filenameAssetId.pathParts(date), isEmpty);
+    expect(AlbumTargetLayout.filenameAssetId.pathParts(date), isEmpty);
   });
 
   test('iOS asset identifier cannot create subdirectories in upload name', () {
@@ -37,7 +76,7 @@ void main() {
     expect(name.contains(r'\'), isFalse);
   });
 
-  test('a record is stale after a photo or destination change', () {
+  test('a record is stale after a photo or target change', () {
     final modified = DateTime.utc(2026, 9, 18, 10);
     final record = SyncRecord(
       targetPath: '/backup/2026/IMG_1_asset.jpg',

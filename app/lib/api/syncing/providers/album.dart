@@ -1,44 +1,171 @@
 import 'dart:convert';
 import 'dart:io' as io;
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:fixnum/fixnum.dart' as fixnum;
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:photo_manager/photo_manager.dart';
 
 import 'package:maple_file/api/file/providers/service.dart';
+import 'package:maple_file/api/syncing/providers/history.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
+import 'package:maple_file/common/utils/util.dart';
+import 'package:maple_file/generated/proto/api/file/file.pb.dart' as file_proto;
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
-enum AlbumDestinationLayout {
+part 'album.freezed.dart';
+part 'album.g.dart';
+
+enum AlbumTargetLayout {
+  @JsonValue('year_month_day')
   yearMonthDay('year_month_day', '按年月日整理'),
+  @JsonValue('year_month')
   yearMonth('year_month', '按年月整理'),
+  @JsonValue('filename_asset_id')
   filenameAssetId('filename_asset_id', '文件名加资产 ID');
 
-  const AlbumDestinationLayout(this.value, this.label);
+  const AlbumTargetLayout(this.value, this.label);
 
   final String value;
   final String label;
 
-  static AlbumDestinationLayout fromValue(String? value) {
-    return AlbumDestinationLayout.values.firstWhere(
+  static AlbumTargetLayout fromValue(String? value) {
+    return AlbumTargetLayout.values.firstWhere(
       (layout) => layout.value == value,
-      orElse: () => AlbumDestinationLayout.yearMonthDay,
+      orElse: () => AlbumTargetLayout.yearMonthDay,
     );
   }
 
   List<String> pathParts(DateTime date) => switch (this) {
-        AlbumDestinationLayout.yearMonthDay => [
+        AlbumTargetLayout.yearMonthDay => [
             date.year.toString().padLeft(4, '0'),
             date.month.toString().padLeft(2, '0'),
             date.day.toString().padLeft(2, '0'),
           ],
-        AlbumDestinationLayout.yearMonth => [
+        AlbumTargetLayout.yearMonth => [
             date.year.toString().padLeft(4, '0'),
             date.month.toString().padLeft(2, '0'),
           ],
-        AlbumDestinationLayout.filenameAssetId => const [],
+        AlbumTargetLayout.filenameAssetId => const [],
       };
+}
+
+@freezed
+class AlbumBackupSourceConfig with _$AlbumBackupSourceConfig {
+  const factory AlbumBackupSourceConfig({
+    @JsonKey(name: 'album_ids') @Default(<String>[]) List<String> albumIds,
+  }) = _AlbumBackupSourceConfig;
+
+  factory AlbumBackupSourceConfig.fromJson(Map<String, Object?> json) =>
+      _$AlbumBackupSourceConfigFromJson(json);
+}
+
+@freezed
+class AlbumBackupTargetConfig with _$AlbumBackupTargetConfig {
+  const factory AlbumBackupTargetConfig({
+    @Default('') String path,
+    @Default(AlbumTargetLayout.yearMonthDay) AlbumTargetLayout layout,
+    @JsonKey(name: 'append_device_model') @Default(true) bool appendDeviceModel,
+  }) = _AlbumBackupTargetConfig;
+
+  factory AlbumBackupTargetConfig.fromJson(Map<String, Object?> json) =>
+      _$AlbumBackupTargetConfigFromJson(json);
+}
+
+@freezed
+class AlbumBackupIssueContext with _$AlbumBackupIssueContext {
+  @JsonSerializable(includeIfNull: false)
+  const factory AlbumBackupIssueContext({
+    @JsonKey(name: 'album_label') String? albumLabel,
+    @JsonKey(name: 'local_path') String? localPath,
+  }) = _AlbumBackupIssueContext;
+
+  factory AlbumBackupIssueContext.fromJson(Map<String, Object?> json) =>
+      _$AlbumBackupIssueContextFromJson(json);
+}
+
+class AlbumBackupProfile {
+  AlbumBackupProfile._({
+    required SyncProfile profile,
+    required this.sourceConfig,
+    required this.targetConfig,
+  }) : _profile = SyncProfile()..mergeFromMessage(profile);
+
+  factory AlbumBackupProfile.create({required String name}) {
+    return AlbumBackupProfile._(
+      profile: SyncProfile(
+        name: name,
+        enabled: true,
+        mode: SyncProfile_Mode.MODE_BACKUP,
+        sourceType: SyncSourceType.album.value,
+        sourceConfig: '{}',
+        targetType: SyncTargetType.repoDirectory.value,
+        targetConfig: '{}',
+        policyConfig: '{}',
+      ),
+      sourceConfig: AlbumBackupSourceConfig(),
+      targetConfig: const AlbumBackupTargetConfig(),
+    );
+  }
+
+  factory AlbumBackupProfile.fromSyncProfile(SyncProfile profile) {
+    if (SyncSourceType.fromValue(profile.sourceType) != SyncSourceType.album ||
+        profile.mode != SyncProfile_Mode.MODE_BACKUP ||
+        SyncTargetType.fromValue(profile.targetType) !=
+            SyncTargetType.repoDirectory) {
+      throw const FormatException('此同步配置不是相册备份');
+    }
+    final source = _decodeConfig(profile.sourceConfig, '备份源');
+    final target = _decodeConfig(profile.targetConfig, '备份目标');
+    return AlbumBackupProfile._(
+      profile: profile,
+      sourceConfig: AlbumBackupSourceConfig.fromJson(source),
+      targetConfig: AlbumBackupTargetConfig.fromJson(target),
+    );
+  }
+
+  final SyncProfile _profile;
+  final AlbumBackupSourceConfig sourceConfig;
+  final AlbumBackupTargetConfig targetConfig;
+
+  int get id => _profile.id;
+  String get name => _profile.name;
+  bool get enabled => _profile.enabled;
+  int get configVersion => _profile.configVersion.toInt();
+
+  AlbumBackupProfile copyWith({
+    String? name,
+    bool? enabled,
+    AlbumBackupSourceConfig? sourceConfig,
+    AlbumBackupTargetConfig? targetConfig,
+  }) {
+    final profile = SyncProfile()
+      ..mergeFromMessage(_profile)
+      ..name = name ?? this.name
+      ..enabled = enabled ?? this.enabled;
+    return AlbumBackupProfile._(
+      profile: profile,
+      sourceConfig: sourceConfig ?? this.sourceConfig,
+      targetConfig: targetConfig ?? this.targetConfig,
+    );
+  }
+
+  SyncProfile toSyncProfile() {
+    return SyncProfile()
+      ..mergeFromMessage(_profile)
+      ..sourceConfig = jsonEncode(sourceConfig.toJson())
+      ..targetConfig = jsonEncode(targetConfig.toJson());
+  }
+
+  static Map<String, dynamic> _decodeConfig(String value, String name) {
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is Map<String, dynamic>) return decoded;
+    } catch (_) {}
+    throw FormatException('$name配置格式错误');
+  }
 }
 
 class AlbumBackupResult {
@@ -68,7 +195,7 @@ String albumBackupFilename(String originalName, String assetId) {
 bool albumBackupRecordMatches(
   SyncRecord record,
   DateTime modifiedAt,
-  String destinationPath,
+  String targetDirectory,
   String? expectedName,
   int configVersion,
 ) {
@@ -77,9 +204,31 @@ bool albumBackupRecordMatches(
       record.hasSourceModifiedAt() &&
       record.sourceModifiedAt.toDateTime().millisecondsSinceEpoch ==
           modifiedAt.millisecondsSinceEpoch &&
-      filepath.posix.dirname(record.targetPath) == destinationPath &&
+      filepath.posix.dirname(record.targetPath) == targetDirectory &&
       (expectedName == null ||
           filepath.posix.basename(record.targetPath) == expectedName);
+}
+
+String albumBackupTargetPath(
+  AlbumBackupTargetConfig config,
+  String deviceModel,
+) {
+  final model =
+      deviceModel.replaceAll(RegExp(r'[/\\:*?"<>|\x00-\x1F]'), '_').trim();
+  if (!config.appendDeviceModel || model.isEmpty) return config.path;
+  if (filepath.posix.basename(config.path) == model) return config.path;
+  return filepath.posix.join(config.path, model);
+}
+
+Future<String> albumBackupDeviceModel() async {
+  try {
+    final deviceInfo = DeviceInfoPlugin();
+    if (Util.isAndroid) return (await deviceInfo.androidInfo).model;
+    if (Util.isIOS) return (await deviceInfo.iosInfo).modelName;
+  } catch (_) {
+    // The base target remains usable when device information is unavailable.
+  }
+  return '';
 }
 
 class AlbumBackupService {
@@ -89,6 +238,31 @@ class AlbumBackupService {
   factory AlbumBackupService() => _instance;
 
   AlbumBackupService._internal();
+
+  Future<SyncHistory> run(AlbumBackupProfile profile) async {
+    final startedAt = DateTime.now();
+    final runId = await SyncHistoryStore.start(profile.id, startedAt);
+    AlbumBackupResult? result;
+    String? errorMessage;
+    try {
+      result = await _run(profile);
+    } catch (error) {
+      errorMessage = '$error';
+    }
+    final history = buildAlbumSyncHistory(
+      profileId: profile.id,
+      runId: runId,
+      startedAt: startedAt,
+      finishedAt: DateTime.now(),
+      result: result,
+      error: errorMessage,
+    );
+    try {
+      return await SyncHistoryStore.finish(history);
+    } catch (error) {
+      throw StateError('保存备份记录失败：$error');
+    }
+  }
 
   Future<List<AssetPathEntity>> requestAlbums(
       {bool includeEmpty = false}) async {
@@ -107,36 +281,28 @@ class AlbumBackupService {
     ];
   }
 
-  Future<AlbumBackupResult> run(SyncProfile profile) async {
+  Future<AlbumBackupResult> _run(AlbumBackupProfile profile) async {
     if (!profile.enabled) {
       throw StateError('请先启用此相册备份');
     }
-    if (SyncSourceType.fromValue(profile.sourceType) != SyncSourceType.album ||
-        profile.mode != SyncProfile_Mode.MODE_BACKUP ||
-        SyncTargetType.fromValue(profile.targetType) !=
-            SyncTargetType.repoDirectory) {
-      throw StateError('此同步配置不能作为相册备份执行');
-    }
-    final target = _json(profile.targetConfig);
-    final targetPath = target['path'] as String?;
-    if (targetPath == null || targetPath.isEmpty) {
+    if (profile.targetConfig.path.isEmpty) {
       throw StateError('备份目录配置无效');
     }
+    final targetPath = albumBackupTargetPath(
+      profile.targetConfig,
+      await albumBackupDeviceModel(),
+    );
+    await _ensureTargetDirectory(targetPath);
     final albums = await requestAlbums(includeEmpty: true);
     final paths = {for (final album in albums) album.id: album};
-    final sourceIds = (_json(profile.sourceConfig)['album_ids'] as List?)
-            ?.whereType<String>()
-            .toList() ??
-        const <String>[];
     var uploaded = 0;
     var skipped = 0;
     var scanned = 0;
     final failures = <AlbumBackupFailure>[];
-    await _ensureTargetDirectory(targetPath);
     final createdDirectories = <String>{targetPath};
     final remoteDirectories = <String, Map<String, int>>{};
     final verifiedAssets = <String, SyncRecord>{};
-    for (final sourceKey in sourceIds) {
+    for (final sourceKey in profile.sourceConfig.albumIds) {
       final album = paths[sourceKey];
       if (album == null) {
         failures.add(AlbumBackupFailure(
@@ -155,7 +321,7 @@ class AlbumBackupService {
           sourceKey,
           album,
           targetPath,
-          AlbumDestinationLayout.fromValue(target['layout'] as String?),
+          profile.targetConfig.layout,
           createdDirectories,
           remoteDirectories,
           verifiedAssets,
@@ -183,11 +349,11 @@ class AlbumBackupService {
   }
 
   Future<AlbumBackupResult> _runAlbumSource(
-    SyncProfile profile,
+    AlbumBackupProfile profile,
     String sourceKey,
     AssetPathEntity album,
     String targetPath,
-    AlbumDestinationLayout layout,
+    AlbumTargetLayout layout,
     Set<String> createdDirectories,
     Map<String, Map<String, int>> remoteDirectories,
     Map<String, SyncRecord> verifiedAssets,
@@ -234,14 +400,19 @@ class AlbumBackupService {
         try {
           final title = await asset.titleAsync;
           if (title.isNotEmpty) itemName = title;
-          final path = _destinationPath(targetPath, layout, asset);
+          final targetDirectory = _targetDirectory(targetPath, layout, asset);
           final expectedName =
               title.isEmpty ? null : albumBackupFilename(title, asset.id);
           final verifiedKey = '$sourceKey:${asset.id}';
           final verified = verifiedAssets[verifiedKey];
           if (verified != null &&
-              albumBackupRecordMatches(verified, asset.modifiedDateTime, path,
-                  expectedName, profile.configVersion.toInt())) {
+              albumBackupRecordMatches(
+                verified,
+                asset.modifiedDateTime,
+                targetDirectory,
+                expectedName,
+                profile.configVersion,
+              )) {
             skipped++;
             continue;
           }
@@ -250,30 +421,19 @@ class AlbumBackupService {
               albumBackupRecordMatches(
                 record,
                 asset.modifiedDateTime,
-                path,
+                targetDirectory,
                 expectedName,
-                profile.configVersion.toInt(),
+                profile.configVersion,
               )) {
             stage = '检查云端文件';
-            var remoteFiles = remoteDirectories[path];
+            var remoteFiles = remoteDirectories[targetDirectory];
             if (remoteFiles == null) {
-              try {
-                final files =
-                    await FileService.instance.list(filter: {'path': path});
-                remoteFiles = {
-                  for (final file in files)
-                    if (file.type != 'DIR') file.name: file.size.toInt(),
-                };
-              } catch (error) {
-                final message = error.toString().toLowerCase();
-                if (!message.contains('does not exist') &&
-                    !message.contains('not found') &&
-                    !message.contains('no such file')) {
-                  rethrow;
-                }
-                remoteFiles = {};
-              }
-              remoteDirectories[path] = remoteFiles;
+              final files = await _ensureTargetDirectory(targetDirectory);
+              remoteFiles = {
+                for (final file in files)
+                  if (file.type != 'DIR') file.name: file.size.toInt(),
+              };
+              remoteDirectories[targetDirectory] = remoteFiles;
             }
             if (record.hasTargetSize() &&
                 remoteFiles[filepath.posix.basename(record.targetPath)] ==
@@ -310,7 +470,7 @@ class AlbumBackupService {
           }
           sourceItemPath = file.path;
           stage = '准备云端目录';
-          final destination = await _destination(
+          final target = await _prepareTarget(
             targetPath,
             layout,
             asset,
@@ -318,17 +478,16 @@ class AlbumBackupService {
             createdDirectories,
             title,
           );
-          targetItemPath =
-              filepath.posix.join(destination.path, destination.name);
-          stage = '上传到 ${destination.path}/${destination.name}';
-          final (uploadedFile, hashAlgorithm, sourceHash) =
-              await FileService.instance.uploadFilePreservingName(
-                  destination.path, file, destination.name);
+          targetItemPath = filepath.posix.join(target.directory, target.name);
+          stage = '上传到 ${target.directory}/${target.name}';
+          final (uploadedFile, hashAlgorithm, sourceHash) = await FileService
+              .instance
+              .uploadFilePreservingName(target.directory, file, target.name);
           final uploadedRecord = SyncRecord(
             profileId: profile.id,
             sourcePath: sourceKey,
             sourceKey: asset.id,
-            configVersion: profile.configVersion,
+            configVersion: fixnum.Int64(profile.configVersion),
             targetPath:
                 filepath.posix.join(uploadedFile.path, uploadedFile.name),
             sourceSize: fixnum.Int64(file.lengthSync()),
@@ -344,7 +503,7 @@ class AlbumBackupService {
           stage = '保存备份记录';
           await SyncingService.instance.upsertRecords([uploadedRecord]);
           verifiedAssets[verifiedKey] = uploadedRecord;
-          remoteDirectories[destination.path]?[destination.name] =
+          remoteDirectories[target.directory]?[target.name] =
               uploadedFile.size.toInt();
           uploaded++;
         } catch (error) {
@@ -393,9 +552,9 @@ class AlbumBackupService {
     return {for (final record in records) record.sourceKey: record};
   }
 
-  String _destinationPath(
+  String _targetDirectory(
     String targetPath,
-    AlbumDestinationLayout layout,
+    AlbumTargetLayout layout,
     AssetEntity asset,
   ) {
     return filepath.posix.joinAll([
@@ -404,9 +563,9 @@ class AlbumBackupService {
     ]);
   }
 
-  Future<_BackupDestination> _destination(
+  Future<_AlbumBackupTarget> _prepareTarget(
     String targetPath,
-    AlbumDestinationLayout layout,
+    AlbumTargetLayout layout,
     AssetEntity asset,
     io.File file,
     Set<String> createdDirectories,
@@ -418,55 +577,51 @@ class AlbumBackupService {
     for (final part in layout.pathParts(asset.createDateTime)) {
       final nextPath = filepath.posix.join(path, part);
       if (!createdDirectories.contains(nextPath)) {
-        final files = await FileService.instance.list(filter: {'path': path});
-        if (!files.any((file) => file.name == part && file.type == 'DIR')) {
-          await FileService.instance.mkdir(path, part);
-        }
+        await _ensureTargetDirectory(nextPath);
         createdDirectories.add(nextPath);
       }
       path = nextPath;
     }
-    return _BackupDestination(
+    return _AlbumBackupTarget(
       path,
       albumBackupFilename(sourceName, asset.id),
     );
   }
 
-  Future<void> _ensureTargetDirectory(String path) async {
-    try {
-      await FileService.instance.list(filter: {'path': path});
-      return;
-    } catch (error) {
-      final message = error.toString().toLowerCase();
-      if (!message.contains('does not exist') &&
-          !message.contains('not found') &&
-          !message.contains('no such file')) {
-        rethrow;
+  Future<List<file_proto.File>> _ensureTargetDirectory(String path) async {
+    final normalizedPath = filepath.posix.normalize(path);
+    if (normalizedPath == '/') {
+      return FileService.instance.list(filter: {'path': normalizedPath});
+    }
+    final parent = filepath.posix.dirname(normalizedPath);
+    final name = filepath.posix.basename(normalizedPath);
+    if (name.isEmpty || name == '/' || parent == normalizedPath) {
+      throw StateError('备份目录无效：$path');
+    }
+    final files = await _ensureTargetDirectory(parent);
+    file_proto.File? target;
+    for (final file in files) {
+      if (file.name == name) {
+        target = file;
+        break;
       }
     }
-    final parent = filepath.posix.dirname(path);
-    final name = filepath.posix.basename(path);
-    if (name.isEmpty || name == '/' || parent == path) {
-      throw StateError('备份目录不存在：$path');
-    }
-    final files = await FileService.instance.list(filter: {'path': parent});
-    if (!files.any((file) => file.name == name && file.type == 'DIR')) {
+    if (target == null) {
       await FileService.instance.mkdir(parent, name);
+      return const <file_proto.File>[];
     }
-  }
-
-  Map<String, dynamic> _json(String value) {
-    final decoded = jsonDecode(value);
-    if (decoded is! Map<String, dynamic>) throw const FormatException('配置格式错误');
-    return decoded;
+    if (target.type != 'DIR') {
+      throw StateError('备份目标不是目录：$normalizedPath');
+    }
+    return FileService.instance.list(filter: {'path': normalizedPath});
   }
 }
 
-class _BackupDestination {
-  final String path;
+class _AlbumBackupTarget {
+  final String directory;
   final String name;
 
-  const _BackupDestination(this.path, this.name);
+  const _AlbumBackupTarget(this.directory, this.name);
 }
 
 class AlbumBackupFailure {
@@ -491,30 +646,11 @@ class AlbumBackupFailure {
   final SyncHistoryIssue_Operation operation;
   final String errorCode;
 
-  factory AlbumBackupFailure.fromHistory(SyncHistoryIssue issue) {
-    Map<String, dynamic> context = const {};
-    try {
-      final value = jsonDecode(issue.context);
-      if (value is Map<String, dynamic>) context = value;
-    } catch (_) {}
-    return AlbumBackupFailure(
-      album: context['album_label'] as String? ?? '',
-      item: issue.sourceKey.isEmpty ? '' : issue.sourceLabel,
-      reason: issue.errorMessage,
-      sourceKey: issue.sourcePath,
-      itemKey: issue.sourceKey,
-      sourcePath: context['local_path'] as String? ?? '',
-      targetPath: issue.targetPath,
-      operation: issue.errorOperation,
-      errorCode: issue.errorCode,
-    );
-  }
-
-  SyncHistoryIssue toHistory() {
-    final context = <String, String>{
-      if (album.isNotEmpty) 'album_label': album,
-      if (sourcePath.isNotEmpty) 'local_path': sourcePath,
-    };
+  SyncHistoryIssue toIssue() {
+    final context = AlbumBackupIssueContext(
+      albumLabel: album.isEmpty ? null : album,
+      localPath: sourcePath.isEmpty ? null : sourcePath,
+    ).toJson();
     return SyncHistoryIssue(
       sourceLabel: item.isEmpty ? album : item,
       sourcePath: sourceKey,
@@ -529,67 +665,31 @@ class AlbumBackupFailure {
   }
 }
 
-class AlbumBackupHistory {
-  const AlbumBackupHistory(
-      {required this.startedAt,
-      required this.finishedAt,
-      required this.uploaded,
-      required this.skipped,
-      this.scanned = 0,
-      required this.failures,
-      this.error,
-      this.status = SyncHistory_Status.STATUS_UNSPECIFIED,
-      this.historyId = 0});
-
-  final DateTime startedAt;
-  final DateTime finishedAt;
-  final int uploaded;
-  final int skipped;
-  final int scanned;
-  final List<AlbumBackupFailure> failures;
-  final String? error;
-  final SyncHistory_Status status;
-  final int historyId;
-
-  int get failed => failures.length + (error == null ? 0 : 1);
-  bool get hasFailed => failed > 0;
-  bool get isRunning => status == SyncHistory_Status.STATUS_RUNNING;
-  bool get isInterrupted => status == SyncHistory_Status.STATUS_INTERRUPTED;
-
-  factory AlbumBackupHistory.fromHistory(SyncHistory history) =>
-      AlbumBackupHistory(
-        startedAt: history.startedAt.toDateTime(),
-        finishedAt: history.hasFinishedAt()
-            ? history.finishedAt.toDateTime()
-            : history.startedAt.toDateTime(),
-        uploaded: history.synced,
-        skipped: history.skipped,
-        scanned: history.scanned,
-        failures: [
-          for (final issue in history.issues)
-            AlbumBackupFailure.fromHistory(issue)
-        ],
-        error: history.errorSummary.isEmpty ? null : history.errorSummary,
-        status: history.status,
-        historyId: history.id.toInt(),
-      );
-
-  SyncHistory toHistory(int profileId, String runId) => SyncHistory(
-        profileId: profileId,
-        runId: runId,
-        startedAt: Timestamp.fromDateTime(startedAt),
-        finishedAt: Timestamp.fromDateTime(finishedAt),
-        status: error != null
-            ? SyncHistory_Status.STATUS_FAILED
-            : failures.isNotEmpty
-                ? SyncHistory_Status.STATUS_PARTIAL
-                : SyncHistory_Status.STATUS_SUCCEEDED,
-        trigger: SyncHistory_Trigger.TRIGGER_MANUAL,
-        scanned: scanned,
-        synced: uploaded,
-        skipped: skipped,
-        failed: failed,
-        errorSummary: error ?? '',
-        issues: [for (final failure in failures) failure.toHistory()],
-      );
+SyncHistory buildAlbumSyncHistory({
+  required int profileId,
+  required String runId,
+  required DateTime startedAt,
+  required DateTime finishedAt,
+  AlbumBackupResult? result,
+  String? error,
+}) {
+  final failures = result?.failures ?? const <AlbumBackupFailure>[];
+  return SyncHistory(
+    profileId: profileId,
+    runId: runId,
+    startedAt: Timestamp.fromDateTime(startedAt),
+    finishedAt: Timestamp.fromDateTime(finishedAt),
+    status: error != null
+        ? SyncHistory_Status.STATUS_FAILED
+        : failures.isNotEmpty
+            ? SyncHistory_Status.STATUS_PARTIAL
+            : SyncHistory_Status.STATUS_SUCCEEDED,
+    trigger: SyncHistory_Trigger.TRIGGER_MANUAL,
+    scanned: result?.scanned ?? 0,
+    synced: result?.uploaded ?? 0,
+    skipped: result?.skipped ?? 0,
+    failed: failures.length + (error == null ? 0 : 1),
+    errorSummary: error ?? '',
+    issues: [for (final failure in failures) failure.toIssue()],
+  );
 }

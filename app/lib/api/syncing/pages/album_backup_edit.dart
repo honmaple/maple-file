@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
@@ -38,7 +35,7 @@ class AlbumBackupEditScreen extends ConsumerStatefulWidget {
 class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late SyncProfile _form;
+  late AlbumBackupProfile _form;
   List<_AlbumSource>? _selectedSources;
   Map<String, String> _albumNames = {};
 
@@ -46,21 +43,8 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   void initState() {
     super.initState();
     _form = widget.profile == null
-        ? SyncProfile(
-            name: '相册备份'.tr(),
-            enabled: true,
-            mode: SyncProfile_Mode.MODE_BACKUP,
-            sourceType: SyncSourceType.album.value,
-            sourceConfig: jsonEncode({'album_ids': <String>[]}),
-            targetType: SyncTargetType.repoDirectory.value,
-            targetConfig: jsonEncode({
-              'path': '',
-              'layout': AlbumDestinationLayout.yearMonthDay.value,
-              'append_device_model': true,
-            }),
-            policyConfig: '{}',
-          )
-        : (SyncProfile()..mergeFromMessage(widget.profile!));
+        ? AlbumBackupProfile.create(name: '相册备份'.tr())
+        : AlbumBackupProfile.fromSyncProfile(widget.profile!);
     if (Util.isAndroid || Util.isIOS) {
       _handleLoadAlbumNames();
     }
@@ -111,12 +95,14 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
                 label: '备份名称'.tr(),
                 value: _form.name,
                 isRequired: true,
-                onChanged: (value) => setState(() => _form.name = value),
+                onChanged: (value) =>
+                    setState(() => _form = _form.copyWith(name: value)),
               ),
               CustomListTileSwitch(
                 label: '启用备份'.tr(),
                 value: _form.enabled,
-                onChanged: (value) => setState(() => _form.enabled = value),
+                onChanged: (value) =>
+                    setState(() => _form = _form.copyWith(enabled: value)),
               ),
             ],
           ),
@@ -182,25 +168,25 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
     );
   }
 
-  String get _targetPath => _json(_form.targetConfig)['path'] as String? ?? '';
+  String get _targetPath => _form.targetConfig.path;
 
-  AlbumDestinationLayout get _layout => AlbumDestinationLayout.fromValue(
-        _json(_form.targetConfig)['layout'] as String?,
-      );
+  AlbumTargetLayout get _layout => _form.targetConfig.layout;
 
-  bool get _appendDeviceModelEnabled =>
-      _json(_form.targetConfig)['append_device_model'] as bool? ?? true;
+  bool get _appendDeviceModelEnabled => _form.targetConfig.appendDeviceModel;
 
   void _handleUpdateTargetConfig({
     String? path,
-    AlbumDestinationLayout? layout,
+    AlbumTargetLayout? layout,
     bool? appendDeviceModel,
   }) {
-    _form.targetConfig = jsonEncode({
-      'path': path ?? _targetPath,
-      'layout': (layout ?? _layout).value,
-      'append_device_model': appendDeviceModel ?? _appendDeviceModelEnabled,
-    });
+    _form = _form.copyWith(
+      targetConfig: _form.targetConfig.copyWith(
+        path: path ?? _form.targetConfig.path,
+        layout: layout ?? _form.targetConfig.layout,
+        appendDeviceModel:
+            appendDeviceModel ?? _form.targetConfig.appendDeviceModel,
+      ),
+    );
   }
 
   Future<void> _handleSelectTarget() async {
@@ -211,47 +197,20 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
       child: FileDirectorySelect(title: '选择备份目录'.tr()),
     );
     if (selectedPath != null && mounted) {
-      final path = _appendDeviceModelEnabled
-          ? await _appendDeviceModel(selectedPath)
-          : selectedPath;
-      if (!mounted) return;
-      setState(() => _handleUpdateTargetConfig(path: path));
+      setState(() => _handleUpdateTargetConfig(path: selectedPath));
     }
   }
 
-  Future<String> _appendDeviceModel(String path) async {
-    final model = await _deviceModel();
-    if (model.isEmpty || filepath.posix.basename(path) == model) return path;
-    return filepath.posix.join(path, model);
-  }
-
   Future<String> _removeDeviceModel(String path) async {
-    final model = await _deviceModel();
+    final model = await albumBackupDeviceModel();
     if (model.isEmpty || filepath.posix.basename(path) != model) return path;
     return filepath.posix.dirname(path);
   }
 
-  Future<String> _deviceModel() async {
-    var model = '';
-    try {
-      final deviceInfo = DeviceInfoPlugin();
-      if (Util.isAndroid) {
-        model = (await deviceInfo.androidInfo).model;
-      } else if (Util.isIOS) {
-        model = (await deviceInfo.iosInfo).modelName;
-      }
-    } catch (_) {
-      return '';
-    }
-    return model.replaceAll(RegExp(r'[/\\:*?"<>|\x00-\x1F]'), '_').trim();
-  }
-
   Future<void> _handleToggleDeviceModel(bool enabled) async {
     var path = _targetPath;
-    if (path.isNotEmpty) {
-      path = enabled
-          ? await _appendDeviceModel(path)
-          : await _removeDeviceModel(path);
+    if (!enabled && path.isNotEmpty) {
+      path = await _removeDeviceModel(path);
     }
     if (!mounted) return;
     setState(() => _handleUpdateTargetConfig(
@@ -275,20 +234,20 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   }
 
   Future<void> _handleSelectLayout() async {
-    final layout = await showCustomListOptions<AlbumDestinationLayout>(
+    final layout = await showCustomListOptions<AlbumTargetLayout>(
       context: context,
       options: [
         CustomOption(
           label: '按年月日整理'.tr(),
-          value: AlbumDestinationLayout.yearMonthDay,
+          value: AlbumTargetLayout.yearMonthDay,
         ),
         CustomOption(
           label: '按年月整理'.tr(),
-          value: AlbumDestinationLayout.yearMonth,
+          value: AlbumTargetLayout.yearMonth,
         ),
         CustomOption(
           label: '文件名加资产 ID'.tr(),
-          value: AlbumDestinationLayout.filenameAssetId,
+          value: AlbumTargetLayout.filenameAssetId,
         ),
       ],
     );
@@ -307,13 +266,15 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
       return null;
     }
     try {
-      _form.sourceConfig = jsonEncode({
-        'album_ids': [for (final source in sources) source.albumId],
-      });
+      _form = _form.copyWith(
+        sourceConfig: _form.sourceConfig.copyWith(
+          albumIds: [for (final source in sources) source.albumId],
+        ),
+      );
       final profile = _isEditing
-          ? await SyncingService.instance.updateProfile(_form)
-          : await SyncingService.instance.createProfile(_form);
-      _form = profile;
+          ? await SyncingService.instance.updateProfile(_form.toSyncProfile())
+          : await SyncingService.instance.createProfile(_form.toSyncProfile());
+      _form = AlbumBackupProfile.fromSyncProfile(profile);
       ref.invalidate(syncProfilesProvider);
       return profile;
     } catch (error) {
@@ -340,16 +301,9 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
 
   List<_AlbumSource> _albumSources() {
     return [
-      for (final id in (_json(_form.sourceConfig)['album_ids'] as List?)
-              ?.whereType<String>() ??
-          <String>[])
+      for (final id in _form.sourceConfig.albumIds)
         _AlbumSource(id, _albumNames[id] ?? id),
     ];
-  }
-
-  Map<String, dynamic> _json(String value) {
-    final decoded = jsonDecode(value);
-    return decoded is Map<String, dynamic> ? decoded : const {};
   }
 }
 

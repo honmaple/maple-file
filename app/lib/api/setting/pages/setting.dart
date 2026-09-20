@@ -8,6 +8,8 @@ import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/common/widgets/responsive.dart';
 
+import 'package:maple_file/api/syncing/providers/service.dart';
+
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key, this.navigatorKey});
 
@@ -133,25 +135,26 @@ class SettingScreen extends StatelessWidget {
               ),
             ],
           ),
-          CustomListSection(
-            header: Container(
-              alignment: Alignment.centerLeft,
-              child: Text("同步备份".tr(), style: themeData.textTheme.bodySmall),
-            ),
-            children: [
-              PlatformListTile(
-                leading: Icon(
-                  Icons.sync,
-                  color: themeData.colorScheme.primary,
-                ),
-                title: Text("同步备份".tr()),
-                trailing: PlatformListTileChevron(),
-                onTap: () {
-                  navigatorState(context).pushNamed('/setting/syncing');
-                },
+          if (SyncSourceType.hasSupportedType)
+            CustomListSection(
+              header: Container(
+                alignment: Alignment.centerLeft,
+                child: Text("同步备份".tr(), style: themeData.textTheme.bodySmall),
               ),
-            ],
-          ),
+              children: [
+                PlatformListTile(
+                  leading: Icon(
+                    Icons.sync,
+                    color: themeData.colorScheme.primary,
+                  ),
+                  title: Text("同步与备份".tr()),
+                  trailing: PlatformListTileChevron(),
+                  onTap: () {
+                    navigatorState(context).pushNamed('/syncing');
+                  },
+                ),
+              ],
+            ),
           CustomListSection(
             header: Container(
               alignment: Alignment.centerLeft,
@@ -236,13 +239,14 @@ class _DesktopSettingState extends State<DesktopSettingScreen> {
               _navigatorPush('/setting/backup');
             },
           ),
-          CustomTreeMenu(
-            icon: Icons.sync,
-            label: "同步与备份".tr(),
-            onTap: () {
-              _navigatorPush('/setting/syncing');
-            },
-          ),
+          if (SyncSourceType.hasSupportedType)
+            CustomTreeMenu(
+              icon: Icons.sync,
+              label: "同步与备份".tr(),
+              onTap: () {
+                _navigatorPush('/syncing');
+              },
+            ),
         ],
       ),
       CustomTreeMenu(

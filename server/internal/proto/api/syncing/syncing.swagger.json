@@ -147,18 +147,19 @@
                   "title": "@gotags: gorm:\"not null;unique\""
                 },
                 "enabled": {
-                  "type": "boolean"
+                  "type": "boolean",
+                  "description": "Enables future automatic backup or synchronization scheduling. Manual runs\nare always allowed regardless of this value."
                 },
                 "mode": {
                   "$ref": "#/definitions/SyncProfileMode"
                 },
                 "sourceType": {
                   "type": "string",
-                  "title": "Current value: album. Determines the source_config schema.\n@gotags: gorm:\"not null;index\""
+                  "title": "Current values: album, local_directory. Determines source_config schema.\n@gotags: gorm:\"not null;index\""
                 },
                 "sourceConfig": {
                   "type": "string",
-                  "title": "JSON object. Album uses {\"album_ids\":[\"album_001\",\"album_002\"]}.\n@gotags: gorm:\"not null\""
+                  "title": "JSON object. Album uses {\"album_ids\":[...]}; local_directory uses\n{\"path\":\"/absolute/path\",\"bookmark\":\"...\"}.\n@gotags: gorm:\"not null\""
                 },
                 "targetType": {
                   "type": "string",
@@ -166,16 +167,16 @@
                 },
                 "targetConfig": {
                   "type": "string",
-                  "title": "JSON object. Album backup uses {\"path\":\"/repo/path\",\"layout\":\"year_month_day\"}.\n@gotags: gorm:\"not null\""
+                  "title": "JSON object. All current targets use path. Album also stores layout and\nappend_device_model.\n@gotags: gorm:\"not null\""
                 },
                 "policyConfig": {
                   "type": "string",
-                  "title": "Mode-specific execution policy. Album backup currently uses {}.\n@gotags: gorm:\"not null\""
+                  "title": "Mode-specific execution policy. Current executors require {}.\n@gotags: gorm:\"not null\""
                 },
                 "configVersion": {
                   "type": "string",
                   "format": "int64",
-                  "title": "Destination mapping generation. Starts at 1 and increases when target_type\nName, enabled, source_config, and policy_config do not increase it.\nA file record is reusable only when its config_version matches this value.\n@gotags: gorm:\"not null;default:1\""
+                  "title": "Destination mapping generation. Starts at 1 and increases when target_type\nor target_config changes. Name, enabled, source_config, and policy_config do\nnot increase it. A local_directory source path change deletes old records.\nA file record is reusable only when its config_version matches this value.\n@gotags: gorm:\"not null;default:1\""
                 }
               }
             }
@@ -489,18 +490,19 @@
           "title": "@gotags: gorm:\"not null;unique\""
         },
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Enables future automatic backup or synchronization scheduling. Manual runs\nare always allowed regardless of this value."
         },
         "mode": {
           "$ref": "#/definitions/SyncProfileMode"
         },
         "sourceType": {
           "type": "string",
-          "title": "Current value: album. Determines the source_config schema.\n@gotags: gorm:\"not null;index\""
+          "title": "Current values: album, local_directory. Determines source_config schema.\n@gotags: gorm:\"not null;index\""
         },
         "sourceConfig": {
           "type": "string",
-          "title": "JSON object. Album uses {\"album_ids\":[\"album_001\",\"album_002\"]}.\n@gotags: gorm:\"not null\""
+          "title": "JSON object. Album uses {\"album_ids\":[...]}; local_directory uses\n{\"path\":\"/absolute/path\",\"bookmark\":\"...\"}.\n@gotags: gorm:\"not null\""
         },
         "targetType": {
           "type": "string",
@@ -508,16 +510,16 @@
         },
         "targetConfig": {
           "type": "string",
-          "title": "JSON object. Album backup uses {\"path\":\"/repo/path\",\"layout\":\"year_month_day\"}.\n@gotags: gorm:\"not null\""
+          "title": "JSON object. All current targets use path. Album also stores layout and\nappend_device_model.\n@gotags: gorm:\"not null\""
         },
         "policyConfig": {
           "type": "string",
-          "title": "Mode-specific execution policy. Album backup currently uses {}.\n@gotags: gorm:\"not null\""
+          "title": "Mode-specific execution policy. Current executors require {}.\n@gotags: gorm:\"not null\""
         },
         "configVersion": {
           "type": "string",
           "format": "int64",
-          "title": "Destination mapping generation. Starts at 1 and increases when target_type\nName, enabled, source_config, and policy_config do not increase it.\nA file record is reusable only when its config_version matches this value.\n@gotags: gorm:\"not null;default:1\""
+          "title": "Destination mapping generation. Starts at 1 and increases when target_type\nor target_config changes. Name, enabled, source_config, and policy_config do\nnot increase it. A local_directory source path change deletes old records.\nA file record is reusable only when its config_version matches this value.\n@gotags: gorm:\"not null;default:1\""
         }
       }
     },
@@ -572,11 +574,11 @@
         },
         "sourcePath": {
           "type": "string",
-          "title": "Source container identifier. Album backup uses the album ID; a directory\nsource can use the parent directory path.\n@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:2\""
+          "title": "Source container identifier. Album backup uses the album ID;\nlocal_directory uses the file's normalized absolute parent directory.\n@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:2\""
         },
         "sourceKey": {
           "type": "string",
-          "title": "Stable item identifier within source_path. Album backup uses the asset ID,\nnot the photo name, because names can repeat or change.\n@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:3\""
+          "title": "Stable item identifier within source_path. Album backup uses the asset ID;\nlocal_directory uses the file name without path separators.\n@gotags: gorm:\"not null;uniqueIndex:idx_sync_record_source_entry,priority:3\""
         },
         "sourceSize": {
           "type": "string",

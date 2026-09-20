@@ -8,7 +8,7 @@ import 'package:maple_file/api/file/widgets/file_select.dart';
 import 'package:maple_file/api/syncing/providers/album.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
-import 'package:maple_file/api/syncing/widgets/album_select.dart';
+import 'package:maple_file/api/syncing/widgets/album/select.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
@@ -16,22 +16,16 @@ import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
-class AlbumBackupEditScreen extends ConsumerStatefulWidget {
-  const AlbumBackupEditScreen({super.key, this.profile});
+class AlbumBackupForm extends ConsumerStatefulWidget {
+  const AlbumBackupForm({super.key, this.profile});
 
   final SyncProfile? profile;
 
-  factory AlbumBackupEditScreen.fromRoute(ModalRoute? route) {
-    final args = route?.settings.arguments;
-    return AlbumBackupEditScreen(profile: args as SyncProfile?);
-  }
-
   @override
-  ConsumerState<AlbumBackupEditScreen> createState() =>
-      _AlbumBackupEditScreenState();
+  ConsumerState<AlbumBackupForm> createState() => _AlbumBackupFormState();
 }
 
-class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
+class _AlbumBackupFormState extends ConsumerState<AlbumBackupForm> {
   final _formKey = GlobalKey<FormState>();
 
   late AlbumBackupProfile _form;
@@ -42,7 +36,7 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   void initState() {
     super.initState();
     _form = widget.profile == null
-        ? AlbumBackupProfile.create(name: '相册备份'.tr())
+        ? AlbumBackupProfile.create(name: SyncSourceType.album.label)
         : AlbumBackupProfile.fromSyncProfile(widget.profile!);
     if (Util.isAndroid || Util.isIOS) {
       _handleLoadAlbumNames();
@@ -66,16 +60,7 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Text(_isEditing ? '修改相册备份'.tr() : '添加相册备份'.tr()),
-        trailingActions: [
-          if (_isEditing)
-            TextButton(onPressed: _handleDelete, child: Text('删除'.tr())),
-        ],
-      ),
-      body: _buildForm(_selectedSources ?? _albumSources()),
-    );
+    return _buildForm(_selectedSources ?? _albumSources());
   }
 
   Widget _buildForm(List<_AlbumSource> sources) {
@@ -96,7 +81,7 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
                     setState(() => _form = _form.copyWith(name: value)),
               ),
               CustomListTileSwitch(
-                label: '启用备份'.tr(),
+                label: '自动备份'.tr(),
                 value: _form.enabled,
                 onChanged: (value) =>
                     setState(() => _form = _form.copyWith(enabled: value)),
@@ -144,7 +129,7 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
               PlatformListTile(
                 title: Text('目的地整理'.tr()),
                 subtitle: Text(
-                  _layout.label.tr(),
+                  _layout.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -287,17 +272,6 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   Future<void> _handleSave(List<_AlbumSource> sources) async {
     final profile = await _handleSaveProfile(sources);
     if (profile != null && mounted) Navigator.pop(context, profile);
-  }
-
-  Future<void> _handleDelete() async {
-    final confirmed = await showCustomConfirmDialog(
-      context: context,
-      title: Text('确认删除相册备份?'.tr()),
-    );
-    if (confirmed != true) return;
-    await SyncingService.instance.deleteProfile(_form.id);
-    ref.invalidate(syncProfilesProvider);
-    if (mounted) Navigator.pop(context, false);
   }
 
   List<_AlbumSource> _albumSources() {

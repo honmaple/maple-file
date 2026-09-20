@@ -1,20 +1,39 @@
 import 'package:grpc/grpc.dart';
 
 import 'package:maple_file/app/grpc.dart';
+import 'package:maple_file/app/i18n.dart';
+import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pbgrpc.dart';
 
 enum SyncSourceType {
-  album('album');
+  unknown(''),
+  album('album'),
+  localDirectory('local_directory');
 
   const SyncSourceType(this.value);
 
   final String value;
 
-  static SyncSourceType? fromValue(String value) {
+  String get label => switch (this) {
+        SyncSourceType.unknown => '未知同步类型'.tr(),
+        SyncSourceType.album => '相册备份'.tr(),
+        SyncSourceType.localDirectory => '本地目录同步'.tr(),
+      };
+
+  bool get isSupported => switch (this) {
+        SyncSourceType.unknown => false,
+        SyncSourceType.album => !Util.isWeb && (Util.isAndroid || Util.isIOS),
+        SyncSourceType.localDirectory =>
+          !Util.isWeb && (Util.isAndroid || Util.isDesktop),
+      };
+
+  static bool get hasSupportedType => values.any((type) => type.isSupported);
+
+  static SyncSourceType fromValue(String value) {
     for (final type in SyncSourceType.values) {
       if (type.value == value) return type;
     }
-    return null;
+    return SyncSourceType.unknown;
   }
 }
 

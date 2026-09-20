@@ -12,66 +12,55 @@ import 'package:maple_file/api/syncing/providers/album_controller.dart';
 import 'package:maple_file/api/syncing/providers/history.dart';
 import 'package:maple_file/api/syncing/widgets/sync_history_records.dart';
 
-class AlbumBackupDetailScreen extends ConsumerStatefulWidget {
-  const AlbumBackupDetailScreen({super.key, required this.profile});
+class AlbumBackupDetail extends ConsumerStatefulWidget {
+  const AlbumBackupDetail({
+    super.key,
+    required this.profile,
+    required this.onProfileChanged,
+  });
 
   final SyncProfile profile;
-
-  factory AlbumBackupDetailScreen.fromRoute(ModalRoute? route) {
-    return AlbumBackupDetailScreen(
-      profile: route!.settings.arguments as SyncProfile,
-    );
-  }
+  final ValueChanged<SyncProfile> onProfileChanged;
 
   @override
-  ConsumerState<AlbumBackupDetailScreen> createState() =>
-      _AlbumBackupDetailScreenState();
+  ConsumerState<AlbumBackupDetail> createState() => _AlbumBackupDetailState();
 }
 
-class _AlbumBackupDetailScreenState
-    extends ConsumerState<AlbumBackupDetailScreen> {
+class _AlbumBackupDetailState extends ConsumerState<AlbumBackupDetail> {
   late final _provider = albumBackupProvider(widget.profile);
 
   @override
   Widget build(BuildContext context) {
     final detail = ref.watch(_provider);
-    return PlatformScaffold(
-      appBar: PlatformAppBar(
-        title: Text(detail.profile.name),
-        trailingActions: [
-          TextButton(onPressed: _handleEdit, child: Text('编辑'.tr())),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                CustomListSection(
-                  children: [
-                    PlatformListTile(
-                      title: Text('相册备份'.tr()),
-                      trailing: PlatformSwitch(
-                        value: detail.profile.enabled,
-                        activeTrackColor: Theme.of(context).primaryColor,
-                        onChanged: _handleSetEnabled,
-                      ),
+    return Column(
+      children: [
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              CustomListSection(
+                children: [
+                  PlatformListTile(
+                    title: Text('自动备份'.tr()),
+                    trailing: PlatformSwitch(
+                      value: detail.profile.enabled,
+                      activeTrackColor: Theme.of(context).primaryColor,
+                      onChanged: _handleSetEnabled,
                     ),
-                  ],
-                ),
-                _buildConfiguration(detail),
-                _buildHistoryHeader(detail.profile.id),
-                SyncHistoryRecords(
-                  profileId: detail.profile.id,
-                  onHistoryTap: _handleOpenHistoryDetail,
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              _buildConfiguration(detail),
+              _buildHistoryHeader(detail.profile.id),
+              SyncHistoryRecords(
+                profileId: detail.profile.id,
+                onHistoryTap: _handleOpenHistoryDetail,
+              ),
+            ],
           ),
-          _buildBackupAction(detail),
-        ],
-      ),
+        ),
+        _buildBackupAction(detail),
+      ],
     );
   }
 
@@ -88,8 +77,7 @@ class _AlbumBackupDetailScreenState
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          onPressed:
-              detail.profile.enabled && !detail.running ? _handleRun : null,
+          onPressed: !detail.running ? _handleRun : null,
           icon: const Icon(Icons.sync_rounded, size: 18),
           label: Text(detail.running ? '备份中'.tr() : '立即备份'.tr()),
         ),
@@ -186,7 +174,7 @@ class _AlbumBackupDetailScreenState
                         ),
                       ),
                       Text(
-                        detail.profile.targetConfig.layout.label.tr(),
+                        detail.profile.targetConfig.layout.label,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
@@ -274,22 +262,11 @@ class _AlbumBackupDetailScreenState
   Future<void> _handleSetEnabled(bool enabled) async {
     try {
       await ref.read(_provider.notifier).setEnabled(enabled);
+      widget.onProfileChanged(
+        ref.read(_provider).profile.toSyncProfile(),
+      );
     } catch (error) {
       SmartDialog.showNotify(msg: '$error', notifyType: NotifyType.error);
-    }
-  }
-
-  Future<void> _handleEdit() async {
-    final profile = ref.read(_provider).profile;
-    final result = await Navigator.of(context).pushNamed(
-      '/setting/syncing/album-backup/edit',
-      arguments: profile.toSyncProfile(),
-    );
-    if (!mounted) return;
-    if (result == false) {
-      Navigator.pop(context);
-    } else if (result is SyncProfile) {
-      ref.read(_provider.notifier).replaceProfile(result);
     }
   }
 

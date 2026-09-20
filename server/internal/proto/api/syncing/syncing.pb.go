@@ -353,26 +353,31 @@ type SyncProfile struct {
 	// @gotags: gorm:"serializer:protobuf_timestamp;type:datetime"
 	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"serializer:protobuf_timestamp;type:datetime"`
 	// @gotags: gorm:"not null;unique"
-	Name    string           `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty" gorm:"not null;unique"`
+	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty" gorm:"not null;unique"`
+	// Enables future automatic backup or synchronization scheduling. Manual runs
+	// are always allowed regardless of this value.
 	Enabled bool             `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	Mode    SyncProfile_Mode `protobuf:"varint,6,opt,name=mode,proto3,enum=api.syncing.SyncProfile_Mode" json:"mode,omitempty"`
-	// Current value: album. Determines the source_config schema.
+	// Current values: album, local_directory. Determines source_config schema.
 	// @gotags: gorm:"not null;index"
 	SourceType string `protobuf:"bytes,7,opt,name=source_type,json=sourceType,proto3" json:"source_type,omitempty" gorm:"not null;index"`
-	// JSON object. Album uses {"album_ids":["album_001","album_002"]}.
+	// JSON object. Album uses {"album_ids":[...]}; local_directory uses
+	// {"path":"/absolute/path","bookmark":"..."}.
 	// @gotags: gorm:"not null"
 	SourceConfig string `protobuf:"bytes,8,opt,name=source_config,json=sourceConfig,proto3" json:"source_config,omitempty" gorm:"not null"`
 	// Current value: repo_directory.
 	// @gotags: gorm:"not null"
 	TargetType string `protobuf:"bytes,9,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty" gorm:"not null"`
-	// JSON object. Album backup uses {"path":"/repo/path","layout":"year_month_day"}.
+	// JSON object. All current targets use path. Album also stores layout and
+	// append_device_model.
 	// @gotags: gorm:"not null"
 	TargetConfig string `protobuf:"bytes,10,opt,name=target_config,json=targetConfig,proto3" json:"target_config,omitempty" gorm:"not null"`
-	// Mode-specific execution policy. Album backup currently uses {}.
+	// Mode-specific execution policy. Current executors require {}.
 	// @gotags: gorm:"not null"
 	PolicyConfig string `protobuf:"bytes,11,opt,name=policy_config,json=policyConfig,proto3" json:"policy_config,omitempty" gorm:"not null"`
 	// Destination mapping generation. Starts at 1 and increases when target_type
-	// Name, enabled, source_config, and policy_config do not increase it.
+	// or target_config changes. Name, enabled, source_config, and policy_config do
+	// not increase it. A local_directory source path change deletes old records.
 	// A file record is reusable only when its config_version matches this value.
 	// @gotags: gorm:"not null;default:1"
 	ConfigVersion int64 `protobuf:"varint,12,opt,name=config_version,json=configVersion,proto3" json:"config_version,omitempty" gorm:"not null;default:1"`
@@ -504,12 +509,12 @@ type SyncRecord struct {
 	// SyncProfile.config_version when this source item last completed successfully.
 	// An older version cannot be used as a skip baseline.
 	ConfigVersion int64 `protobuf:"varint,4,opt,name=config_version,json=configVersion,proto3" json:"config_version,omitempty"`
-	// Source container identifier. Album backup uses the album ID; a directory
-	// source can use the parent directory path.
+	// Source container identifier. Album backup uses the album ID;
+	// local_directory uses the file's normalized absolute parent directory.
 	// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:2"
 	SourcePath string `protobuf:"bytes,5,opt,name=source_path,json=sourcePath,proto3" json:"source_path,omitempty" gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:2"`
-	// Stable item identifier within source_path. Album backup uses the asset ID,
-	// not the photo name, because names can repeat or change.
+	// Stable item identifier within source_path. Album backup uses the asset ID;
+	// local_directory uses the file name without path separators.
 	// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:3"
 	SourceKey           string `protobuf:"bytes,6,opt,name=source_key,json=sourceKey,proto3" json:"source_key,omitempty" gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:3"`
 	SourceSize          *int64 `protobuf:"varint,7,opt,name=source_size,json=sourceSize,proto3,oneof" json:"source_size,omitempty"`

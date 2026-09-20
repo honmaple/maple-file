@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'package:maple_file/app/router.dart';
 
-import 'pages/album_backup_detail.dart';
-import 'pages/album_backup_edit.dart';
 import 'pages/syncing.dart';
+import 'pages/syncing_detail.dart';
+import 'pages/syncing_edit.dart';
 
 Future<void> init(CustomRouter router) async {
   router.registerMany({
-    '/setting/syncing': (context) => const SyncingScreen(),
-    '/setting/syncing/album-backup/detail': (context) =>
-        AlbumBackupDetailScreen.fromRoute(ModalRoute.of(context)),
-    '/setting/syncing/album-backup/edit': (context) =>
-        AlbumBackupEditScreen.fromRoute(ModalRoute.of(context)),
+    '/syncing': (context) => const SyncingScreen(),
+    '/syncing/detail': (context) =>
+        SyncingDetailScreen.fromRoute(ModalRoute.of(context)),
+    '/syncing/edit': (context) =>
+        SyncingEditScreen.fromRoute(ModalRoute.of(context)),
   });
 }

@@ -10,8 +10,9 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:maple_file/api/file/providers/service.dart';
 import 'package:maple_file/api/syncing/providers/history.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
+import 'package:maple_file/api/syncing/providers/target.dart';
+import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
-import 'package:maple_file/generated/proto/api/file/file.pb.dart' as file_proto;
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
@@ -20,16 +21,21 @@ part 'album.g.dart';
 
 enum AlbumTargetLayout {
   @JsonValue('year_month_day')
-  yearMonthDay('year_month_day', '按年月日整理'),
+  yearMonthDay('year_month_day'),
   @JsonValue('year_month')
-  yearMonth('year_month', '按年月整理'),
+  yearMonth('year_month'),
   @JsonValue('filename_asset_id')
-  filenameAssetId('filename_asset_id', '文件名加资产 ID');
+  filenameAssetId('filename_asset_id');
 
-  const AlbumTargetLayout(this.value, this.label);
+  const AlbumTargetLayout(this.value);
 
   final String value;
-  final String label;
+
+  String get label => switch (this) {
+        AlbumTargetLayout.yearMonthDay => '按年月日整理'.tr(),
+        AlbumTargetLayout.yearMonth => '按年月整理'.tr(),
+        AlbumTargetLayout.filenameAssetId => '文件名加资产 ID'.tr(),
+      };
 
   static AlbumTargetLayout fromValue(String? value) {
     return AlbumTargetLayout.values.firstWhere(
@@ -282,9 +288,6 @@ class AlbumBackupService {
   }
 
   Future<AlbumBackupResult> _run(AlbumBackupProfile profile) async {
-    if (!profile.enabled) {
-      throw StateError('请先启用此相册备份');
-    }
     if (profile.targetConfig.path.isEmpty) {
       throw StateError('备份目录配置无效');
     }
@@ -292,15 +295,14 @@ class AlbumBackupService {
       profile.targetConfig,
       await albumBackupDeviceModel(),
     );
-    await _ensureTargetDirectory(targetPath);
+    final targetDirectory = SyncTargetDirectory();
+    await targetDirectory.ensure(targetPath);
     final albums = await requestAlbums(includeEmpty: true);
     final paths = {for (final album in albums) album.id: album};
     var uploaded = 0;
     var skipped = 0;
     var scanned = 0;
     final failures = <AlbumBackupFailure>[];
-    final createdDirectories = <String>{targetPath};
-    final remoteDirectories = <String, Map<String, int>>{};
     final verifiedAssets = <String, SyncRecord>{};
     for (final sourceKey in profile.sourceConfig.albumIds) {
       final album = paths[sourceKey];
@@ -322,8 +324,7 @@ class AlbumBackupService {
           album,
           targetPath,
           profile.targetConfig.layout,
-          createdDirectories,
-          remoteDirectories,
+          targetDirectory,
           verifiedAssets,
         );
         uploaded += result.uploaded;
@@ -354,8 +355,7 @@ class AlbumBackupService {
     AssetPathEntity album,
     String targetPath,
     AlbumTargetLayout layout,
-    Set<String> createdDirectories,
-    Map<String, Map<String, int>> remoteDirectories,
+    SyncTargetDirectory targetStore,
     Map<String, SyncRecord> verifiedAssets,
   ) async {
     var uploaded = 0;
@@ -426,18 +426,15 @@ class AlbumBackupService {
                 profile.configVersion,
               )) {
             stage = '检查云端文件';
-            var remoteFiles = remoteDirectories[targetDirectory];
-            if (remoteFiles == null) {
-              final files = await _ensureTargetDirectory(targetDirectory);
-              remoteFiles = {
-                for (final file in files)
-                  if (file.type != 'DIR') file.name: file.size.toInt(),
-              };
-              remoteDirectories[targetDirectory] = remoteFiles;
-            }
+            final remoteFiles = await targetStore.ensure(targetDirectory);
+            final remoteFile = targetStore.find(
+              remoteFiles,
+              filepath.posix.basename(record.targetPath),
+            );
             if (record.hasTargetSize() &&
-                remoteFiles[filepath.posix.basename(record.targetPath)] ==
-                    record.targetSize.toInt()) {
+                remoteFile != null &&
+                remoteFile.type != 'DIR' &&
+                remoteFile.size == record.targetSize) {
               verifiedAssets[verifiedKey] = record;
               skipped++;
               continue;
@@ -470,19 +467,23 @@ class AlbumBackupService {
           }
           sourceItemPath = file.path;
           stage = '准备云端目录';
-          final target = await _prepareTarget(
+          final uploadTarget = await _prepareTarget(
             targetPath,
             layout,
             asset,
             file,
-            createdDirectories,
+            targetStore,
             title,
           );
-          targetItemPath = filepath.posix.join(target.directory, target.name);
-          stage = '上传到 ${target.directory}/${target.name}';
-          final (uploadedFile, hashAlgorithm, sourceHash) = await FileService
-              .instance
-              .uploadFilePreservingName(target.directory, file, target.name);
+          targetItemPath =
+              filepath.posix.join(uploadTarget.directory, uploadTarget.name);
+          stage = '上传到 ${uploadTarget.directory}/${uploadTarget.name}';
+          final (uploadedFile, hashAlgorithm, sourceHash) =
+              await FileService.instance.uploadFilePreservingName(
+            uploadTarget.directory,
+            file,
+            uploadTarget.name,
+          );
           final uploadedRecord = SyncRecord(
             profileId: profile.id,
             sourcePath: sourceKey,
@@ -503,8 +504,7 @@ class AlbumBackupService {
           stage = '保存备份记录';
           await SyncingService.instance.upsertRecords([uploadedRecord]);
           verifiedAssets[verifiedKey] = uploadedRecord;
-          remoteDirectories[target.directory]?[target.name] =
-              uploadedFile.size.toInt();
+          targetStore.record(uploadTarget.directory, uploadedFile);
           uploaded++;
         } catch (error) {
           failures.add(AlbumBackupFailure(
@@ -568,7 +568,7 @@ class AlbumBackupService {
     AlbumTargetLayout layout,
     AssetEntity asset,
     io.File file,
-    Set<String> createdDirectories,
+    SyncTargetDirectory targetStore,
     String original,
   ) async {
     final sourceName =
@@ -576,44 +576,13 @@ class AlbumBackupService {
     var path = targetPath;
     for (final part in layout.pathParts(asset.createDateTime)) {
       final nextPath = filepath.posix.join(path, part);
-      if (!createdDirectories.contains(nextPath)) {
-        await _ensureTargetDirectory(nextPath);
-        createdDirectories.add(nextPath);
-      }
+      await targetStore.ensure(nextPath);
       path = nextPath;
     }
     return _AlbumBackupTarget(
       path,
       albumBackupFilename(sourceName, asset.id),
     );
-  }
-
-  Future<List<file_proto.File>> _ensureTargetDirectory(String path) async {
-    final normalizedPath = filepath.posix.normalize(path);
-    if (normalizedPath == '/') {
-      return FileService.instance.list(filter: {'path': normalizedPath});
-    }
-    final parent = filepath.posix.dirname(normalizedPath);
-    final name = filepath.posix.basename(normalizedPath);
-    if (name.isEmpty || name == '/' || parent == normalizedPath) {
-      throw StateError('备份目录无效：$path');
-    }
-    final files = await _ensureTargetDirectory(parent);
-    file_proto.File? target;
-    for (final file in files) {
-      if (file.name == name) {
-        target = file;
-        break;
-      }
-    }
-    if (target == null) {
-      await FileService.instance.mkdir(parent, name);
-      return const <file_proto.File>[];
-    }
-    if (target.type != 'DIR') {
-      throw StateError('备份目标不是目录：$normalizedPath');
-    }
-    return FileService.instance.list(filter: {'path': normalizedPath});
   }
 }
 

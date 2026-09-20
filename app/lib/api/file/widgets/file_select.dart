@@ -27,12 +27,14 @@ Future<String?> showDirectorySelectDialog(
   BuildContext context, {
   String path = '/',
   String title = '选择文件',
+  bool Function(File)? filter,
   bool useRootNavigator = false,
 }) async {
   final result = await _showFileSelectDialog(
     context,
     path: path,
     title: title,
+    filter: filter,
     mode: FileSelectMode.directory,
     useRootNavigator: useRootNavigator,
   );
@@ -263,7 +265,9 @@ class _FileSelectState extends ConsumerState<FileSelectPage> {
 
   bool _filter(File file) {
     if (file.type == "DIR") {
-      return true;
+      return widget.mode.selectsDirectory
+          ? widget.filter?.call(file) ?? true
+          : true;
     }
     return widget.filter?.call(file) ?? false;
   }

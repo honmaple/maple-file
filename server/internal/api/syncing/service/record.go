@@ -13,12 +13,13 @@ func (srv *serviceImpl) ListRecords(ctx context.Context, req *pb.SyncRecord_List
 	if err != nil {
 		return nil, err
 	}
-	keys, err := repository.AlbumSourceKeys(profile)
-	if err != nil {
+	if err := repository.ValidateSourceEntry(profile, req.GetSourcePath(), ""); err != nil {
 		return nil, err
 	}
-	if _, ok := keys[req.GetSourcePath()]; !ok {
-		return nil, errors.New("同步来源不存在")
+	for _, key := range req.GetSourceKeys() {
+		if err := repository.ValidateSourceEntry(profile, req.GetSourcePath(), key); err != nil {
+			return nil, err
+		}
 	}
 	results, err := srv.repo.ListRecords(ctx, req.GetProfileId(), req.GetSourcePath(), req.GetSourceKeys())
 	return &pb.SyncRecord_ListResponse{Results: results}, err
@@ -33,12 +34,10 @@ func (srv *serviceImpl) UpsertRecords(ctx context.Context, req *pb.SyncRecord_Up
 		if err != nil {
 			return nil, err
 		}
-		keys, err := repository.AlbumSourceKeys(profile)
-		if err != nil {
+		if err := repository.ValidateSourceEntry(profile, item.GetSourcePath(), item.GetSourceKey()); err != nil {
 			return nil, err
 		}
-		_, sourceConfigured := keys[item.GetSourcePath()]
-		if !sourceConfigured || item.GetSourceKey() == "" || item.GetTargetPath() == "" ||
+		if item.GetSourceKey() == "" || item.GetTargetPath() == "" ||
 			item.GetState() != pb.SyncRecord_STATE_ACTIVE || item.GetConfigVersion() != profile.GetConfigVersion() ||
 			(item.SourceSize != nil && item.GetSourceSize() < 0) || (item.TargetSize != nil && item.GetTargetSize() < 0) {
 			return nil, errors.New("同步记录参数错误")

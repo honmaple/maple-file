@@ -524,6 +524,8 @@ class SyncProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearName() => clearField(4);
 
+  /// Enables future automatic backup or synchronization scheduling. Manual runs
+  /// are always allowed regardless of this value.
   @$pb.TagNumber(5)
   $core.bool get enabled => $_getBF(4);
   @$pb.TagNumber(5)
@@ -542,7 +544,7 @@ class SyncProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   void clearMode() => clearField(6);
 
-  /// Current value: album. Determines the source_config schema.
+  /// Current values: album, local_directory. Determines source_config schema.
   /// @gotags: gorm:"not null;index"
   @$pb.TagNumber(7)
   $core.String get sourceType => $_getSZ(6);
@@ -553,7 +555,8 @@ class SyncProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   void clearSourceType() => clearField(7);
 
-  /// JSON object. Album uses {"album_ids":["album_001","album_002"]}.
+  /// JSON object. Album uses {"album_ids":[...]}; local_directory uses
+  /// {"path":"/absolute/path","bookmark":"..."}.
   /// @gotags: gorm:"not null"
   @$pb.TagNumber(8)
   $core.String get sourceConfig => $_getSZ(7);
@@ -575,7 +578,8 @@ class SyncProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   void clearTargetType() => clearField(9);
 
-  /// JSON object. Album backup uses {"path":"/repo/path","layout":"year_month_day"}.
+  /// JSON object. All current targets use path. Album also stores layout and
+  /// append_device_model.
   /// @gotags: gorm:"not null"
   @$pb.TagNumber(10)
   $core.String get targetConfig => $_getSZ(9);
@@ -586,7 +590,7 @@ class SyncProfile extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   void clearTargetConfig() => clearField(10);
 
-  /// Mode-specific execution policy. Album backup currently uses {}.
+  /// Mode-specific execution policy. Current executors require {}.
   /// @gotags: gorm:"not null"
   @$pb.TagNumber(11)
   $core.String get policyConfig => $_getSZ(10);
@@ -598,7 +602,8 @@ class SyncProfile extends $pb.GeneratedMessage {
   void clearPolicyConfig() => clearField(11);
 
   /// Destination mapping generation. Starts at 1 and increases when target_type
-  /// Name, enabled, source_config, and policy_config do not increase it.
+  /// or target_config changes. Name, enabled, source_config, and policy_config do
+  /// not increase it. A local_directory source path change deletes old records.
   /// A file record is reusable only when its config_version matches this value.
   /// @gotags: gorm:"not null;default:1"
   @$pb.TagNumber(12)
@@ -973,8 +978,8 @@ class SyncRecord extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearConfigVersion() => clearField(4);
 
-  /// Source container identifier. Album backup uses the album ID; a directory
-  /// source can use the parent directory path.
+  /// Source container identifier. Album backup uses the album ID;
+  /// local_directory uses the file's normalized absolute parent directory.
   /// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:2"
   @$pb.TagNumber(5)
   $core.String get sourcePath => $_getSZ(4);
@@ -985,8 +990,8 @@ class SyncRecord extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearSourcePath() => clearField(5);
 
-  /// Stable item identifier within source_path. Album backup uses the asset ID,
-  /// not the photo name, because names can repeat or change.
+  /// Stable item identifier within source_path. Album backup uses the asset ID;
+  /// local_directory uses the file name without path separators.
   /// @gotags: gorm:"not null;uniqueIndex:idx_sync_record_source_entry,priority:3"
   @$pb.TagNumber(6)
   $core.String get sourceKey => $_getSZ(5);

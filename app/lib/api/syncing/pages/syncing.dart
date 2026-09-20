@@ -3,13 +3,16 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-import 'package:maple_file/api/syncing/providers/profile.dart';
-import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
+
+import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/local_directory.dart';
+import 'package:maple_file/api/syncing/providers/profile.dart';
+import 'package:maple_file/api/syncing/providers/service.dart';
 
 class SyncingScreen extends ConsumerWidget {
   const SyncingScreen({super.key});
@@ -31,9 +34,10 @@ class SyncingScreen extends ConsumerWidget {
                     for (final profile in profiles)
                       PlatformListTile(
                         leading: Icon(
-                          profile.mode == SyncProfile_Mode.MODE_BACKUP
-                              ? Icons.backup_outlined
-                              : Icons.sync,
+                          SyncSourceType.fromValue(profile.sourceType) ==
+                                  SyncSourceType.localDirectory
+                              ? Icons.folder_copy_outlined
+                              : Icons.photo_library_outlined,
                         ),
                         title: Text(profile.name),
                         trailing: PlatformSwitch(
@@ -79,7 +83,10 @@ class SyncingScreen extends ConsumerWidget {
         );
         return;
       }
-      await _handleOpenDetail(context, sourceType, profile);
+      await Navigator.of(context).pushNamed(
+        '/syncing/detail',
+        arguments: profile,
+      );
       ref.invalidate(syncProfilesProvider);
     } catch (error) {
       SmartDialog.showNotify(msg: '$error', notifyType: NotifyType.error);
@@ -87,18 +94,46 @@ class SyncingScreen extends ConsumerWidget {
   }
 
   Future<void> _handleCreateProfile(BuildContext context) async {
+    if (!SyncSourceType.hasSupportedType) {
+      SmartDialog.showNotify(
+        msg: '暂无支持的同步类型'.tr(),
+        notifyType: NotifyType.warning,
+      );
+      return;
+    }
     final sourceType = await showCustomListOptions<SyncSourceType>(
       context: context,
       options: [
-        CustomOption(
-          icon: const Icon(Icons.photo_library_outlined),
-          label: '相册备份'.tr(),
-          value: SyncSourceType.album,
-        ),
+        if (SyncSourceType.album.isSupported)
+          CustomOption(
+            icon: const Icon(Icons.photo_library_outlined),
+            label: SyncSourceType.album.label,
+            value: SyncSourceType.album,
+          ),
+        if (SyncSourceType.localDirectory.isSupported)
+          CustomOption(
+            icon: const Icon(Icons.folder_copy_outlined),
+            label: SyncSourceType.localDirectory.label,
+            value: SyncSourceType.localDirectory,
+          ),
       ],
     );
     if (sourceType != null && context.mounted) {
-      await _handleOpenEditor(context, sourceType);
+      final profile = switch (sourceType) {
+        SyncSourceType.album => AlbumBackupProfile.create(
+            name: sourceType.label,
+          ).toSyncProfile(),
+        SyncSourceType.localDirectory => LocalDirectorySyncProfile.create(
+            name: sourceType.label,
+          ).toSyncProfile(),
+        SyncSourceType.unknown => null,
+      };
+      if (profile != null && context.mounted) {
+        Navigator.of(context).pushNamed(
+          '/syncing/edit',
+          arguments: profile,
+        );
+      }
     }
   }
 
@@ -110,32 +145,12 @@ class SyncingScreen extends ConsumerWidget {
             SyncTargetType.repoDirectory) {
       return sourceType;
     }
+    if (sourceType == SyncSourceType.localDirectory &&
+        profile.mode == SyncProfile_Mode.MODE_ONE_WAY &&
+        SyncTargetType.fromValue(profile.targetType) ==
+            SyncTargetType.repoDirectory) {
+      return sourceType;
+    }
     return null;
-  }
-
-  Future<void> _handleOpenEditor(
-    BuildContext context,
-    SyncSourceType sourceType, [
-    SyncProfile? profile,
-  ]) {
-    return Navigator.of(context).pushNamed(
-      switch (sourceType) {
-        SyncSourceType.album => '/setting/syncing/album-backup/edit',
-      },
-      arguments: profile,
-    );
-  }
-
-  Future<void> _handleOpenDetail(
-    BuildContext context,
-    SyncSourceType sourceType,
-    SyncProfile profile,
-  ) {
-    return Navigator.of(context).pushNamed(
-      switch (sourceType) {
-        SyncSourceType.album => '/setting/syncing/album-backup/detail',
-      },
-      arguments: profile,
-    );
   }
 }

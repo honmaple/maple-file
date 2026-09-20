@@ -20,7 +20,6 @@ class _FileSettingServerState extends ConsumerState<FileSettingServerScreen> {
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('外部服务'.tr()),
       ),

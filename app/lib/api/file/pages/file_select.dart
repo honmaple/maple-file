@@ -59,7 +59,6 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
     final bottomBarHeight = _bottomActionBarHeight + bottomInset;
 
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: _buildAppBar(context),
       body: Stack(
         children: [
@@ -100,7 +99,6 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
   PlatformAppBar _buildAppBar(BuildContext context) {
     return PlatformAppBar(
       title: Text(widget.title),
-      material: (context, _) => MaterialAppBarData(centerTitle: true),
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () {

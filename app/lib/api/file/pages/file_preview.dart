@@ -131,11 +131,11 @@ class _FilePreviewState extends ConsumerState<FilePreviewScreen> {
       );
     }
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text(widget.file.name),
         trailingActions: [
           IconButton(
+            iconSize: 24,
             icon: const Icon(Icons.more_vert),
             onPressed: () async {
               final result = await showFileAction(context, widget.file);
@@ -191,6 +191,11 @@ class _FilePreviewState extends ConsumerState<FilePreviewScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: Text('下载'.tr()),
                   onPressed: () async {
                     await FileAction.download.action(context, file, ref: ref);
@@ -226,13 +231,19 @@ class _FileImagePreviewState extends FilePreviewBaseState<FileImagePreview> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
+      iosContentPadding: false,
       appBar: PlatformAppBar(
+        cupertino: (context, _) => CupertinoNavigationBarData(
+          backgroundColor: Colors.transparent,
+          border: const Border(),
+        ),
         title: Text(
           _file.name,
           overflow: TextOverflow.ellipsis,
         ),
         trailingActions: [
           IconButton(
+            iconSize: 24,
             icon: const Icon(Icons.more_vert),
             onPressed: () async {
               final result = await showFileAction(context, _file);
@@ -271,7 +282,6 @@ class _FileAudioPreviewState extends FilePreviewBaseState<FileAudioPreview> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text(
           _file.name,
@@ -303,7 +313,6 @@ class _FileVideoPreviewState extends FilePreviewBaseState<FileVideoPreview> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text(
           _file.name,

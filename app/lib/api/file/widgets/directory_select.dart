@@ -27,9 +27,7 @@ class _FileDirectorySelectState extends ConsumerState<FileDirectorySelect> {
   Widget build(BuildContext context) {
     final currentPath = _path;
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
-        material: (context, _) => MaterialAppBarData(leadingWidth: 96),
         title: Text(widget.title ?? '选择目录'.tr()),
         automaticallyImplyLeading: false,
         leading: TextButton(
@@ -112,6 +110,11 @@ class _FileDirectorySelectState extends ConsumerState<FileDirectorySelect> {
             child: SizedBox(
               width: double.infinity,
               child: FilledButton(
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 onPressed: currentPath == '/'
                     ? null
                     : () => Navigator.of(context).pop(currentPath),

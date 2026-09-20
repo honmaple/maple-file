@@ -59,7 +59,6 @@ void showTaskDetail(BuildContext context, Task task) {
   showCustomDialog(
     context,
     child: PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text("执行日志".tr()),
       ),

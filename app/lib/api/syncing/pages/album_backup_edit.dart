@@ -67,7 +67,6 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text(_isEditing ? '修改相册备份'.tr() : '添加相册备份'.tr()),
         trailingActions: [
@@ -157,6 +156,11 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: FilledButton(
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               onPressed: () => _handleSave(sources),
               child: Text(_isEditing ? '确认修改'.tr() : '确认添加'.tr()),
             ),

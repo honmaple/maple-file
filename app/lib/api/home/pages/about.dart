@@ -18,7 +18,6 @@ class AboutScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text("关于".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),

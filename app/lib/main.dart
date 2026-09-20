@@ -108,6 +108,11 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         platformStyle: PlatformStyleData(
           ios: PlatformStyle.Cupertino,
           android: PlatformStyle.Cupertino,
+          macos: PlatformStyle.Cupertino,
+          windows: PlatformStyle.Cupertino,
+          linux: PlatformStyle.Cupertino,
+          fuchsia: PlatformStyle.Cupertino,
+          web: PlatformStyle.Cupertino,
         ),
       ),
       builder: (context) {

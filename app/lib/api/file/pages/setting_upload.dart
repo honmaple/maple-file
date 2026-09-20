@@ -21,7 +21,6 @@ class _FileSettingUploadState extends ConsumerState<FileSettingUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('文件上传'.tr()),
       ),

@@ -36,7 +36,6 @@ class _AlbumBackupDetailScreenState
   Widget build(BuildContext context) {
     final detail = ref.watch(_provider);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text(detail.profile.name),
         trailingActions: [

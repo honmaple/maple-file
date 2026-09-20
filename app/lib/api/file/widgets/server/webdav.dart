@@ -53,7 +53,6 @@ class _WebdavServerState extends ConsumerState<WebdavServer> {
     final themeData = Theme.of(context);
     final option = ref.watch(webdavSettingProvider);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text("Webdav"),
       ),
@@ -117,6 +116,9 @@ class _WebdavServerState extends ConsumerState<WebdavServer> {
                                       themeData.colorScheme.primary,
                                   backgroundColor:
                                       ColorUtil.backgroundColor(context),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 child: Text("关闭服务".tr()),
                                 onPressed: () {
@@ -216,6 +218,11 @@ class _WebdavServerState extends ConsumerState<WebdavServer> {
                           SizedBox(
                             width: double.infinity,
                             child: FilledButton(
+                              style: FilledButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
                               child: Text("开启服务".tr()),
                               onPressed: () {
                                 _handleEnable(option);

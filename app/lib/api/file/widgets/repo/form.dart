@@ -96,6 +96,9 @@ class _DriverFormState extends State<DriverForm> {
             style: FilledButton.styleFrom(
               foregroundColor: colorScheme.primary,
               backgroundColor: ColorUtil.backgroundColor(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () async {
               final form = widget.form.clone();
@@ -103,7 +106,6 @@ class _DriverFormState extends State<DriverForm> {
                 platformPageRoute(
                   context: context,
                   builder: (context) => PlatformScaffold(
-                    iosContentPadding: true,
                     appBar: PlatformAppBar(
                       title: Text('更多设置'.tr()),
                       trailingActions: [

@@ -9,7 +9,6 @@ class NotFoundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: const Text("404", style: TextStyle(fontSize: 16)),
       ),

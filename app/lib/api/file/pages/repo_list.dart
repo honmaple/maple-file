@@ -21,7 +21,6 @@ class _RepoListState extends ConsumerState<RepoListScreen> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('存储库'.tr()),
       ),

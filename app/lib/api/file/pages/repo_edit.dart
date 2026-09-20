@@ -50,7 +50,6 @@ class _RepoEditState extends ConsumerState<RepoEditScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: _isEditing ? Text('修改存储'.tr()) : Text('添加存储'.tr()),
         trailingActions: [
@@ -141,6 +140,9 @@ class _RepoEditState extends ConsumerState<RepoEditScreen> {
                       style: FilledButton.styleFrom(
                         foregroundColor: colorScheme.primary,
                         backgroundColor: ColorUtil.backgroundColor(context),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       onPressed: _handleTest,
                       child: Text('测试连接'.tr()),
@@ -152,10 +154,20 @@ class _RepoEditState extends ConsumerState<RepoEditScreen> {
                     width: double.infinity,
                     child: _isEditing
                         ? FilledButton(
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                             onPressed: _handleUpdate,
                             child: Text('确认修改'.tr()),
                           )
                         : FilledButton(
+                            style: FilledButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                             onPressed: _handleCreate,
                             child: Text('确认添加'.tr()),
                           ),

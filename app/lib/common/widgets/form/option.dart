@@ -103,7 +103,6 @@ class _CustomOptions<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text(label),
       ),

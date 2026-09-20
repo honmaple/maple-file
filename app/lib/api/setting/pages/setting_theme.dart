@@ -45,7 +45,6 @@ class _SettingThemeState extends ConsumerState<SettingThemeScreen> {
   Widget build(BuildContext context) {
     final appearance = ref.watch(appearanceProvider);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('主题'.tr()),
         cupertino: (context, t) {

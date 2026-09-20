@@ -19,115 +19,15 @@ class HelpLink {
   const HelpLink({required this.name, required this.link});
 }
 
-class HelpWebViewArgs {
-  final String title;
-  final String link;
-
-  const HelpWebViewArgs({
-    required this.title,
-    required this.link,
-  });
-}
-
-class HelpWebViewScreen extends StatefulWidget {
-  const HelpWebViewScreen({super.key, required this.title, required this.link});
-
-  final String title;
-  final String link;
-
-  factory HelpWebViewScreen.fromRoute(ModalRoute? route) {
-    final args = route?.settings.arguments as HelpWebViewArgs;
-    return HelpWebViewScreen(
-      title: args.title,
-      link: args.link,
-    );
-  }
-
-  @override
-  State<HelpWebViewScreen> createState() => _HelpWebViewState();
-}
-
-class _HelpWebViewState extends State<HelpWebViewScreen> {
-  late final WebViewController _controller;
-
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (_) {
-            if (mounted) {
-              setState(() {
-                _loading = true;
-              });
-            }
-          },
-          onPageFinished: (_) {
-            if (mounted) {
-              setState(() {
-                _loading = false;
-              });
-            }
-          },
-          onWebResourceError: (_) {
-            if (mounted) {
-              setState(() {
-                _loading = false;
-              });
-            }
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.link));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PlatformScaffold(
-      iosContentPadding: true,
-      appBar: PlatformAppBar(
-        title: Text(widget.title),
-        automaticallyImplyLeading: Breakpoint.isSmall(context),
-        trailingActions: [
-          IconButton(
-            onPressed: () async {
-              await _controller.reload();
-            },
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(
-            controller: _controller,
-          ),
-          if (_loading)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
 Future<void> openHelpLink(
   BuildContext context,
-  HelpLink item,
-) async {
+  HelpLink item, {
+  NavigatorState? navigator,
+}) async {
   if (Util.isAndroid || Util.isIOS || Util.isMacOS) {
-    await Navigator.of(context).pushNamed(
+    await (navigator ?? Navigator.of(context)).pushNamed(
       '/help/webview',
-      arguments: HelpWebViewArgs(
-        title: item.name,
-        link: item.link,
-      ),
+      arguments: item,
     );
     return;
   }
@@ -215,6 +115,93 @@ List<HelpLink> drivers = [
   ),
 ];
 
+class HelpWebViewScreen extends StatefulWidget {
+  const HelpWebViewScreen({super.key, required this.title, required this.link});
+
+  final String title;
+  final String link;
+
+  factory HelpWebViewScreen.fromRoute(ModalRoute? route) {
+    final item = route?.settings.arguments as HelpLink;
+    return HelpWebViewScreen(
+      title: item.name,
+      link: item.link,
+    );
+  }
+
+  @override
+  State<HelpWebViewScreen> createState() => _HelpWebViewState();
+}
+
+class _HelpWebViewState extends State<HelpWebViewScreen> {
+  late final WebViewController _controller;
+
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) {
+            if (mounted) {
+              setState(() {
+                _loading = true;
+              });
+            }
+          },
+          onPageFinished: (_) {
+            if (mounted) {
+              setState(() {
+                _loading = false;
+              });
+            }
+          },
+          onWebResourceError: (_) {
+            if (mounted) {
+              setState(() {
+                _loading = false;
+              });
+            }
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.link));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
+        title: Text(widget.title),
+        trailingActions: [
+          IconButton(
+            iconSize: 24,
+            onPressed: () async {
+              await _controller.reload();
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(
+            controller: _controller,
+          ),
+          if (_loading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
@@ -222,7 +209,6 @@ class HelpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text("帮助".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),
@@ -242,8 +228,8 @@ class HelpScreen extends StatelessWidget {
                 PlatformListTile(
                   title: Text(item.name),
                   trailing: PlatformListTileChevron(),
-                  onTap: () async {
-                    await openHelpLink(context, item);
+                  onTap: () {
+                    openHelpLink(context, item);
                   },
                 ),
             ],
@@ -260,8 +246,8 @@ class HelpScreen extends StatelessWidget {
                 PlatformListTile(
                   title: Text(item.name),
                   trailing: PlatformListTileChevron(),
-                  onTap: () async {
-                    await openHelpLink(context, item);
+                  onTap: () {
+                    openHelpLink(context, item);
                   },
                 ),
             ],
@@ -306,7 +292,7 @@ class _DesktopHelpState extends State<DesktopHelpScreen> {
                 CustomTreeMenu(
                   label: item.name,
                   onTap: () async {
-                    await openHelpLink(context, item);
+                    await _handleLink(item);
                   },
                 ),
             ],
@@ -319,7 +305,7 @@ class _DesktopHelpState extends State<DesktopHelpScreen> {
                 CustomTreeMenu(
                   label: item.name,
                   onTap: () async {
-                    await openHelpLink(context, item);
+                    await _handleLink(item);
                   },
                 ),
             ],
@@ -345,5 +331,12 @@ class _DesktopHelpState extends State<DesktopHelpScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _handleLink(HelpLink item) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    await openHelpLink(context, item, navigator: navigator);
   }
 }

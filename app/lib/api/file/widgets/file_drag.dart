@@ -121,7 +121,6 @@ class _FileDragListState extends ConsumerState<FileDragList> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         leading: TextButton(
           onPressed: () {

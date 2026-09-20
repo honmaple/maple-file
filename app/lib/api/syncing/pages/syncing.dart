@@ -17,7 +17,6 @@ class SyncingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(title: Text('同步与备份'.tr())),
       body: CustomRefresh(
         onRefresh: () => ref.invalidate(syncProfilesProvider),

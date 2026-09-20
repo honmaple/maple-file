@@ -36,7 +36,6 @@ class _TextPreviewState extends State<TextPreview> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       body: Container(
         width: double.infinity,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

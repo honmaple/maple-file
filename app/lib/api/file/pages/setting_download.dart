@@ -25,7 +25,6 @@ class _FileSettingDownloadState
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('文件下载'.tr()),
       ),
@@ -78,9 +77,7 @@ class _FileSettingDownloadState
                       setting.downloadPath!,
                       style: textTheme.bodySmall?.copyWith(color: Colors.grey),
                     ),
-              trailing: isMaterial(context)
-                  ? Icon(Icons.chevron_right)
-                  : PlatformListTileChevron(),
+              trailing: PlatformListTileChevron(),
               onTap: () async {
                 String? result = await FilePicker.platform.getDirectoryPath();
                 if (result != null) {

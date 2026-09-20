@@ -30,7 +30,6 @@ class _SettingBackupState extends ConsumerState<SettingBackupScreen> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('备份与恢复'.tr()),
       ),
@@ -77,6 +76,11 @@ class _SettingBackupState extends ConsumerState<SettingBackupScreen> {
           margin: EdgeInsets.fromLTRB(16, 0, 16, 0),
           width: double.infinity,
           child: FilledButton(
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: Text('备份'.tr()),
             onPressed: () {
               showCustomDialog(
@@ -121,6 +125,9 @@ class _SettingBackupState extends ConsumerState<SettingBackupScreen> {
             style: FilledButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
               backgroundColor: ColorUtil.backgroundColor(context),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Text('恢复'.tr()),
             onPressed: () {

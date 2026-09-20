@@ -18,7 +18,6 @@ class SyncHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = syncHistoriesProvider(profileId);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(title: Text('同步记录'.tr())),
       body: CustomPaging(
         onRefresh: () => ref.read(provider.notifier).refresh(),
@@ -47,7 +46,6 @@ class SyncHistoryDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(title: Text('同步详情'.tr())),
       body: CustomScrollView(
         slivers: [

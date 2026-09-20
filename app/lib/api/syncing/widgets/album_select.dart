@@ -67,7 +67,6 @@ class _AlbumSelectScreenState extends State<AlbumSelectScreen> {
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('备份相册范围'.tr()),
         trailingActions: [
@@ -121,6 +120,11 @@ class _AlbumSelectScreenState extends State<AlbumSelectScreen> {
               child: ValueListenableBuilder<int>(
                 valueListenable: _selectedCount,
                 builder: (context, selectedCount, _) => FilledButton(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: selectedCount == 0
                       ? null
                       : () => Navigator.pop(

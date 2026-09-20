@@ -52,7 +52,6 @@ class _FileListState extends ConsumerState<FileListScreen> {
     }
 
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: _buildAppBar(context, taskCount),
       body: Stack(
         children: [
@@ -120,9 +119,7 @@ class _FileListState extends ConsumerState<FileListScreen> {
       trailingActions: [
         if (Breakpoint.isSmall(context))
           IconButton(
-            style: IconButton.styleFrom(
-              iconSize: 24,
-            ),
+            iconSize: 24,
             icon: Badge(
               label: Text('$taskCount'),
               isLabelVisible: taskCount > 0,
@@ -203,7 +200,6 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
     final bottomBarHeight = _bottomActionBarHeight + bottomInset;
 
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: _buildAppBar(context),
       body: Stack(
         children: [

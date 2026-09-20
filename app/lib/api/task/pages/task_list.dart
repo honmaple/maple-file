@@ -57,7 +57,6 @@ class _TaskListState extends ConsumerState<TaskListScreen>
   @override
   Widget build(BuildContext context) {
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text("任务列表".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),

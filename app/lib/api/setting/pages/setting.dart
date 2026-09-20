@@ -22,13 +22,7 @@ class SettingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
-        material: (context, _) {
-          return MaterialAppBarData(
-            centerTitle: true,
-          );
-        },
         title: Text("设置".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),

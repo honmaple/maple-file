@@ -26,7 +26,6 @@ class _FileSettingThemeState extends ConsumerState<FileSettingThemeScreen> {
     final setting = ref.watch(fileSettingProvider);
     final thumbSetting = setting.thumb ?? FileThumbSetting();
     return PlatformScaffold(
-      iosContentPadding: true,
       appBar: PlatformAppBar(
         title: Text('显示设置'.tr()),
       ),

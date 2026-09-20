@@ -31,12 +31,16 @@ class FileView extends ConsumerStatefulWidget {
     this.path = "/",
     this.filter,
     this.selection,
+    this.showActions = true,
+    required this.onPathChanged,
     required this.fileBuilder,
   });
 
   final String path;
   final bool Function(File)? filter;
   final Selection<File>? selection;
+  final bool showActions;
+  final ValueChanged<String> onPathChanged;
   final Widget Function(BuildContext, File, Widget) fileBuilder;
 
   @override
@@ -56,7 +60,10 @@ class _FileViewState extends ConsumerState<FileView> {
           SliverToBoxAdapter(
             child: ListTile(
               dense: true,
-              title: FileBreadcrumb(path: widget.path),
+              title: FileBreadcrumb(
+                path: widget.path,
+                onChanged: widget.onPathChanged,
+              ),
               trailing: const FileSortAction(),
             ),
           ),
@@ -148,7 +155,7 @@ class _FileViewState extends ConsumerState<FileView> {
               selected: selection.contains(row),
               trailing: _isSelection(row)
                   ? _buildCheckbox(selection, row)
-                  : !_isRoot
+                  : widget.showActions && !_isRoot
                       ? IconButton(
                           icon: const Icon(Icons.more_vert),
                           onPressed: () async {

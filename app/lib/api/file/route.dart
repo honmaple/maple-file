@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:maple_file/app/router.dart';
 
 import "pages/file_list.dart";
-import "pages/file_select.dart";
 import "pages/file_preview.dart";
 
 import "pages/repo_list.dart";
@@ -18,9 +17,6 @@ Future<void> init(CustomRouter router) async {
   router.registerMany({
     '/file/list': (context) {
       return FileListScreen.fromRoute(ModalRoute.of(context));
-    },
-    '/file/select': (context) {
-      return FileSelectScreen.fromRoute(ModalRoute.of(context));
     },
     '/file/preview': (context) {
       return FilePreviewScreen.fromRoute(ModalRoute.of(context));

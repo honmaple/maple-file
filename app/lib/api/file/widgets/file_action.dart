@@ -21,6 +21,7 @@ import 'package:maple_file/api/task/providers/task.dart';
 import '../providers/file.dart';
 import '../providers/file_setting.dart';
 import '../providers/service.dart';
+import 'file_select.dart';
 
 enum FileAction {
   open,
@@ -86,36 +87,26 @@ extension FileActionExtension on FileAction {
         showFileDetail(context, file);
         return;
       case FileAction.move:
-        final Map<String, dynamic> args = {
-          "path": "/",
-          "title": "移动文件到".tr(),
-          "filter": (File file) => file.type == "DIR",
-        };
-        final result = await navigator.pushNamed(
-          '/file/select',
-          arguments: args,
+        final result = await showDirectorySelectDialog(
+          context,
+          title: "移动文件到".tr(),
         );
         if (result != null) {
           await FileService.instance.move(
             file.path,
-            result as String,
+            result,
             [file.name],
           );
         }
         return;
       case FileAction.copy:
-        final Map<String, dynamic> args = {
-          "path": "/",
-          "title": "复制文件到".tr(),
-          "filter": (File file) => file.type == "DIR",
-        };
-        final result = await navigator.pushNamed(
-          '/file/select',
-          arguments: args,
+        final result = await showDirectorySelectDialog(
+          context,
+          title: "复制文件到".tr(),
         );
         if (result != null) {
           await FileService.instance
-              .copy(file.path, result as String, [file.name]).then((_) {
+              .copy(file.path, result, [file.name]).then((_) {
             ref?.invalidate(fileProvider(file.path));
           });
         }
@@ -517,21 +508,15 @@ extension FileSelectionActionExtension on FileSelectionAction {
   }) async {
     switch (this) {
       case FileSelectionAction.move:
-        final Map<String, dynamic> args = {
-          "path": "/",
-          "title": "移动文件到".tr(),
-          "filter": (File file) => file.type == "DIR",
-        };
-        final result = await Navigator.pushNamed(
+        final result = await showDirectorySelectDialog(
           context,
-          '/file/select',
-          arguments: args,
+          title: "移动文件到".tr(),
         );
         if (result != null) {
           FileService.instance
               .move(
             path,
-            result as String,
+            result,
             selected.map((i) => i.name).toList(),
           )
               .then((_) {
@@ -541,21 +526,15 @@ extension FileSelectionActionExtension on FileSelectionAction {
         }
         return;
       case FileSelectionAction.copy:
-        final Map<String, dynamic> args = {
-          "path": "/",
-          "title": "复制文件到".tr(),
-          "filter": (File file) => file.type == "DIR",
-        };
-        final result = await Navigator.pushNamed(
+        final result = await showDirectorySelectDialog(
           context,
-          '/file/select',
-          arguments: args,
+          title: "复制文件到".tr(),
         );
         if (result != null) {
           FileService.instance
               .copy(
             path,
-            result as String,
+            result,
             selected.map((i) => i.name).toList(),
           )
               .then((_) {

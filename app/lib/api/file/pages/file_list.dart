@@ -15,6 +15,22 @@ import '../widgets/file_action.dart';
 
 import '../providers/file.dart';
 
+void _handlePathChanged(
+  BuildContext context, {
+  required String currentPath,
+  required String targetPath,
+}) {
+  int depth(String path) =>
+      path.split('/').where((part) => part.isNotEmpty).length;
+
+  var remaining = depth(currentPath) - depth(targetPath);
+  Navigator.popUntil(context, (route) {
+    if (remaining <= 0) return true;
+    remaining--;
+    return false;
+  });
+}
+
 class FileListScreen extends ConsumerStatefulWidget {
   final String path;
   const FileListScreen({super.key, this.path = "/"});
@@ -61,6 +77,11 @@ class _FileListState extends ConsumerState<FileListScreen> {
               path: widget.path,
               child: FileView(
                 path: widget.path,
+                onPathChanged: (path) => _handlePathChanged(
+                  context,
+                  currentPath: widget.path,
+                  targetPath: path,
+                ),
                 fileBuilder: (context, file, child) {
                   return InkWell(
                     onTap: () => _handleTap(context, file),
@@ -208,6 +229,11 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
             child: FileView(
               path: widget.path,
               selection: widget.selection,
+              onPathChanged: (path) => _handlePathChanged(
+                context,
+                currentPath: widget.path,
+                targetPath: path,
+              ),
               fileBuilder: (context, file, child) {
                 return InkWell(
                   onTap: () => _handleTap(context, file),

@@ -4,7 +4,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:path/path.dart' as filepath;
 
-import 'package:maple_file/api/file/widgets/directory_select.dart';
+import 'package:maple_file/api/file/widgets/file_select.dart';
 import 'package:maple_file/api/syncing/providers/album.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
@@ -192,11 +192,10 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   }
 
   Future<void> _handleSelectTarget() async {
-    final selectedPath = await showCustomDialog<String>(
+    final selectedPath = await showDirectorySelectDialog(
       context,
-      width: 560,
-      height: MediaQuery.sizeOf(context).height * 0.75,
-      child: FileDirectorySelect(title: '选择备份目录'.tr()),
+      path: _targetPath.isEmpty ? '/' : _targetPath,
+      title: '选择备份目录'.tr(),
     );
     if (selectedPath != null && mounted) {
       setState(() => _handleUpdateTargetConfig(path: selectedPath));

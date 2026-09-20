@@ -13,10 +13,10 @@ import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/platform.dart';
-import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 
 import 'package:maple_file/api/file/providers/file.dart';
 import 'package:maple_file/api/file/providers/service.dart';
+import 'package:maple_file/api/file/widgets/file_select.dart';
 
 class SettingBackupScreen extends ConsumerStatefulWidget {
   const SettingBackupScreen({super.key});
@@ -227,19 +227,14 @@ class _SettingBackupState extends ConsumerState<SettingBackupScreen> {
   }
 
   Future<void> _handleBackupToCloud() async {
-    final Map<String, dynamic> args = {
-      "path": "/",
-      "title": "备份文件到".tr(),
-    };
-    final result = await Navigator.pushNamed(
+    final result = await showDirectorySelectDialog(
       context,
-      '/file/select',
-      arguments: args,
+      title: "备份文件到".tr(),
     );
     if (result != null) {
       final name = _generateName();
       final path = await PathUtil.getDatabasePath();
-      FileService.instance.upload(result as String, files: [
+      FileService.instance.upload(result, files: [
         io.File(path)
       ], newNames: {
         path: name,
@@ -284,22 +279,16 @@ class _SettingBackupState extends ConsumerState<SettingBackupScreen> {
   }
 
   Future<void> _handleRestoreFromCloud() async {
-    final Map<String, dynamic> args = {
-      "path": "/",
-      "title": "请选择备份文件".tr(),
-      "filter": (File file) => file.name.endsWith(".db"),
-      "selectDir": false,
-    };
-    final result = await Navigator.pushNamed(
+    final result = await showFileSelectDialog(
       context,
-      '/file/select',
-      arguments: args,
+      title: "请选择备份文件".tr(),
+      filter: (file) => file.name.endsWith(".db"),
     );
     if (result != null) {
       final path = await PathUtil.getDatabasePath();
 
       FileService.instance
-          .download(result as String, io.File(path), override: true)
+          .download(result, io.File(path), override: true)
           .then((_) {
         SmartDialog.showNotify(
           msg: "恢复成功，请重启应用".tr(),

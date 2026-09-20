@@ -80,6 +80,7 @@ class Selection<T> {
     List<T>? selected,
   }) {
     return Selection<T>(
+      compare: compare,
       enabled: enabled ?? this.enabled,
       multiple: multiple ?? this.multiple,
       selected: selected ?? this.selected,

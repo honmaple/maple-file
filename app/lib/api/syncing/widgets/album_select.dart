@@ -6,7 +6,6 @@ import 'package:photo_manager/photo_manager.dart';
 
 import 'package:maple_file/api/syncing/providers/album.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/utils/util.dart';
 
 Future<List<AssetPathEntity>?> showAlbumSelect(
@@ -69,7 +68,6 @@ class _AlbumSelectScreenState extends State<AlbumSelectScreen> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('备份相册范围'.tr()),
         trailingActions: [

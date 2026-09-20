@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/platform.dart';
@@ -91,7 +90,6 @@ class _HelpWebViewState extends State<HelpWebViewScreen> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text(widget.title),
         automaticallyImplyLeading: Breakpoint.isSmall(context),
@@ -225,7 +223,6 @@ class HelpScreen extends StatelessWidget {
     final themeData = Theme.of(context);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text("帮助".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),

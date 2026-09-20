@@ -3,7 +3,6 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/tree.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/platform.dart';
@@ -24,7 +23,6 @@ class SettingScreen extends StatelessWidget {
     final themeData = Theme.of(context);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         material: (context, _) {
           return MaterialAppBarData(

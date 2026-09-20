@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
 
@@ -23,7 +22,6 @@ class _RepoListState extends ConsumerState<RepoListScreen> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('存储库'.tr()),
       ),

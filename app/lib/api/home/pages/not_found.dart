@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
 
@@ -7,8 +8,9 @@ class NotFoundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         title: const Text("404", style: TextStyle(fontSize: 16)),
       ),
       body: Center(

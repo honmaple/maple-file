@@ -2,6 +2,7 @@ import 'package:maple_file/api/file/providers/service.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
@@ -47,36 +48,59 @@ class FileSelectScreen extends ConsumerStatefulWidget {
 }
 
 class _FileSelectState extends ConsumerState<FileSelectScreen> {
+  static const double _bottomActionBarHeight = 64;
+
   @override
   Widget build(BuildContext context) {
     final selection = ref.watch(fileSelectionProvider);
+    final showBottomBar = widget.path != "/" &&
+        (widget.selectDir || selection.selected.isNotEmpty);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final bottomBarHeight = _bottomActionBarHeight + bottomInset;
 
-    return Scaffold(
-      appBar: buildAppBar(context),
-      body: FileView(
-        path: widget.path,
-        filter: _filter,
-        selection: selection,
-        fileBuilder: (context, file, child) {
-          return InkWell(
-            onTap: () {
-              _onTap(context, file);
-            },
-            child: child,
-          );
-        },
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: _buildAppBar(context),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            bottom: showBottomBar ? bottomBarHeight : 0,
+            child: FileView(
+              path: widget.path,
+              filter: _filter,
+              selection: selection,
+              fileBuilder: (context, file, child) {
+                return InkWell(
+                  onTap: () => _handleTap(context, file),
+                  child: child,
+                );
+              },
+            ),
+          ),
+          if (showBottomBar)
+            PositionedDirectional(
+              start: 0,
+              end: 0,
+              bottom: 0,
+              height: bottomBarHeight,
+              child: Material(
+                color: Theme.of(context).colorScheme.surface,
+                elevation: 8,
+                child: SafeArea(
+                  top: false,
+                  child: _buildBottomBar(context),
+                ),
+              ),
+            ),
+        ],
       ),
-      bottomNavigationBar: (widget.path != "/" &&
-              (widget.selectDir || selection.selected.isNotEmpty))
-          ? buildBottomBar(context)
-          : null,
     );
   }
 
-  buildAppBar(BuildContext context) {
-    return AppBar(
+  PlatformAppBar _buildAppBar(BuildContext context) {
+    return PlatformAppBar(
       title: Text(widget.title),
-      centerTitle: true,
+      material: (context, _) => MaterialAppBarData(centerTitle: true),
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () {
@@ -87,7 +111,7 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
           });
         },
       ),
-      actions: [
+      trailingActions: [
         if (widget.path != "/" && widget.selectDir)
           TextButton(
             child: Text("新建文件夹".tr()),
@@ -107,7 +131,7 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
     );
   }
 
-  buildBottomBar(BuildContext context) {
+  Widget _buildBottomBar(BuildContext context) {
     return OverflowBar(
       alignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
@@ -155,7 +179,7 @@ class _FileSelectState extends ConsumerState<FileSelectScreen> {
     return widget.filter?.call(file) ?? false;
   }
 
-  _onTap(BuildContext context, File item) async {
+  Future<void> _handleTap(BuildContext context, File item) async {
     final selection = ref.read(fileSelectionProvider);
     if (item.type == "DIR") {
       if (selection.enabled) _resetProvider();

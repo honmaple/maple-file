@@ -679,13 +679,6 @@ class FilePopupAction extends ConsumerWidget {
                     });
                   },
                 ),
-          PlatformPopupMenuItem(
-            icon: Icons.settings,
-            label: "设置".tr(),
-            onTap: () {
-              Navigator.of(context).pushNamed("/setting");
-            },
-          ),
         ];
       },
     );

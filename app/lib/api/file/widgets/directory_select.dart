@@ -6,7 +6,6 @@ import 'package:path/path.dart' as filepath;
 import 'package:maple_file/api/file/providers/file.dart';
 import 'package:maple_file/api/file/providers/service.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
@@ -29,7 +28,6 @@ class _FileDirectorySelectState extends ConsumerState<FileDirectorySelect> {
     final currentPath = _path;
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         material: (context, _) => MaterialAppBarData(leadingWidth: 96),
         title: Text(widget.title ?? '选择目录'.tr()),

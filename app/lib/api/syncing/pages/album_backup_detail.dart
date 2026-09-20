@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
@@ -38,7 +37,6 @@ class _AlbumBackupDetailScreenState
     final detail = ref.watch(_provider);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text(detail.profile.name),
         trailingActions: [

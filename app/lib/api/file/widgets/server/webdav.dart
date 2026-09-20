@@ -54,7 +54,6 @@ class _WebdavServerState extends ConsumerState<WebdavServer> {
     final option = ref.watch(webdavSettingProvider);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text("Webdav"),
       ),

@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/path.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/platform.dart';
@@ -27,7 +26,6 @@ class _FileSettingDownloadState
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('文件下载'.tr()),
       ),

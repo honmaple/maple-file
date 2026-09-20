@@ -10,7 +10,6 @@ import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/api/syncing/widgets/album_select.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/form.dart';
@@ -69,7 +68,6 @@ class _AlbumBackupEditScreenState extends ConsumerState<AlbumBackupEditScreen> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text(_isEditing ? '修改相册备份'.tr() : '添加相册备份'.tr()),
         trailingActions: [

@@ -123,39 +123,42 @@ class _FileViewState extends ConsumerState<FileView> {
       itemBuilder: (context, index) {
         final row = rows[index];
 
-        return widget.fileBuilder(
-          context,
-          row,
-          ListTile(
-            leading: FileIcon(file: row, size: 0.8),
-            title: _buildName(row),
-            subtitle: Wrap(
-              spacing: 8,
-              children: [
-                Text(
-                  TimeUtil.pbToString(row.updatedAt, "yyyy-MM-dd HH:mm"),
-                  style: const TextStyle(fontSize: 12),
-                ),
-                if (row.type != "DIR")
+        return Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: widget.fileBuilder(
+            context,
+            row,
+            ListTile(
+              leading: FileIcon(file: row, size: 0.8),
+              title: _buildName(row),
+              subtitle: Wrap(
+                spacing: 8,
+                children: [
                   Text(
-                    Util.formatSize(row.size.toInt()),
+                    TimeUtil.pbToString(row.updatedAt, "yyyy-MM-dd HH:mm"),
                     style: const TextStyle(fontSize: 12),
                   ),
-              ],
+                  if (row.type != "DIR")
+                    Text(
+                      Util.formatSize(row.size.toInt()),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                ],
+              ),
+              selected: selection.contains(row),
+              trailing: _isSelection(row)
+                  ? _buildCheckbox(selection, row)
+                  : !_isRoot
+                      ? IconButton(
+                          icon: const Icon(Icons.more_vert),
+                          onPressed: () async {
+                            final result = await showFileAction(context, row);
+                            if (!context.mounted) return;
+                            result?.action(context, row, ref: ref);
+                          },
+                        )
+                      : null,
             ),
-            selected: selection.contains(row),
-            trailing: _isSelection(row)
-                ? _buildCheckbox(selection, row)
-                : !_isRoot
-                    ? IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () async {
-                          final result = await showFileAction(context, row);
-                          if (!context.mounted) return;
-                          result?.action(context, row, ref: ref);
-                        },
-                      )
-                    : null,
           ),
         );
       },

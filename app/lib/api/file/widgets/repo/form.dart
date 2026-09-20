@@ -104,7 +104,6 @@ class _DriverFormState extends State<DriverForm> {
                   context: context,
                   builder: (context) => PlatformScaffold(
                     iosContentPadding: true,
-                    backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
                     appBar: PlatformAppBar(
                       title: Text('更多设置'.tr()),
                       trailingActions: [

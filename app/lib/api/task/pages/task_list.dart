@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/app.dart';
 import 'package:maple_file/app/i18n.dart';
@@ -55,8 +56,9 @@ class _TaskListState extends ConsumerState<TaskListScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         title: Text("任务列表".tr()),
         automaticallyImplyLeading: Breakpoint.isSmall(context),
       ),

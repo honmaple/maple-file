@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/platform.dart';
 
 import '../providers/setting_appearance.dart';
@@ -34,7 +33,6 @@ class _SettingLocaleState extends ConsumerState<SettingLocaleScreen> {
           );
         },
       ),
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       body: ListView(
         children: [
           CustomListSection(

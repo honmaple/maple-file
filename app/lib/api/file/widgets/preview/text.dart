@@ -2,6 +2,7 @@ import 'dart:io' as io;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:http/http.dart' as http;
 
 import 'source.dart';
@@ -34,7 +35,8 @@ class _TextPreviewState extends State<TextPreview> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PlatformScaffold(
+      iosContentPadding: true,
       body: Container(
         width: double.infinity,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

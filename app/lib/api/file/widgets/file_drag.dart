@@ -3,6 +3,7 @@ import 'package:desktop_drop/desktop_drop.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
@@ -68,7 +69,7 @@ class _FileDragState extends ConsumerState<FileDrag> {
           ? Container(
               width: double.infinity,
               height: double.infinity,
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               child: Center(
                 child: Text("拖拽文件到这里".tr()),
               ),
@@ -90,7 +91,9 @@ class _FileDragState extends ConsumerState<FileDrag> {
       return io.File(file.path);
     }).toList();
 
-    FileService.instance.upload(widget.path, files: files, dirs: dirs).then((_) {
+    FileService.instance
+        .upload(widget.path, files: files, dirs: dirs)
+        .then((_) {
       ref.invalidate(fileProvider(widget.path));
     });
   }
@@ -117,8 +120,9 @@ class _FileDragListState extends ConsumerState<FileDragList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         leading: TextButton(
           onPressed: () {
             Navigator.of(context).pop();
@@ -126,7 +130,7 @@ class _FileDragListState extends ConsumerState<FileDragList> {
           child: Text("取消".tr()),
         ),
         title: Text("确认上传文件?".tr()),
-        actions: [
+        trailingActions: [
           if (files.isNotEmpty)
             TextButton(
               onPressed: () {

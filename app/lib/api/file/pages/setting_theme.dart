@@ -4,7 +4,6 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/form.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/platform.dart';
@@ -28,7 +27,6 @@ class _FileSettingThemeState extends ConsumerState<FileSettingThemeScreen> {
     final thumbSetting = setting.thumb ?? FileThumbSetting();
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('显示设置'.tr()),
       ),

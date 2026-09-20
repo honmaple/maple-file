@@ -6,7 +6,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
@@ -19,7 +18,6 @@ class SyncingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(title: Text('同步与备份'.tr())),
       body: CustomRefresh(
         onRefresh: () => ref.invalidate(syncProfilesProvider),

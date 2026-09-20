@@ -31,7 +31,6 @@ class _SettingBackupState extends ConsumerState<SettingBackupScreen> {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('备份与恢复'.tr()),
       ),

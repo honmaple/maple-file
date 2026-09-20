@@ -24,10 +24,9 @@ class ColorUtil {
   }
 
   static Color scaffoldBackgroundColor(BuildContext context) {
-    return CupertinoDynamicColor.resolve(
-      CupertinoColors.systemGroupedBackground,
-      context,
-    );
+    const color = CupertinoColors.systemGroupedBackground;
+    final brightness = Theme.of(context).brightness;
+    return brightness == Brightness.dark ? color.darkColor : color.color;
   }
 
   static Color backgroundColor(BuildContext context) {

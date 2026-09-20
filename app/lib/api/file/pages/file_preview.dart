@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:path/path.dart' as filepath;
 
@@ -129,10 +130,11 @@ class _FilePreviewState extends ConsumerState<FilePreviewScreen> {
         files: ref.read(fileProvider(widget.file.path)).valueOrNull,
       );
     }
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         title: Text(widget.file.name),
-        actions: [
+        trailingActions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () async {
@@ -223,14 +225,13 @@ class _FileImagePreviewState extends FilePreviewBaseState<FileImagePreview> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
+    return PlatformScaffold(
+      appBar: PlatformAppBar(
         title: Text(
           _file.name,
           overflow: TextOverflow.ellipsis,
         ),
-        actions: [
+        trailingActions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () async {
@@ -269,8 +270,9 @@ class _FileAudioPreviewState extends FilePreviewBaseState<FileAudioPreview> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         title: Text(
           _file.name,
           overflow: TextOverflow.ellipsis,
@@ -300,8 +302,9 @@ class _FileVideoPreviewState extends FilePreviewBaseState<FileVideoPreview> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         title: Text(
           _file.name,
           overflow: TextOverflow.ellipsis,

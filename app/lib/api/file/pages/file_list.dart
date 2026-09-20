@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/api/task/providers/task.dart';
@@ -50,60 +51,59 @@ class _FileListState extends ConsumerState<FileListScreen> {
       return FileSelectionList(path: widget.path, selection: selection);
     }
 
-    return Scaffold(
+    return PlatformScaffold(
+      iosContentPadding: true,
       appBar: _buildAppBar(context, taskCount),
-      body: FileDrag(
-        enable: _dragEnable,
-        path: widget.path,
-        child: FileView(
-          path: widget.path,
-          fileBuilder: (context, file, child) {
-            return InkWell(
-              onTap: () {
-                _onTap(context, file);
-              },
-              onLongPress: _isRoot
-                  ? null
-                  : () {
-                      _onLongPress(context, file);
-                    },
-              onSecondaryTapUp: (!_isRoot && (Util.isDesktop || Util.isWeb))
-                  ? (detail) {
-                      _onSecondaryTapUp(context, file, detail);
-                    }
-                  : null,
-              child: child,
-            );
-          },
-        ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: FileDrag(
+              enable: _dragEnable,
+              path: widget.path,
+              child: FileView(
+                path: widget.path,
+                fileBuilder: (context, file, child) {
+                  return InkWell(
+                    onTap: () => _handleTap(context, file),
+                    onLongPress:
+                        _isRoot ? null : () => _handleLongPress(context, file),
+                    onSecondaryTapUp:
+                        (!_isRoot && (Util.isDesktop || Util.isWeb))
+                            ? (detail) =>
+                                _handleSecondaryTapUp(context, file, detail)
+                            : null,
+                    child: child,
+                  );
+                },
+              ),
+            ),
+          ),
+          if (!_isRoot)
+            PositionedDirectional(
+              end: 16,
+              bottom: 16,
+              child: SafeArea(
+                child: FloatingActionButton(
+                  shape: const CircleBorder(),
+                  onPressed: _handleFloatingAction,
+                  child: const Icon(Icons.add_a_photo),
+                ),
+              ),
+            ),
+        ],
       ),
-      floatingActionButton: !_isRoot
-          ? FloatingActionButton(
-              shape: const CircleBorder(),
-              child: const Icon(Icons.add_a_photo),
-              onPressed: () async {
-                final result = await showFileFloatingAction(
-                  context,
-                  widget.path,
-                  ref: ref,
-                );
-                if (!context.mounted) return;
-                result?.action(context, widget.path, ref: ref);
-              },
-            )
-          : null,
     );
   }
 
-  _buildAppBar(BuildContext context, int taskCount) {
+  PlatformAppBar _buildAppBar(BuildContext context, int taskCount) {
     String title = "";
     if (!_isRoot) {
       title = widget.path.split('/').last;
     }
-    return AppBar(
+    return PlatformAppBar(
       leading: _isRoot
           ? Container(
-              alignment: Alignment.center,
+              alignment: Alignment.centerLeft,
               padding: const EdgeInsets.only(left: 4, right: 4),
               child: const Text(
                 'F',
@@ -117,14 +117,17 @@ class _FileListState extends ConsumerState<FileListScreen> {
             )
           : null,
       title: Text(title),
-      actions: [
+      trailingActions: [
         if (Breakpoint.isSmall(context))
           IconButton(
+            style: IconButton.styleFrom(
+              iconSize: 24,
+            ),
             icon: Badge(
               label: Text('$taskCount'),
               isLabelVisible: taskCount > 0,
               backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(Icons.swap_vert_circle_outlined),
+              child: Icon(Icons.swap_vert_circle_outlined),
             ),
             onPressed: () {
               Navigator.pushNamed(context, '/task/list');
@@ -135,7 +138,7 @@ class _FileListState extends ConsumerState<FileListScreen> {
     );
   }
 
-  _onTap(BuildContext context, File file) async {
+  Future<void> _handleTap(BuildContext context, File file) async {
     setState(() {
       _dragEnable = false;
     });
@@ -145,13 +148,13 @@ class _FileListState extends ConsumerState<FileListScreen> {
     });
   }
 
-  _onLongPress(BuildContext context, File file) {
+  void _handleLongPress(BuildContext context, File file) {
     ref.read(fileSelectionProvider.notifier).update((state) {
       return state.copyWith(enabled: true, selected: [file]);
     });
   }
 
-  _onSecondaryTapUp(
+  Future<void> _handleSecondaryTapUp(
     BuildContext context,
     File file,
     TapUpDetails detail,
@@ -163,6 +166,16 @@ class _FileListState extends ConsumerState<FileListScreen> {
     );
     if (!context.mounted) return;
     result?.action(context, file, ref: ref);
+  }
+
+  Future<void> _handleFloatingAction() async {
+    final result = await showFileFloatingAction(
+      context,
+      widget.path,
+      ref: ref,
+    );
+    if (!mounted) return;
+    result?.action(context, widget.path, ref: ref);
   }
 }
 
@@ -181,41 +194,60 @@ class FileSelectionList extends ConsumerStatefulWidget {
 }
 
 class _FileSelectionListState extends ConsumerState<FileSelectionList> {
+  static const double _bottomActionBarHeight = 64;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final showBottomBar = Util.isMobile && widget.selection.selected.isNotEmpty;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final bottomBarHeight = _bottomActionBarHeight + bottomInset;
+
+    return PlatformScaffold(
+      iosContentPadding: true,
       appBar: _buildAppBar(context),
-      body: FileView(
-        path: widget.path,
-        selection: widget.selection,
-        fileBuilder: (context, file, child) {
-          return InkWell(
-            onTap: () {
-              _onTap(context, file);
-            },
-            onLongPress: () {
-              _onLongPress(context, file);
-            },
-            onSecondaryTapUp: ((Util.isDesktop || Util.isWeb) &&
-                    widget.selection.selected.isNotEmpty)
-                ? (detail) {
-                    _onSecondaryTapUp(context, detail);
-                  }
-                : null,
-            child: child,
-          );
-        },
+      body: Stack(
+        children: [
+          Positioned.fill(
+            bottom: showBottomBar ? bottomBarHeight : 0,
+            child: FileView(
+              path: widget.path,
+              selection: widget.selection,
+              fileBuilder: (context, file, child) {
+                return InkWell(
+                  onTap: () => _handleTap(context, file),
+                  onLongPress: () => _handleLongPress(context, file),
+                  onSecondaryTapUp: ((Util.isDesktop || Util.isWeb) &&
+                          widget.selection.selected.isNotEmpty)
+                      ? (detail) => _handleSecondaryTapUp(context, detail)
+                      : null,
+                  child: child,
+                );
+              },
+            ),
+          ),
+          if (showBottomBar)
+            PositionedDirectional(
+              start: 0,
+              end: 0,
+              bottom: 0,
+              height: bottomBarHeight,
+              child: Material(
+                color: Theme.of(context).colorScheme.surface,
+                elevation: 8,
+                child: SafeArea(
+                  top: false,
+                  child: _buildBottomBar(context),
+                ),
+              ),
+            ),
+        ],
       ),
-      bottomNavigationBar:
-          (Util.isMobile && widget.selection.selected.isNotEmpty)
-              ? _buildBottomBar(context)
-              : null,
     );
   }
 
-  _buildAppBar(BuildContext context) {
+  PlatformAppBar _buildAppBar(BuildContext context) {
     final items = ref.watch(fileProvider(widget.path)).valueOrNull ?? <File>[];
-    return AppBar(
+    return PlatformAppBar(
       automaticallyImplyLeading: false,
       title: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
@@ -243,7 +275,7 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
     );
   }
 
-  _buildBottomBar(BuildContext context) {
+  Widget _buildBottomBar(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -288,11 +320,11 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
     );
   }
 
-  _onTap(BuildContext context, File item) {
+  void _handleTap(BuildContext context, File item) {
     ref.read(fileSelectionProvider.notifier).toggle(item);
   }
 
-  _onLongPress(BuildContext context, File item) {
+  void _handleLongPress(BuildContext context, File item) {
     if (widget.path != "/") {
       ref.read(fileSelectionProvider.notifier).update((state) {
         return state.copyWith(enabled: true, selected: [item]);
@@ -300,7 +332,10 @@ class _FileSelectionListState extends ConsumerState<FileSelectionList> {
     }
   }
 
-  _onSecondaryTapUp(BuildContext context, TapUpDetails detail) async {
+  Future<void> _handleSecondaryTapUp(
+    BuildContext context,
+    TapUpDetails detail,
+  ) async {
     final result = await showFileSelectionPopupAction(
       context,
       widget.path,

@@ -51,7 +51,6 @@ class _RepoEditState extends ConsumerState<RepoEditScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: _isEditing ? Text('修改存储'.tr()) : Text('添加存储'.tr()),
         trailingActions: [

@@ -5,7 +5,6 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/platform.dart';
 
 import '../providers/setting_appearance.dart';
@@ -47,7 +46,6 @@ class _SettingThemeState extends ConsumerState<SettingThemeScreen> {
     final appearance = ref.watch(appearanceProvider);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('主题'.tr()),
         cupertino: (context, t) {

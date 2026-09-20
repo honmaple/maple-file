@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/widgets/platform.dart';
 
 import 'package:maple_file/api/file/widgets/server/webdav.dart';
@@ -22,7 +21,6 @@ class _FileSettingServerState extends ConsumerState<FileSettingServerScreen> {
     final themeData = Theme.of(context);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(
         title: Text('外部服务'.tr()),
       ),

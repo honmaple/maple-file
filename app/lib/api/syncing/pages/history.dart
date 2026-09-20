@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:maple_file/api/syncing/providers/history.dart';
 import 'package:maple_file/api/syncing/widgets/sync_history_records.dart';
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/common/utils/color.dart';
 import 'package:maple_file/common/utils/time.dart';
 import 'package:maple_file/common/widgets/custom.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
@@ -20,7 +19,6 @@ class SyncHistoryScreen extends ConsumerWidget {
     final provider = syncHistoriesProvider(profileId);
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(title: Text('同步记录'.tr())),
       body: CustomPaging(
         onRefresh: () => ref.read(provider.notifier).refresh(),
@@ -50,7 +48,6 @@ class SyncHistoryDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PlatformScaffold(
       iosContentPadding: true,
-      backgroundColor: ColorUtil.scaffoldBackgroundColor(context),
       appBar: PlatformAppBar(title: Text('同步详情'.tr())),
       body: CustomScrollView(
         slivers: [

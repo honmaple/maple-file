@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/dialog.dart';
@@ -57,8 +58,9 @@ extension on TaskAction {
 void showTaskDetail(BuildContext context, Task task) {
   showCustomDialog(
     context,
-    child: Scaffold(
-      appBar: AppBar(
+    child: PlatformScaffold(
+      iosContentPadding: true,
+      appBar: PlatformAppBar(
         title: Text("执行日志".tr()),
       ),
       body: ListView(

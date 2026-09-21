@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/album/profile.dart';
+import 'package:maple_file/api/syncing/providers/album/service.dart';
 import 'package:maple_file/api/syncing/providers/history.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';

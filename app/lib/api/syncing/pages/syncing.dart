@@ -9,8 +9,8 @@ import 'package:maple_file/common/widgets/dialog.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
-import 'package:maple_file/api/syncing/providers/album.dart';
-import 'package:maple_file/api/syncing/providers/local_directory.dart';
+import 'package:maple_file/api/syncing/providers/album/profile.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/profile.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
 

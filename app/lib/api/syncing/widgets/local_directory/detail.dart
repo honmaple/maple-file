@@ -5,8 +5,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 import 'package:maple_file/api/syncing/pages/history.dart';
 import 'package:maple_file/api/syncing/providers/history.dart';
-import 'package:maple_file/api/syncing/providers/local_directory.dart';
-import 'package:maple_file/api/syncing/providers/local_directory_controller.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/controller.dart';
+import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/api/syncing/widgets/sync_history_records.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/widgets/platform/list.dart';
@@ -53,7 +53,8 @@ class _LocalDirectorySyncDetailState
                 ],
               ),
               _buildConfiguration(detail),
-              if (!isLocalDirectorySyncSupported) _buildUnsupportedNotice(),
+              if (!SyncSourceType.localDirectory.isSupported)
+                _buildUnsupportedNotice(),
               _buildHistoryHeader(detail.profile.id),
               SyncHistoryRecords(
                 profileId: detail.profile.id,
@@ -255,9 +256,10 @@ class _LocalDirectorySyncDetailState
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          onPressed: isLocalDirectorySyncSupported && !detail.running
-              ? _handleRun
-              : null,
+          onPressed:
+              SyncSourceType.localDirectory.isSupported && !detail.running
+                  ? _handleRun
+                  : null,
           icon: const Icon(Icons.sync_rounded, size: 18),
           label: Text(detail.running ? '同步中'.tr() : '立即同步'.tr()),
         ),

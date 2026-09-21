@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/album/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
@@ -40,7 +40,7 @@ void main() {
       sourceConfig: AlbumBackupSourceConfig(albumIds: ['album-1']),
       targetConfig: const AlbumBackupTargetConfig(
         path: '/photos',
-        layout: AlbumTargetLayout.filenameAssetId,
+        layout: AlbumTargetLayout.flat,
         appendDeviceModel: false,
       ),
     );
@@ -51,7 +51,7 @@ void main() {
 
     expect(source['album_ids'], ['album-1']);
     expect(target['path'], '/photos');
-    expect(target['layout'], 'filename_asset_id');
+    expect(target['layout'], 'flat');
     expect(target['append_device_model'], isFalse);
   });
 }

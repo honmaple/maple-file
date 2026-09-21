@@ -8,7 +8,7 @@ import 'package:maple_file/common/widgets/platform/list.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
 import 'package:maple_file/api/syncing/pages/history.dart';
-import 'package:maple_file/api/syncing/providers/album_controller.dart';
+import 'package:maple_file/api/syncing/providers/album/controller.dart';
 import 'package:maple_file/api/syncing/providers/history.dart';
 import 'package:maple_file/api/syncing/widgets/sync_history_records.dart';
 

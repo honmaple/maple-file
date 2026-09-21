@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:maple_file/api/syncing/providers/local_directory.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/profile.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/service.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart' as remote;
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
@@ -34,7 +35,7 @@ void main() {
     final file = '$root${separator}.hidden${separator}photo.jpg';
 
     expect(
-      localDirectoryTargetPath(
+      LocalDirectorySyncService.targetPath(
         sourceRoot: root,
         sourceFile: file,
         targetRoot: '/remote/backup',
@@ -57,7 +58,7 @@ void main() {
       entities.add(link);
     }
 
-    final result = localDirectoryScanEntries(entities);
+    final result = LocalDirectorySyncService.scanEntries(entities);
 
     expect(result.files.map((file) => file.path), [hidden.path]);
     expect(result.directories, isEmpty);
@@ -88,7 +89,7 @@ void main() {
     );
 
     expect(
-      localDirectorySyncDecision(
+      LocalDirectorySyncService.decide(
         record: record,
         source: stat,
         targetPath: '/remote/item.txt',
@@ -98,7 +99,7 @@ void main() {
       LocalDirectorySyncDecision.skip,
     );
     expect(
-      localDirectorySyncDecision(
+      LocalDirectorySyncService.decide(
         record: record,
         source: stat,
         targetPath: '/remote/item.txt',
@@ -108,7 +109,7 @@ void main() {
       LocalDirectorySyncDecision.upload,
     );
     expect(
-      localDirectorySyncDecision(
+      LocalDirectorySyncService.decide(
         record: null,
         source: stat,
         targetPath: '/remote/item.txt',
@@ -126,7 +127,7 @@ void main() {
       updatedAt: target.updatedAt,
     );
     expect(
-      localDirectorySyncDecision(
+      LocalDirectorySyncService.decide(
         record: record,
         source: stat,
         targetPath: '/remote/item.txt',
@@ -139,7 +140,7 @@ void main() {
     await file.writeAsString('changed');
     final changedSource = await file.stat();
     expect(
-      localDirectorySyncDecision(
+      LocalDirectorySyncService.decide(
         record: record,
         source: changedSource,
         targetPath: '/remote/item.txt',

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fixnum/fixnum.dart' as fixnum;
-import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/album/profile.dart';
+import 'package:maple_file/api/syncing/providers/album/service.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
@@ -10,7 +11,7 @@ void main() {
 
     test('appends the device model when enabled', () {
       expect(
-        albumBackupTargetPath(base, 'iPhone 16 Pro'),
+        AlbumBackupService.targetPath(base, 'iPhone 16 Pro'),
         '/photos/backup/iPhone 16 Pro',
       );
     });
@@ -20,7 +21,7 @@ void main() {
         path: '/photos/backup/iPhone 16 Pro',
       );
       expect(
-        albumBackupTargetPath(target, 'iPhone 16 Pro'),
+        AlbumBackupService.targetPath(target, 'iPhone 16 Pro'),
         '/photos/backup/iPhone 16 Pro',
       );
     });
@@ -31,14 +32,14 @@ void main() {
         appendDeviceModel: false,
       );
       expect(
-        albumBackupTargetPath(target, 'iPhone 16 Pro'),
+        AlbumBackupService.targetPath(target, 'iPhone 16 Pro'),
         '/photos/backup',
       );
     });
 
     test('sanitizes invalid path characters in the device model', () {
       expect(
-        albumBackupTargetPath(base, r'Phone/Pro:1'),
+        AlbumBackupService.targetPath(base, r'Phone/Pro:1'),
         '/photos/backup/Phone_Pro_1',
       );
     });
@@ -52,28 +53,75 @@ void main() {
       AlbumTargetLayout.yearMonth,
     );
     expect(
-      AlbumTargetLayout.yearMonth.pathParts(date),
+      AlbumBackupService.layoutPathParts(
+        layout: AlbumTargetLayout.yearMonth,
+        createdAt: date,
+        albumName: '最近项目',
+        isAndroid: false,
+      ),
       ['2026', '09'],
     );
     expect(
-      AlbumTargetLayout.yearMonthDay.pathParts(date),
+      AlbumBackupService.layoutPathParts(
+        layout: AlbumTargetLayout.yearMonthDay,
+        createdAt: date,
+        albumName: '最近项目',
+        isAndroid: false,
+      ),
       ['2026', '09', '19'],
     );
-    expect(AlbumTargetLayout.filenameAssetId.pathParts(date), isEmpty);
   });
 
-  test('iOS asset identifier cannot create subdirectories in upload name', () {
+  test('keeps the original photo name without appending the asset id', () {
     expect(
-      albumBackupFilename('IMG_1565.HEIC', 'F6A1B2C3/L0/001'),
-      'IMG_1565_F6A1B2C3_L0_001.HEIC',
+      AlbumBackupService.filename('IMG_1565.HEIC'),
+      'IMG_1565.HEIC',
     );
   });
 
   test('filename is a single path component for nested source names', () {
-    final name = albumBackupFilename(r'Photos\IMG_1565.JPG', r'asset\123');
-    expect(name, 'IMG_1565_asset_123.JPG');
+    final name = AlbumBackupService.filename(r'Photos\IMG_1565.JPG');
+    expect(name, 'IMG_1565.JPG');
     expect(name.contains('/'), isFalse);
     expect(name.contains(r'\'), isFalse);
+  });
+
+  test('flat layout uses the album name on iOS', () {
+    expect(
+      AlbumBackupService.layoutPathParts(
+        layout: AlbumTargetLayout.flat,
+        createdAt: DateTime(2026, 9, 19),
+        albumName: '最近项目',
+        isAndroid: false,
+      ),
+      ['最近项目'],
+    );
+  });
+
+  test('flat layout uses the relative physical path on Android', () {
+    expect(
+      AlbumBackupService.layoutPathParts(
+        layout: AlbumTargetLayout.flat,
+        createdAt: DateTime(2026, 9, 19),
+        albumName: '相机',
+        isAndroid: true,
+        relativePath: 'DCIM/Camera/',
+      ),
+      ['DCIM', 'Camera'],
+    );
+  });
+
+  test('flat layout removes the storage root on older Android versions', () {
+    expect(
+      AlbumBackupService.layoutPathParts(
+        layout: AlbumTargetLayout.flat,
+        createdAt: DateTime(2026, 9, 19),
+        albumName: '相机',
+        isAndroid: true,
+        relativePath: '/storage/emulated/0/DCIM/Camera',
+      ),
+      ['DCIM', 'Camera'],
+    );
   });
 
   test('a record is stale after a photo or target change', () {
@@ -85,20 +133,24 @@ void main() {
       configVersion: fixnum.Int64(1),
     );
     expect(
-      albumBackupRecordMatches(
+      AlbumBackupService.recordMatches(
           record, modified, '/backup/2026', 'IMG_1_asset.jpg', 1),
       isTrue,
     );
     expect(
-      albumBackupRecordMatches(record, modified, '/backup/new', null, 1),
+      AlbumBackupService.recordMatches(
+          record, modified, '/backup/new', null, 1),
       isFalse,
     );
     expect(
-      albumBackupRecordMatches(record, modified.add(const Duration(seconds: 1)),
-          '/backup/2026', null, 1),
+      AlbumBackupService.recordMatches(record,
+          modified.add(const Duration(seconds: 1)), '/backup/2026', null, 1),
       isFalse,
     );
-    expect(albumBackupRecordMatches(record, modified, '/backup/2026', null, 2),
-        isFalse);
+    expect(
+      AlbumBackupService.recordMatches(
+          record, modified, '/backup/2026', null, 2),
+      isFalse,
+    );
   });
 }

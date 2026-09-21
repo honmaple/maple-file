@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:maple_file/api/syncing/providers/target.dart';
+import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart';
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 

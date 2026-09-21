@@ -1,208 +1,26 @@
-import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:fixnum/fixnum.dart' as fixnum;
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
 import 'package:path/path.dart' as filepath;
 import 'package:permission_handler/permission_handler.dart';
 
-import 'package:maple_file/api/file/providers/service.dart';
-import 'package:maple_file/api/syncing/providers/history.dart';
-import 'package:maple_file/api/syncing/providers/service.dart';
-import 'package:maple_file/api/syncing/providers/target.dart';
 import 'package:maple_file/common/utils/util.dart';
-import 'package:maple_file/generated/proto/api/file/file.pb.dart' as file_proto;
+import 'package:maple_file/generated/proto/api/file/file.pb.dart' as filepb;
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
-part 'local_directory.freezed.dart';
-part 'local_directory.g.dart';
+import 'package:maple_file/api/file/providers/service.dart';
+import 'package:maple_file/api/syncing/providers/history.dart';
+import 'package:maple_file/api/syncing/providers/service.dart';
 
-@freezed
-class LocalDirectorySourceConfig with _$LocalDirectorySourceConfig {
-  const factory LocalDirectorySourceConfig({
-    @Default('') String path,
-    @Default('') String bookmark,
-  }) = _LocalDirectorySourceConfig;
-
-  factory LocalDirectorySourceConfig.fromJson(Map<String, Object?> json) =>
-      _$LocalDirectorySourceConfigFromJson(json);
-}
-
-@freezed
-class LocalDirectoryTargetConfig with _$LocalDirectoryTargetConfig {
-  const factory LocalDirectoryTargetConfig({
-    @Default('') String path,
-  }) = _LocalDirectoryTargetConfig;
-
-  factory LocalDirectoryTargetConfig.fromJson(Map<String, Object?> json) =>
-      _$LocalDirectoryTargetConfigFromJson(json);
-}
-
-class LocalDirectorySyncProfile {
-  LocalDirectorySyncProfile._({
-    required SyncProfile profile,
-    required this.sourceConfig,
-    required this.targetConfig,
-  }) : _profile = SyncProfile()..mergeFromMessage(profile);
-
-  factory LocalDirectorySyncProfile.create({required String name}) {
-    return LocalDirectorySyncProfile._(
-      profile: SyncProfile(
-        name: name,
-        enabled: true,
-        mode: SyncProfile_Mode.MODE_ONE_WAY,
-        sourceType: SyncSourceType.localDirectory.value,
-        sourceConfig: '{}',
-        targetType: SyncTargetType.repoDirectory.value,
-        targetConfig: '{}',
-        policyConfig: '{}',
-      ),
-      sourceConfig: const LocalDirectorySourceConfig(),
-      targetConfig: const LocalDirectoryTargetConfig(),
-    );
-  }
-
-  factory LocalDirectorySyncProfile.fromSyncProfile(SyncProfile profile) {
-    if (SyncSourceType.fromValue(profile.sourceType) !=
-            SyncSourceType.localDirectory ||
-        profile.mode != SyncProfile_Mode.MODE_ONE_WAY ||
-        SyncTargetType.fromValue(profile.targetType) !=
-            SyncTargetType.repoDirectory) {
-      throw const FormatException('此同步配置不是本地目录同步');
-    }
-    return LocalDirectorySyncProfile._(
-      profile: profile,
-      sourceConfig: LocalDirectorySourceConfig.fromJson(
-        _decodeConfig(profile.sourceConfig, '本地来源'),
-      ),
-      targetConfig: LocalDirectoryTargetConfig.fromJson(
-        _decodeConfig(profile.targetConfig, '同步目标'),
-      ),
-    );
-  }
-
-  final SyncProfile _profile;
-  final LocalDirectorySourceConfig sourceConfig;
-  final LocalDirectoryTargetConfig targetConfig;
-
-  int get id => _profile.id;
-  String get name => _profile.name;
-  bool get enabled => _profile.enabled;
-  int get configVersion => _profile.configVersion.toInt();
-
-  LocalDirectorySyncProfile copyWith({
-    String? name,
-    bool? enabled,
-    LocalDirectorySourceConfig? sourceConfig,
-    LocalDirectoryTargetConfig? targetConfig,
-  }) {
-    final profile = SyncProfile()
-      ..mergeFromMessage(_profile)
-      ..name = name ?? this.name
-      ..enabled = enabled ?? this.enabled;
-    return LocalDirectorySyncProfile._(
-      profile: profile,
-      sourceConfig: sourceConfig ?? this.sourceConfig,
-      targetConfig: targetConfig ?? this.targetConfig,
-    );
-  }
-
-  SyncProfile toSyncProfile() {
-    return SyncProfile()
-      ..mergeFromMessage(_profile)
-      ..sourceConfig = jsonEncode(sourceConfig.toJson())
-      ..targetConfig = jsonEncode(targetConfig.toJson())
-      ..policyConfig = '{}';
-  }
-
-  static Map<String, dynamic> _decodeConfig(String value, String name) {
-    try {
-      final decoded = jsonDecode(value);
-      if (decoded is Map<String, dynamic>) return decoded;
-    } catch (_) {}
-    throw FormatException('$name配置格式错误');
-  }
-}
+import 'profile.dart';
 
 enum LocalDirectorySyncDecision {
   upload,
   skip,
   conflictWithoutBaseline,
   conflictModified
-}
-
-({List<io.Directory> directories, List<io.File> files})
-    localDirectoryScanEntries(Iterable<io.FileSystemEntity> entries) {
-  return (
-    directories: entries.whereType<io.Directory>().toList(),
-    files: entries.whereType<io.File>().toList(),
-  );
-}
-
-String localDirectoryTargetPath({
-  required String sourceRoot,
-  required String sourceFile,
-  required String targetRoot,
-}) {
-  final relative = filepath.relative(sourceFile, from: sourceRoot);
-  if (relative == '..' ||
-      relative.startsWith('..${filepath.separator}') ||
-      filepath.isAbsolute(relative)) {
-    throw StateError('本地文件超出同步目录：$sourceFile');
-  }
-  return filepath.posix.joinAll([
-    targetRoot,
-    ...filepath.split(relative),
-  ]);
-}
-
-LocalDirectorySyncDecision localDirectorySyncDecision({
-  required SyncRecord? record,
-  required io.FileStat source,
-  required String targetPath,
-  required file_proto.File? target,
-  required int configVersion,
-}) {
-  if (record == null ||
-      record.state != SyncRecord_State.STATE_ACTIVE ||
-      record.configVersion.toInt() != configVersion ||
-      record.targetPath != targetPath) {
-    return target == null
-        ? LocalDirectorySyncDecision.upload
-        : LocalDirectorySyncDecision.conflictWithoutBaseline;
-  }
-  if (target == null) return LocalDirectorySyncDecision.upload;
-  if (!_targetMatches(record, target)) {
-    return LocalDirectorySyncDecision.conflictModified;
-  }
-  return _sourceMatches(record, source)
-      ? LocalDirectorySyncDecision.skip
-      : LocalDirectorySyncDecision.upload;
-}
-
-bool _sourceMatches(SyncRecord record, io.FileStat source) {
-  return record.hasSourceSize() &&
-      record.sourceSize.toInt() == source.size &&
-      record.hasSourceModifiedAt() &&
-      record.sourceModifiedAt.toDateTime().millisecondsSinceEpoch ==
-          source.modified.millisecondsSinceEpoch;
-}
-
-bool _targetMatches(SyncRecord record, file_proto.File target) {
-  if (target.type == 'DIR') return false;
-  if (!record.hasTargetSize() || record.targetSize != target.size) return false;
-  if (record.targetHash.isNotEmpty &&
-      target.hash.isNotEmpty &&
-      record.targetHash != target.hash) {
-    return false;
-  }
-  if (record.hasTargetModifiedAt() && target.hasUpdatedAt()) {
-    return record.targetModifiedAt.toDateTime().millisecondsSinceEpoch ==
-        target.updatedAt.toDateTime().millisecondsSinceEpoch;
-  }
-  return true;
 }
 
 class LocalDirectorySyncResult {
@@ -227,10 +45,88 @@ class LocalDirectorySyncResult {
 }
 
 class LocalDirectorySyncService {
-  static final LocalDirectorySyncService instance =
+  static LocalDirectorySyncService get instance => _instance;
+  static final LocalDirectorySyncService _instance =
       LocalDirectorySyncService._internal();
 
+  factory LocalDirectorySyncService() => _instance;
+
   LocalDirectorySyncService._internal();
+
+  static ({List<io.Directory> directories, List<io.File> files}) scanEntries(
+    Iterable<io.FileSystemEntity> entries,
+  ) {
+    return (
+      directories: entries.whereType<io.Directory>().toList(),
+      files: entries.whereType<io.File>().toList(),
+    );
+  }
+
+  static String targetPath({
+    required String sourceRoot,
+    required String sourceFile,
+    required String targetRoot,
+  }) {
+    final relative = filepath.relative(sourceFile, from: sourceRoot);
+    if (relative == '..' ||
+        relative.startsWith('..${filepath.separator}') ||
+        filepath.isAbsolute(relative)) {
+      throw StateError('本地文件超出同步目录：$sourceFile');
+    }
+    return filepath.posix.joinAll([
+      targetRoot,
+      ...filepath.split(relative),
+    ]);
+  }
+
+  static LocalDirectorySyncDecision decide({
+    required SyncRecord? record,
+    required io.FileStat source,
+    required String targetPath,
+    required filepb.File? target,
+    required int configVersion,
+  }) {
+    if (record == null ||
+        record.state != SyncRecord_State.STATE_ACTIVE ||
+        record.configVersion.toInt() != configVersion ||
+        record.targetPath != targetPath) {
+      return target == null
+          ? LocalDirectorySyncDecision.upload
+          : LocalDirectorySyncDecision.conflictWithoutBaseline;
+    }
+    if (target == null) return LocalDirectorySyncDecision.upload;
+    if (!_targetMatches(record, target)) {
+      return LocalDirectorySyncDecision.conflictModified;
+    }
+    return _sourceMatches(record, source)
+        ? LocalDirectorySyncDecision.skip
+        : LocalDirectorySyncDecision.upload;
+  }
+
+  static bool _sourceMatches(SyncRecord record, io.FileStat source) {
+    return record.hasSourceSize() &&
+        record.sourceSize.toInt() == source.size &&
+        record.hasSourceModifiedAt() &&
+        record.sourceModifiedAt.toDateTime().millisecondsSinceEpoch ==
+            source.modified.millisecondsSinceEpoch;
+  }
+
+  static bool _targetMatches(SyncRecord record, filepb.File target) {
+    if (target.type == 'DIR') return false;
+    if (!record.hasTargetSize() || record.targetSize != target.size) {
+      return false;
+    }
+    if (record.targetHash.isNotEmpty &&
+        target.hash.isNotEmpty &&
+        record.targetHash != target.hash) {
+      return false;
+    }
+    if (record.hasTargetModifiedAt() && target.hasUpdatedAt()) {
+      return record.targetModifiedAt.toDateTime().millisecondsSinceEpoch ==
+          target.updatedAt.toDateTime().millisecondsSinceEpoch;
+    }
+    return true;
+  }
 
   Future<SyncHistory> run(LocalDirectorySyncProfile profile) async {
     final startedAt = DateTime.now();
@@ -270,7 +166,7 @@ class LocalDirectorySyncService {
   Future<LocalDirectorySyncResult> _run(
     LocalDirectorySyncProfile profile,
   ) async {
-    if (!isLocalDirectorySyncSupported) {
+    if (!SyncSourceType.localDirectory.isSupported) {
       throw UnsupportedError('当前平台不支持本地目录同步');
     }
     if (Util.isAndroid) {
@@ -338,7 +234,7 @@ class LocalDirectorySyncService {
       List<io.File> files;
       try {
         final entries = await directory.list(followLinks: false).toList();
-        final scanEntries = localDirectoryScanEntries(entries);
+        final scanEntries = LocalDirectorySyncService.scanEntries(entries);
         directories.addAll(scanEntries.directories);
         files = scanEntries.files;
       } catch (error) {
@@ -377,7 +273,7 @@ class LocalDirectorySyncService {
       }
       for (final file in files) {
         final name = filepath.basename(file.path);
-        final targetPath = localDirectoryTargetPath(
+        final targetPath = LocalDirectorySyncService.targetPath(
           sourceRoot: sourceRoot,
           sourceFile: file.path,
           targetRoot: profile.targetConfig.path,
@@ -387,7 +283,7 @@ class LocalDirectorySyncService {
           final sourceStat = await file.stat();
           final targetEntries = await targetStore.ensure(targetDirectory);
           final target = targetStore.find(targetEntries, name);
-          final decision = localDirectorySyncDecision(
+          final decision = LocalDirectorySyncService.decide(
             record: records[name],
             source: sourceStat,
             targetPath: targetPath,
@@ -528,6 +424,3 @@ class LocalDirectorySyncService {
     );
   }
 }
-
-bool get isLocalDirectorySyncSupported =>
-    SyncSourceType.localDirectory.isSupported;

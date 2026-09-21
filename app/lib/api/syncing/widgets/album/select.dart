@@ -4,7 +4,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/album/service.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 

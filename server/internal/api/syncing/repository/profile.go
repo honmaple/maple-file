@@ -135,7 +135,7 @@ func verifyProfile(value *pb.SyncProfile) error {
 			Path   string `json:"path"`
 			Layout string `json:"layout"`
 		}
-		if value.GetTargetType() != "repo_directory" || json.Unmarshal([]byte(value.GetTargetConfig()), &target) != nil || target.Path == "" || (target.Layout != "year_month_day" && target.Layout != "year_month" && target.Layout != "filename_asset_id") {
+		if value.GetTargetType() != "repo_directory" || json.Unmarshal([]byte(value.GetTargetConfig()), &target) != nil || target.Path == "" || (target.Layout != "year_month_day" && target.Layout != "year_month" && target.Layout != "flat") {
 			return errors.New("相册备份目标配置无效")
 		}
 	case "local_directory":

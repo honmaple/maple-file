@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:maple_file/api/syncing/providers/history.dart';
-import 'package:maple_file/api/syncing/providers/local_directory.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/profile.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/service.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/app/task_scheduler.dart';

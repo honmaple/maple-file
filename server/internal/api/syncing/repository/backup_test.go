@@ -50,7 +50,7 @@ func TestBackupRecordsAndHistory(t *testing.T) {
 		t.Fatal("unsupported album policy was accepted")
 	}
 	profile.PolicyConfig = "{}"
-	profile.TargetConfig = `{"path":"/photos","layout":"filename_asset_id"}`
+	profile.TargetConfig = `{"path":"/photos","layout":"flat"}`
 	profile, err = repo.UpdateProfile(ctx, profile)
 	if err != nil || profile.ConfigVersion != 2 {
 		t.Fatalf("mapping change did not bump version: %v %v", profile, err)

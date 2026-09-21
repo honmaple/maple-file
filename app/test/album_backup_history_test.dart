@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/album/service.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 
 void main() {
@@ -10,18 +10,18 @@ void main() {
       scanned: 4,
       uploaded: 1,
       skipped: 3,
-      failures: const [
-        AlbumBackupFailure(
-          album: '相机',
-          item: 'a.jpg',
-          itemKey: 'asset-1',
-          sourceKey: 'album-1',
-          reason: '上传失败',
+      issues: [
+        SyncHistoryIssue(
+          sourceLabel: 'a.jpg',
+          sourceKey: 'asset-1',
+          sourcePath: 'album-1',
+          kind: SyncHistoryIssue_Kind.KIND_ERROR,
+          errorMessage: '上传失败',
         ),
       ],
     );
 
-    final history = buildAlbumSyncHistory(
+    final history = AlbumBackupService.buildHistory(
       profileId: 7,
       runId: 'history-1',
       startedAt: startedAt,
@@ -42,7 +42,7 @@ void main() {
   });
 
   test('history-level error is retained in the summary', () {
-    final history = buildAlbumSyncHistory(
+    final history = AlbumBackupService.buildHistory(
       profileId: 7,
       runId: 'history-2',
       startedAt: DateTime.utc(2026, 9, 18, 10),

@@ -11,10 +11,9 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:maple_file/api/file/providers/repo.dart';
 import 'package:maple_file/api/file/widgets/file_select.dart';
-import 'package:maple_file/api/syncing/providers/local_directory.dart';
+import 'package:maple_file/api/syncing/providers/local_directory/profile.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
-import 'package:maple_file/api/syncing/providers/target.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/widgets/form.dart';
@@ -89,8 +88,9 @@ class _LocalDirectorySyncFormState
                   overflow: TextOverflow.ellipsis,
                 ),
                 trailing: const PlatformListTileChevron(),
-                onTap:
-                    isLocalDirectorySyncSupported ? _handleSelectSource : null,
+                onTap: SyncSourceType.localDirectory.isSupported
+                    ? _handleSelectSource
+                    : null,
               ),
               PlatformListTile(
                 title: Text('云端目标目录'.tr()),

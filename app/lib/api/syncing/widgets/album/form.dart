@@ -5,7 +5,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:path/path.dart' as filepath;
 
 import 'package:maple_file/api/file/widgets/file_select.dart';
-import 'package:maple_file/api/syncing/providers/album.dart';
+import 'package:maple_file/api/syncing/providers/album/profile.dart';
+import 'package:maple_file/api/syncing/providers/album/service.dart';
 import 'package:maple_file/api/syncing/providers/profile.dart';
 import 'package:maple_file/api/syncing/providers/service.dart';
 import 'package:maple_file/api/syncing/widgets/album/select.dart';
@@ -188,7 +189,7 @@ class _AlbumBackupFormState extends ConsumerState<AlbumBackupForm> {
   }
 
   Future<String> _removeDeviceModel(String path) async {
-    final model = await albumBackupDeviceModel();
+    final model = await AlbumBackupService.deviceModel();
     if (model.isEmpty || filepath.posix.basename(path) != model) return path;
     return filepath.posix.dirname(path);
   }
@@ -232,8 +233,8 @@ class _AlbumBackupFormState extends ConsumerState<AlbumBackupForm> {
           value: AlbumTargetLayout.yearMonth,
         ),
         CustomOption(
-          label: '文件名加资产 ID'.tr(),
-          value: AlbumTargetLayout.filenameAssetId,
+          label: AlbumTargetLayout.flat.label,
+          value: AlbumTargetLayout.flat,
         ),
       ],
     );

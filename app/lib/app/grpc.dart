@@ -7,26 +7,47 @@ import 'package:grpc/service_api.dart' as grpcapi;
 import 'app.dart';
 import 'grpc/web.dart' if (dart.library.io) 'grpc/io.dart';
 
+class FutureException implements Exception {
+  const FutureException({
+    required this.cause,
+    required this.message,
+  });
+
+  final Object cause;
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 Future<T> doFuture<T>(
   Future<T> Function() callback, {
   bool showError = true,
 }) async {
-  String err;
+  FutureException err;
   try {
     return await callback();
   } on GrpcError catch (e) {
-    err = e.message ?? e.toString();
+    err = FutureException(cause: e, message: e.message ?? e.toString());
   } on SocketException catch (e) {
-    err = e.message;
+    err = FutureException(cause: e, message: e.message);
   } catch (e) {
-    err = e.toString();
+    err = e is FutureException
+        ? e
+        : FutureException(
+            cause: e,
+            message: e.toString(),
+          );
   }
   if (showError) {
-    SmartDialog.showNotify(msg: err, notifyType: NotifyType.error);
+    SmartDialog.showNotify(
+      msg: err.message,
+      notifyType: NotifyType.error,
+    );
   } else {
-    App.logger.warning(err);
+    App.logger.warning(err.message);
   }
-  return Future.error(err);
+  return Future<T>.error(err);
 }
 
 class Grpc {

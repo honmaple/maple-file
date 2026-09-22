@@ -78,7 +78,13 @@ void main() {
         local,
         remote,
       ]),
-      throwsStateError,
+      throwsA(
+        isA<SyncException>().having(
+          (error) => error.code,
+          'code',
+          SyncErrorCode.targetRepositoryLocalUnsupported,
+        ),
+      ),
     );
     expect(
       SyncTargetRepository.requireRemoteFrom('/remote/docs', [local, remote]),

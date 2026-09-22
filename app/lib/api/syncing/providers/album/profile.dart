@@ -100,8 +100,16 @@ class AlbumBackupProfile {
             SyncTargetType.repoDirectory) {
       throw const FormatException('此同步配置不是相册备份');
     }
-    final source = _decodeConfig(profile.sourceConfig, '备份源');
-    final target = _decodeConfig(profile.targetConfig, '备份目标');
+    Map<String, dynamic> decodeConfig(String value, String name) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is Map<String, dynamic>) return decoded;
+      } catch (_) {}
+      throw FormatException('$name配置格式错误');
+    }
+
+    final source = decodeConfig(profile.sourceConfig, '备份源');
+    final target = decodeConfig(profile.targetConfig, '备份目标');
     return AlbumBackupProfile._(
       profile: profile,
       sourceConfig: AlbumBackupSourceConfig.fromJson(source),
@@ -140,13 +148,5 @@ class AlbumBackupProfile {
       ..mergeFromMessage(_profile)
       ..sourceConfig = jsonEncode(sourceConfig.toJson())
       ..targetConfig = jsonEncode(targetConfig.toJson());
-  }
-
-  static Map<String, dynamic> _decodeConfig(String value, String name) {
-    try {
-      final decoded = jsonDecode(value);
-      if (decoded is Map<String, dynamic>) return decoded;
-    } catch (_) {}
-    throw FormatException('$name配置格式错误');
   }
 }

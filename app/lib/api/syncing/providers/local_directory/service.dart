@@ -23,27 +23,6 @@ enum LocalDirectorySyncDecision {
   conflictModified
 }
 
-class LocalDirectorySyncResult {
-  const LocalDirectorySyncResult({
-    required this.scanned,
-    required this.synced,
-    required this.skipped,
-    required this.issues,
-  });
-
-  final int scanned;
-  final int synced;
-  final int skipped;
-  final List<SyncHistoryIssue> issues;
-
-  int get failed => issues
-      .where((issue) => issue.kind == SyncHistoryIssue_Kind.KIND_ERROR)
-      .length;
-  int get conflicted => issues
-      .where((issue) => issue.kind == SyncHistoryIssue_Kind.KIND_CONFLICT)
-      .length;
-}
-
 class LocalDirectorySyncService {
   static LocalDirectorySyncService get instance => _instance;
   static final LocalDirectorySyncService _instance =
@@ -71,7 +50,11 @@ class LocalDirectorySyncService {
     if (relative == '..' ||
         relative.startsWith('..${filepath.separator}') ||
         filepath.isAbsolute(relative)) {
-      throw StateError('本地文件超出同步目录：$sourceFile');
+      throw SyncException(
+        code: SyncErrorCode.sourceOutsideRoot,
+        operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+        message: '本地文件超出同步目录：$sourceFile',
+      );
     }
     return filepath.posix.joinAll([
       targetRoot,
@@ -131,14 +114,18 @@ class LocalDirectorySyncService {
   Future<SyncHistory> run(LocalDirectorySyncProfile profile) async {
     final startedAt = DateTime.now();
     final runId = await SyncHistoryStore.start(profile.id, startedAt);
-    LocalDirectorySyncResult? result;
-    String? errorMessage;
+    final progress = SyncRunProgress();
+    SyncException? failure;
     try {
-      result = await _run(profile);
+      await _run(profile, progress);
     } catch (error) {
-      errorMessage = '$error';
+      failure = SyncErrorClassifier.classify(
+        error,
+        fallbackCode: SyncErrorCode.internalItemError,
+        operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+      );
+      progress.addRunFailure(failure);
     }
-    final issues = result?.issues ?? const <SyncHistoryIssue>[];
     return SyncHistoryStore.finish(
       SyncHistory(
         profileId: profile.id,
@@ -146,33 +133,66 @@ class LocalDirectorySyncService {
         configVersion: fixnum.Int64(profile.configVersion),
         startedAt: Timestamp.fromDateTime(startedAt),
         finishedAt: Timestamp.fromDateTime(DateTime.now()),
-        status: errorMessage != null
+        status: failure != null
             ? SyncHistory_Status.STATUS_FAILED
-            : issues.isNotEmpty
+            : progress.issues.isNotEmpty
                 ? SyncHistory_Status.STATUS_PARTIAL
                 : SyncHistory_Status.STATUS_SUCCEEDED,
         trigger: SyncHistory_Trigger.TRIGGER_MANUAL,
-        scanned: result?.scanned ?? 0,
-        synced: result?.synced ?? 0,
-        skipped: result?.skipped ?? 0,
-        failed: (result?.failed ?? 0) + (errorMessage == null ? 0 : 1),
-        conflicted: result?.conflicted ?? 0,
-        errorSummary: errorMessage ?? '',
-        issues: issues,
+        scanned: progress.scanned,
+        synced: progress.synced,
+        skipped: progress.skipped,
+        failed: progress.failed,
+        conflicted: progress.conflicted,
+        errorSummary: failure?.message ?? '',
+        issues: progress.issues,
       ),
     );
   }
 
-  Future<LocalDirectorySyncResult> _run(
+  Future<void> _run(
     LocalDirectorySyncProfile profile,
+    SyncRunProgress progress,
   ) async {
     if (!SyncSourceType.localDirectory.isSupported) {
-      throw UnsupportedError('当前平台不支持本地目录同步');
+      throw const SyncException(
+        code: SyncErrorCode.unsupportedPlatform,
+        operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+        message: '当前平台不支持本地目录同步',
+      );
+    }
+    if (profile.sourceConfig.path.trim().isEmpty) {
+      throw const SyncException(
+        code: SyncErrorCode.sourceRootMissing,
+        operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+        message: '本地来源目录未配置',
+      );
+    }
+    if (profile.targetConfig.path.trim().isEmpty) {
+      throw const SyncException(
+        code: SyncErrorCode.targetConfigInvalid,
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+        message: '同步目标目录未配置',
+      );
     }
     if (Util.isAndroid) {
-      final permission = await Permission.manageExternalStorage.request();
+      late final PermissionStatus permission;
+      try {
+        permission = await Permission.manageExternalStorage.request();
+      } catch (error) {
+        throw SyncException(
+          code: SyncErrorCode.sourcePermissionDenied,
+          operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+          message: '无法确认本地目录访问权限',
+          cause: error,
+        );
+      }
       if (!permission.isGranted) {
-        throw StateError('需要“所有文件访问权限”才能读取本地目录');
+        throw const SyncException(
+          code: SyncErrorCode.sourcePermissionDenied,
+          operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+          message: '需要“所有文件访问权限”才能读取本地目录',
+        );
       }
     }
     await SyncTargetRepository.requireRemote(profile.targetConfig.path);
@@ -185,49 +205,98 @@ class LocalDirectorySyncService {
     try {
       if (Util.isMacOS) {
         if (profile.sourceConfig.bookmark.isEmpty) {
-          throw StateError('本地目录授权已失效，请重新选择目录');
+          throw const SyncException(
+            code: SyncErrorCode.sourceAuthorizationInvalid,
+            operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+            message: '本地目录授权已失效，请重新选择目录',
+          );
         }
         bookmarks = SecureBookmarks();
-        securedDirectory = await bookmarks.resolveBookmark(
-          profile.sourceConfig.bookmark,
-          isDirectory: true,
-        ) as io.Directory;
+        try {
+          securedDirectory = await bookmarks.resolveBookmark(
+            profile.sourceConfig.bookmark,
+            isDirectory: true,
+          ) as io.Directory;
+        } catch (error) {
+          throw SyncException(
+            code: SyncErrorCode.sourceAuthorizationInvalid,
+            operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+            message: '本地目录授权已失效，请重新选择目录',
+            cause: error,
+          );
+        }
         final resolvedPath =
             filepath.normalize(filepath.absolute(securedDirectory.path));
         if (resolvedPath != sourcePath) {
-          throw StateError('本地目录授权与当前配置不一致，请重新选择目录');
+          throw const SyncException(
+            code: SyncErrorCode.sourceAuthorizationMismatch,
+            operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+            message: '本地目录授权与当前配置不一致，请重新选择目录',
+          );
         }
-        await bookmarks.startAccessingSecurityScopedResource(securedDirectory);
+        try {
+          await bookmarks.startAccessingSecurityScopedResource(
+            securedDirectory,
+          );
+        } catch (error) {
+          throw SyncException(
+            code: SyncErrorCode.sourceAuthorizationInvalid,
+            operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+            message: '无法使用本地目录授权，请重新选择目录',
+            cause: error,
+          );
+        }
         accessingSecurityScopedResource = true;
         sourcePath = resolvedPath;
       }
       final source = io.Directory(sourcePath);
-      if (!await source.exists()) throw StateError('本地来源目录不存在');
+      if (!await source.exists()) {
+        throw const SyncException(
+          code: SyncErrorCode.sourceRootMissing,
+          operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+          message: '本地来源目录不存在',
+        );
+      }
       await source.list(followLinks: false).take(1).drain<void>();
       final targetStore = SyncTargetDirectory();
       await targetStore.ensure(profile.targetConfig.path);
-      return _scanDirectory(profile, source, sourcePath, targetStore);
+      await _scanDirectory(
+        profile,
+        source,
+        sourcePath,
+        targetStore,
+        progress,
+      );
     } on io.FileSystemException catch (error) {
-      throw StateError('无法访问本地来源目录：${error.message}');
+      throw SyncException(
+        code: SyncErrorCode.sourceRootUnreadable,
+        operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+        message: '无法访问本地来源目录：${error.message}',
+        cause: error,
+      );
     } finally {
       if (bookmarks != null &&
           securedDirectory != null &&
           accessingSecurityScopedResource) {
-        await bookmarks.stopAccessingSecurityScopedResource(securedDirectory);
+        try {
+          await bookmarks.stopAccessingSecurityScopedResource(
+            securedDirectory,
+          );
+        } catch (_) {
+          // Access has already ended with this run; cleanup failure must not
+          // replace the synchronization result.
+        }
       }
     }
   }
 
-  Future<LocalDirectorySyncResult> _scanDirectory(
+  Future<void> _scanDirectory(
     LocalDirectorySyncProfile profile,
     io.Directory root,
     String sourceRoot,
     SyncTargetDirectory targetStore,
+    SyncRunProgress progress,
   ) async {
-    var scanned = 0;
-    var synced = 0;
-    var skipped = 0;
-    final issues = <SyncHistoryIssue>[];
     final directories = <io.Directory>[root];
     while (directories.isNotEmpty) {
       final directory = directories.removeLast();
@@ -238,49 +307,53 @@ class LocalDirectorySyncService {
         directories.addAll(scanEntries.directories);
         files = scanEntries.files;
       } catch (error) {
-        issues.add(_errorIssue(
+        progress.issues.add(_sourceIssue(
           sourceRoot: sourceRoot,
-          sourceFile: directory.path,
+          sourcePath: directory.path,
           message: '读取目录失败：$error',
-          code: 'source_scan_failed',
+          code: SyncErrorCode.sourceScanFailed,
           operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
         ));
         continue;
       }
-      scanned += files.length;
+      progress.scanned += files.length;
       final parent = filepath.normalize(filepath.absolute(directory.path));
-      Map<String, SyncRecord> records;
-      try {
-        final results = await SyncingService.instance.listRecords(
+      final results = await SyncErrorClassifier.execute(
+        action: () => SyncingService.instance.listRecords(
           SyncRecord_ListRequest(
             profileId: profile.id,
             sourcePath: parent,
             sourceKeys: files.map((file) => filepath.basename(file.path)),
           ),
-        );
-        records = {for (final record in results) record.sourceKey: record};
-      } catch (error) {
-        for (final file in files) {
-          issues.add(_errorIssue(
-            sourceRoot: sourceRoot,
-            sourceFile: file.path,
-            message: '查询同步记录失败：$error',
-            code: 'record_read_failed',
-            operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
-          ));
-        }
-        continue;
-      }
+        ),
+        fallbackCode: SyncErrorCode.recordReadFailed,
+        unavailableCode: SyncErrorCode.syncServiceUnavailable,
+        timeoutCode: SyncErrorCode.syncServiceUnavailable,
+        operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+      );
+      final records = {for (final record in results) record.sourceKey: record};
       for (final file in files) {
         final name = filepath.basename(file.path);
-        final targetPath = LocalDirectorySyncService.targetPath(
-          sourceRoot: sourceRoot,
-          sourceFile: file.path,
-          targetRoot: profile.targetConfig.path,
-        );
-        final targetDirectory = filepath.posix.dirname(targetPath);
+        var targetPath = '';
+        var operation = SyncHistoryIssue_Operation.OPERATION_SCAN;
+        var fallbackCode = SyncErrorCode.sourceUnreadable;
         try {
+          targetPath = LocalDirectorySyncService.targetPath(
+            sourceRoot: sourceRoot,
+            sourceFile: file.path,
+            targetRoot: profile.targetConfig.path,
+          );
+          final targetDirectory = filepath.posix.dirname(targetPath);
+          if (!await file.exists()) {
+            throw const SyncException(
+              code: SyncErrorCode.sourceMissing,
+              operation: SyncHistoryIssue_Operation.OPERATION_SCAN,
+              message: '本地文件不存在',
+            );
+          }
           final sourceStat = await file.stat();
+          operation = SyncHistoryIssue_Operation.OPERATION_VERIFY;
+          fallbackCode = SyncErrorCode.targetAccessFailed;
           final targetEntries = await targetStore.ensure(targetDirectory);
           final target = targetStore.find(targetEntries, name);
           final decision = LocalDirectorySyncService.decide(
@@ -291,29 +364,51 @@ class LocalDirectorySyncService {
             configVersion: profile.configVersion,
           );
           if (decision == LocalDirectorySyncDecision.skip) {
-            skipped++;
+            progress.skipped++;
             continue;
           }
           if (decision == LocalDirectorySyncDecision.conflictWithoutBaseline ||
               decision == LocalDirectorySyncDecision.conflictModified) {
-            issues.add(_conflictIssue(
+            progress.issues.add(_conflictIssue(
               sourceRoot: sourceRoot,
               sourceFile: file.path,
               targetPath: targetPath,
               code:
                   decision == LocalDirectorySyncDecision.conflictWithoutBaseline
-                      ? 'target_exists_without_baseline'
-                      : 'target_modified',
+                      ? SyncErrorCode.targetExistsWithoutBaseline
+                      : SyncErrorCode.targetModified,
             ));
             continue;
           }
-          final (uploaded, hashAlgorithm, sourceHash) = await FileService
-              .instance
-              .uploadFilePreservingName(targetDirectory, file, name);
+          operation = SyncHistoryIssue_Operation.OPERATION_UPLOAD;
+          fallbackCode = SyncErrorCode.uploadFailed;
+          final (uploaded, hashAlgorithm, sourceHash) =
+              await SyncErrorClassifier.execute(
+            action: () => FileService.instance.uploadFilePreservingName(
+              targetDirectory,
+              file,
+              name,
+              showError: false,
+            ),
+            fallbackCode: SyncErrorCode.uploadFailed,
+            operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
+          );
+          fallbackCode = SyncErrorCode.sourceChangedDuringUpload;
+          if (!await file.exists()) {
+            throw const SyncException(
+              code: SyncErrorCode.sourceMissing,
+              operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
+              message: '上传期间本地文件消失',
+            );
+          }
           final finalStat = await file.stat();
           if (finalStat.size != sourceStat.size ||
               finalStat.modified != sourceStat.modified) {
-            throw StateError('上传期间本地文件发生变化');
+            throw const SyncException(
+              code: SyncErrorCode.sourceChangedDuringUpload,
+              operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
+              message: '上传期间本地文件发生变化',
+            );
           }
           final uploadedPath = filepath.posix.normalize(
             filepath.posix.join(uploaded.path, uploaded.name),
@@ -321,46 +416,91 @@ class LocalDirectorySyncService {
           if (uploaded.name != name ||
               uploaded.size.toInt() != sourceStat.size ||
               uploadedPath != targetPath) {
-            throw StateError('云端返回的文件信息与同步目标不一致');
+            throw const SyncException(
+              code: SyncErrorCode.uploadResultMismatch,
+              operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
+              message: '云端返回的文件信息与同步目标不一致',
+            );
           }
-          await SyncingService.instance.upsertRecords([
-            SyncRecord(
-              profileId: profile.id,
-              state: SyncRecord_State.STATE_ACTIVE,
-              configVersion: fixnum.Int64(profile.configVersion),
-              sourcePath: parent,
-              sourceKey: name,
-              sourceSize: fixnum.Int64(sourceStat.size),
-              sourceHash: sourceHash,
-              sourceHashAlgorithm: hashAlgorithm,
-              sourceModifiedAt: Timestamp.fromDateTime(sourceStat.modified),
-              targetPath: uploadedPath,
-              targetSize: uploaded.size,
-              targetHash: uploaded.hash,
-              targetModifiedAt:
-                  uploaded.hasUpdatedAt() ? uploaded.updatedAt : null,
-              syncedAt: Timestamp.fromDateTime(DateTime.now()),
-            ),
-          ]);
+          final record = SyncRecord(
+            profileId: profile.id,
+            state: SyncRecord_State.STATE_ACTIVE,
+            configVersion: fixnum.Int64(profile.configVersion),
+            sourcePath: parent,
+            sourceKey: name,
+            sourceSize: fixnum.Int64(sourceStat.size),
+            sourceHash: sourceHash,
+            sourceHashAlgorithm: hashAlgorithm,
+            sourceModifiedAt: Timestamp.fromDateTime(sourceStat.modified),
+            targetPath: uploadedPath,
+            targetSize: uploaded.size,
+            targetHash: uploaded.hash,
+            targetModifiedAt:
+                uploaded.hasUpdatedAt() ? uploaded.updatedAt : null,
+            syncedAt: Timestamp.fromDateTime(DateTime.now()),
+          );
+          fallbackCode = SyncErrorCode.recordWriteFailed;
+          await SyncErrorClassifier.execute(
+            action: () => SyncingService.instance.upsertRecords([record]),
+            fallbackCode: SyncErrorCode.recordWriteFailed,
+            unavailableCode: SyncErrorCode.syncServiceUnavailable,
+            timeoutCode: SyncErrorCode.syncServiceUnavailable,
+            operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
+          );
           targetStore.record(targetDirectory, uploaded);
-          synced++;
+          progress.synced++;
         } catch (error) {
-          issues.add(_errorIssue(
+          final failure = SyncErrorClassifier.classify(
+            error,
+            fallbackCode: fallbackCode,
+            operation: operation,
+          );
+          if (failure.scope == SyncErrorScope.run) rethrow;
+          if (failure.scope == SyncErrorScope.source) {
+            progress.issues.add(_sourceIssue(
+              sourceRoot: sourceRoot,
+              sourcePath: filepath.dirname(file.path),
+              message: failure.message,
+              code: failure.code,
+              operation: failure.operation,
+            ));
+            break;
+          }
+          progress.issues.add(_errorIssue(
             sourceRoot: sourceRoot,
             sourceFile: file.path,
             targetPath: targetPath,
-            message: '$error',
-            code: 'sync_failed',
-            operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
+            message: failure.message,
+            code: failure.code,
+            operation: failure.operation,
           ));
         }
       }
     }
-    return LocalDirectorySyncResult(
-      scanned: scanned,
-      synced: synced,
-      skipped: skipped,
-      issues: issues,
+  }
+
+  SyncHistoryIssue _issue({
+    required String sourceRoot,
+    required String sourceFile,
+    required String targetPath,
+    required String message,
+    required SyncErrorCode code,
+    required SyncHistoryIssue_Operation operation,
+  }) {
+    final relative = filepath.relative(sourceFile, from: sourceRoot);
+    return SyncHistoryIssue(
+      sourcePath: filepath.normalize(
+        filepath.absolute(filepath.dirname(sourceFile)),
+      ),
+      sourceKey: filepath.basename(sourceFile),
+      sourceLabel: relative == '.' ? filepath.basename(sourceFile) : relative,
+      targetPath: targetPath,
+      errorCode: code.value,
+      errorMessage: message,
+      errorOperation: operation,
+      kind: code.conflict
+          ? SyncHistoryIssue_Kind.KIND_CONFLICT
+          : SyncHistoryIssue_Kind.KIND_ERROR,
     );
   }
 
@@ -368,7 +508,7 @@ class LocalDirectorySyncService {
     required String sourceRoot,
     required String sourceFile,
     required String message,
-    required String code,
+    required SyncErrorCode code,
     required SyncHistoryIssue_Operation operation,
     String targetPath = '',
   }) {
@@ -379,6 +519,23 @@ class LocalDirectorySyncService {
       message: message,
       code: code,
       operation: operation,
+    );
+  }
+
+  SyncHistoryIssue _sourceIssue({
+    required String sourceRoot,
+    required String sourcePath,
+    required String message,
+    required SyncErrorCode code,
+    required SyncHistoryIssue_Operation operation,
+  }) {
+    final relative = filepath.relative(sourcePath, from: sourceRoot);
+    return SyncHistoryIssue(
+      sourcePath: filepath.normalize(filepath.absolute(sourcePath)),
+      sourceLabel: relative == '.' ? filepath.basename(sourcePath) : relative,
+      errorCode: code.value,
+      errorMessage: message,
+      errorOperation: operation,
       kind: SyncHistoryIssue_Kind.KIND_ERROR,
     );
   }
@@ -387,40 +544,15 @@ class LocalDirectorySyncService {
     required String sourceRoot,
     required String sourceFile,
     required String targetPath,
-    required String code,
+    required SyncErrorCode code,
   }) {
     return _issue(
       sourceRoot: sourceRoot,
       sourceFile: sourceFile,
       targetPath: targetPath,
-      message: code == 'target_modified' ? '云端文件已被修改' : '云端存在同名文件',
+      message: code == SyncErrorCode.targetModified ? '云端文件已被修改' : '云端存在同名文件',
       code: code,
       operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
-      kind: SyncHistoryIssue_Kind.KIND_CONFLICT,
-    );
-  }
-
-  SyncHistoryIssue _issue({
-    required String sourceRoot,
-    required String sourceFile,
-    required String targetPath,
-    required String message,
-    required String code,
-    required SyncHistoryIssue_Operation operation,
-    required SyncHistoryIssue_Kind kind,
-  }) {
-    final relative = filepath.relative(sourceFile, from: sourceRoot);
-    return SyncHistoryIssue(
-      sourcePath: filepath.normalize(
-        filepath.absolute(filepath.dirname(sourceFile)),
-      ),
-      sourceKey: filepath.basename(sourceFile),
-      sourceLabel: relative == '.' ? filepath.basename(sourceFile) : relative,
-      targetPath: targetPath,
-      errorCode: code,
-      errorMessage: message,
-      errorOperation: operation,
-      kind: kind,
     );
   }
 }

@@ -35,12 +35,15 @@ class FileService {
     return _client!;
   }
 
-  Future<List<File>> list({Map<String, String>? filter}) {
+  Future<List<File>> list({
+    Map<String, String>? filter,
+    bool showError = true,
+  }) {
     return doFuture(() async {
       File_ListRequest request = File_ListRequest(filter: filter);
       File_ListResponse response = await client.list(request);
       return response.results;
-    });
+    }, showError: showError);
   }
 
   Future<void> move(
@@ -90,15 +93,16 @@ class FileService {
 
   Future<void> mkdir(
     String path,
-    String name,
-  ) async {
+    String name, {
+    bool showError = true,
+  }) async {
     await doFuture(() {
       File_MkdirRequest request = File_MkdirRequest(
         path: path,
         name: name,
       );
       return client.mkdir(request);
-    });
+    }, showError: showError);
   }
 
   Future<void> remove(
@@ -156,7 +160,11 @@ class FileService {
   }
 
   Future<(File, String, String)> uploadFilePreservingName(
-      String path, io.File file, String name) async {
+    String path,
+    io.File file,
+    String name, {
+    bool showError = true,
+  }) async {
     return doFuture(() async {
       final stream = await IsolateUtil.streamCompute<(String, String, String),
           File_UploadRequest>(
@@ -174,7 +182,7 @@ class FileService {
         response.sourceHashAlgorithm,
         response.sourceHash
       );
-    });
+    }, showError: showError);
   }
 
   Future<List<File>> _uploadDir(

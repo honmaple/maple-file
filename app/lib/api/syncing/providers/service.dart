@@ -1,3 +1,5 @@
+import 'dart:io' as io;
+
 import 'package:grpc/grpc.dart';
 import 'package:path/path.dart' as filepath;
 
@@ -9,6 +11,240 @@ import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/generated/proto/api/file/file.pb.dart' as filepb;
 import 'package:maple_file/generated/proto/api/file/repo.pb.dart';
 import 'package:maple_file/generated/proto/api/syncing/syncing.pbgrpc.dart';
+
+enum SyncErrorScope { run, source, item }
+
+enum SyncErrorCode {
+  unsupportedPlatform('unsupported_platform', SyncErrorScope.run),
+  sourcePermissionDenied('source_permission_denied', SyncErrorScope.run),
+  sourceAuthorizationInvalid(
+    'source_authorization_invalid',
+    SyncErrorScope.run,
+  ),
+  sourceAuthorizationMismatch(
+    'source_authorization_mismatch',
+    SyncErrorScope.run,
+  ),
+  sourceRootMissing('source_root_missing', SyncErrorScope.run),
+  sourceRootUnreadable('source_root_unreadable', SyncErrorScope.run),
+  targetConfigInvalid('target_config_invalid', SyncErrorScope.run),
+  targetRepositoryUnavailable(
+    'target_repository_unavailable',
+    SyncErrorScope.run,
+  ),
+  targetRepositoryDisabled(
+    'target_repository_disabled',
+    SyncErrorScope.run,
+  ),
+  targetRepositoryLocalUnsupported(
+    'target_repository_local_unsupported',
+    SyncErrorScope.run,
+  ),
+  targetDirectoryInvalid('target_directory_invalid', SyncErrorScope.run),
+  targetNotDirectory('target_not_directory', SyncErrorScope.run),
+  targetAuthenticationFailed(
+    'target_authentication_failed',
+    SyncErrorScope.run,
+  ),
+  targetStorageFull('target_storage_full', SyncErrorScope.run),
+  recordReadFailed('record_read_failed', SyncErrorScope.run),
+  recordWriteFailed('record_write_failed', SyncErrorScope.run),
+  syncServiceUnavailable(
+    'sync_service_unavailable',
+    SyncErrorScope.run,
+    retryable: true,
+  ),
+  targetUnavailable(
+    'target_unavailable',
+    SyncErrorScope.run,
+    retryable: true,
+  ),
+  targetTimeout(
+    'target_timeout',
+    SyncErrorScope.run,
+    retryable: true,
+  ),
+  targetAccessFailed(
+    'target_access_failed',
+    SyncErrorScope.run,
+    retryable: true,
+  ),
+  sourceUnavailable('source_unavailable', SyncErrorScope.source),
+  sourceScanFailed('source_scan_failed', SyncErrorScope.source),
+  sourceUnreadable('source_unreadable', SyncErrorScope.item),
+  sourceMissing('source_missing', SyncErrorScope.item),
+  sourceOutsideRoot('source_outside_root', SyncErrorScope.item),
+  sourceChangedDuringUpload(
+    'source_changed_during_upload',
+    SyncErrorScope.item,
+  ),
+  uploadRejected('upload_rejected', SyncErrorScope.item),
+  uploadFailed('upload_failed', SyncErrorScope.item),
+  uploadResultMismatch('upload_result_mismatch', SyncErrorScope.item),
+  internalItemError('internal_item_error', SyncErrorScope.item),
+  targetExistsWithoutBaseline(
+    'target_exists_without_baseline',
+    SyncErrorScope.item,
+    conflict: true,
+  ),
+  targetModified(
+    'target_modified',
+    SyncErrorScope.item,
+    conflict: true,
+  );
+
+  const SyncErrorCode(
+    this.value,
+    this.scope, {
+    this.retryable = false,
+    this.conflict = false,
+  });
+
+  final String value;
+  final SyncErrorScope scope;
+  final bool retryable;
+  final bool conflict;
+}
+
+class SyncException implements Exception {
+  const SyncException({
+    required this.code,
+    required this.operation,
+    required this.message,
+    this.cause,
+  });
+
+  final SyncErrorCode code;
+  final SyncHistoryIssue_Operation operation;
+  final String message;
+  final Object? cause;
+
+  SyncErrorScope get scope => code.scope;
+
+  @override
+  String toString() => message;
+}
+
+class SyncErrorClassifier {
+  const SyncErrorClassifier._();
+
+  static SyncException classify(
+    Object error, {
+    SyncErrorCode fallbackCode = SyncErrorCode.internalItemError,
+    required SyncHistoryIssue_Operation operation,
+    SyncErrorCode unavailableCode = SyncErrorCode.targetUnavailable,
+    SyncErrorCode timeoutCode = SyncErrorCode.targetTimeout,
+  }) {
+    if (error is SyncException) return error;
+    final original = _originalError(error);
+    if (original is SyncException) return original;
+    var code = fallbackCode;
+    if (original is GrpcError) {
+      code = switch (original.code) {
+        StatusCode.unauthenticated ||
+        StatusCode.permissionDenied =>
+          SyncErrorCode.targetAuthenticationFailed,
+        StatusCode.unavailable => unavailableCode,
+        StatusCode.deadlineExceeded => timeoutCode,
+        StatusCode.resourceExhausted => SyncErrorCode.targetStorageFull,
+        StatusCode.invalidArgument
+            when fallbackCode == SyncErrorCode.uploadFailed =>
+          SyncErrorCode.uploadRejected,
+        _ => fallbackCode,
+      };
+    } else if (original is io.FileSystemException) {
+      code = _isMissingFile(original)
+          ? SyncErrorCode.sourceMissing
+          : SyncErrorCode.sourceUnreadable;
+    } else if (original is io.SocketException) {
+      code = unavailableCode;
+    }
+    return SyncException(
+      code: code,
+      operation: operation,
+      message: error is FutureException ? error.message : _message(original),
+      cause: original,
+    );
+  }
+
+  static Future<T> execute<T>({
+    required Future<T> Function() action,
+    required SyncErrorCode fallbackCode,
+    required SyncHistoryIssue_Operation operation,
+    SyncErrorCode unavailableCode = SyncErrorCode.targetUnavailable,
+    SyncErrorCode timeoutCode = SyncErrorCode.targetTimeout,
+    int maxAttempts = 3,
+    Duration retryDelay = const Duration(milliseconds: 200),
+  }) async {
+    assert(maxAttempts > 0);
+    for (var attempt = 1;; attempt++) {
+      try {
+        return await action();
+      } catch (error) {
+        final failure = classify(
+          error,
+          fallbackCode: fallbackCode,
+          operation: operation,
+          unavailableCode: unavailableCode,
+          timeoutCode: timeoutCode,
+        );
+        if (!failure.code.retryable || attempt >= maxAttempts) throw failure;
+        if (retryDelay > Duration.zero) {
+          await Future<void>.delayed(retryDelay * attempt);
+        }
+      }
+    }
+  }
+
+  static String _message(Object error) {
+    if (error is SyncException) return error.message;
+    if (error is GrpcError) return error.message ?? error.toString();
+    if (error is io.SocketException) return error.message;
+    if (error is io.FileSystemException) {
+      return error.message.isEmpty ? error.toString() : error.message;
+    }
+    return error.toString();
+  }
+
+  static Object _originalError(Object error) {
+    var result = error;
+    while (result is FutureException && !identical(result, result.cause)) {
+      result = result.cause;
+    }
+    return result;
+  }
+
+  static bool _isMissingFile(io.FileSystemException error) {
+    return switch (error.osError?.errorCode) {
+      2 || 3 => true,
+      _ => false,
+    };
+  }
+}
+
+class SyncRunProgress {
+  int scanned = 0;
+  int synced = 0;
+  int skipped = 0;
+  final List<SyncHistoryIssue> issues = [];
+
+  int get failed => issues
+      .where((issue) => issue.kind == SyncHistoryIssue_Kind.KIND_ERROR)
+      .length;
+
+  int get conflicted => issues
+      .where((issue) => issue.kind == SyncHistoryIssue_Kind.KIND_CONFLICT)
+      .length;
+
+  void addRunFailure(SyncException failure) {
+    issues.add(SyncHistoryIssue(
+      errorCode: failure.code.value,
+      errorMessage: failure.message,
+      errorOperation: failure.operation,
+      kind: SyncHistoryIssue_Kind.KIND_ERROR,
+    ));
+  }
+}
 
 enum SyncSourceType {
   unknown(''),
@@ -68,12 +304,19 @@ class FileSyncTargetGateway implements SyncTargetGateway {
 
   @override
   Future<List<filepb.File>> list(String path) {
-    return FileService.instance.list(filter: {'path': path});
+    return FileService.instance.list(
+      filter: {'path': path},
+      showError: false,
+    );
   }
 
   @override
   Future<void> mkdir(String path, String name) {
-    return FileService.instance.mkdir(path, name);
+    return FileService.instance.mkdir(
+      path,
+      name,
+      showError: false,
+    );
   }
 }
 
@@ -92,30 +335,46 @@ class SyncTargetDirectory {
   Future<List<filepb.File>> ensure(String path) async {
     final normalized = filepath.posix.normalize(path);
     if (!filepath.posix.isAbsolute(normalized)) {
-      throw StateError('同步目标目录无效：$path');
+      throw SyncException(
+        code: SyncErrorCode.targetDirectoryInvalid,
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+        message: '同步目标目录无效：$path',
+      );
     }
     final cached = _entries[normalized];
     if (cached != null) return cached;
     if (normalized == '/') {
-      final files = await _gateway.list(normalized);
+      final files = await _list(normalized);
       return _cache(normalized, files);
     }
 
     final parent = filepath.posix.dirname(normalized);
     final name = filepath.posix.basename(normalized);
     if (name.isEmpty || name == '/' || parent == normalized) {
-      throw StateError('同步目标目录无效：$path');
+      throw SyncException(
+        code: SyncErrorCode.targetDirectoryInvalid,
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+        message: '同步目标目录无效：$path',
+      );
     }
     final parentEntries = await ensure(parent);
     final existing = find(parentEntries, name);
     if (existing == null) {
-      await _gateway.mkdir(parent, name);
+      await SyncErrorClassifier.execute(
+        action: () => _gateway.mkdir(parent, name),
+        fallbackCode: SyncErrorCode.targetAccessFailed,
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+      );
       return _cache(normalized, const <filepb.File>[]);
     }
     if (existing.type != 'DIR') {
-      throw StateError('同步目标不是目录：$normalized');
+      throw SyncException(
+        code: SyncErrorCode.targetNotDirectory,
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+        message: '同步目标不是目录：$normalized',
+      );
     }
-    final files = await _gateway.list(normalized);
+    final files = await _list(normalized);
     return _cache(normalized, files);
   }
 
@@ -140,35 +399,68 @@ class SyncTargetDirectory {
   ) {
     return _entries[path] = List<filepb.File>.of(entries);
   }
+
+  Future<List<filepb.File>> _list(String path) {
+    return SyncErrorClassifier.execute(
+      action: () => _gateway.list(path),
+      fallbackCode: SyncErrorCode.targetAccessFailed,
+      operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+    );
+  }
 }
 
 class SyncTargetRepository {
   const SyncTargetRepository._();
 
   static Future<Repo> requireRemote(String path) async {
-    final repositories = await RepoService.instance.list();
-    return requireRemoteFrom(path, repositories);
+    final repos = await SyncErrorClassifier.execute(
+      action: () => RepoService.instance.list(
+        showError: false,
+      ),
+      operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+      fallbackCode: SyncErrorCode.targetRepositoryUnavailable,
+    );
+    return requireRemoteFrom(path, repos);
   }
 
-  static Repo requireRemoteFrom(String path, Iterable<Repo> repositories) {
-    final repository = resolve(path, repositories);
+  static Repo requireRemoteFrom(String path, Iterable<Repo> repos) {
+    if (!filepath.posix.isAbsolute(filepath.posix.normalize(path))) {
+      throw const SyncException(
+        code: SyncErrorCode.targetConfigInvalid,
+        message: '同步目标目录配置无效',
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+      );
+    }
+    final repository = resolve(path, repos);
     if (repository == null) {
-      throw StateError('同步目标不属于可用的存储仓库');
+      throw const SyncException(
+        code: SyncErrorCode.targetRepositoryUnavailable,
+        message: '同步目标不属于可用的存储仓库',
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+      );
     }
     if (!repository.status) {
-      throw StateError('同步目标所属的存储仓库已停用');
+      throw const SyncException(
+        code: SyncErrorCode.targetRepositoryDisabled,
+        message: '同步目标所属的存储仓库已停用',
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+      );
     }
     if (repository.driver == 'local') {
-      throw StateError('本地目录同步不能选择本地存储仓库作为目标');
+      throw const SyncException(
+        code: SyncErrorCode.targetRepositoryLocalUnsupported,
+        message: '本地目录同步不能选择本地存储仓库作为目标',
+        operation: SyncHistoryIssue_Operation.OPERATION_VERIFY,
+      );
     }
     return repository;
   }
 
-  static Repo? resolve(String path, Iterable<Repo> repositories) {
+  static Repo? resolve(String path, Iterable<Repo> repos) {
     final normalized = filepath.posix.normalize(path);
     Repo? result;
     var matchedLength = -1;
-    for (final repository in repositories) {
+    for (final repository in repos) {
       final root = filepath.posix.normalize(
         filepath.posix.join(repository.path, repository.name),
       );
@@ -183,9 +475,9 @@ class SyncTargetRepository {
     return result;
   }
 
-  static Set<String> localRoots(Iterable<Repo> repositories) {
+  static Set<String> localRoots(Iterable<Repo> repos) {
     return {
-      for (final repository in repositories)
+      for (final repository in repos)
         if (repository.driver == 'local')
           filepath.posix.normalize(
             filepath.posix.join(repository.path, repository.name),
@@ -217,64 +509,71 @@ class SyncingService {
     return _client!;
   }
 
-  Future<List<SyncProfile>> listProfiles() => doFuture(() async {
+  Future<T> _request<T>(Future<T> Function() callback) {
+    return doFuture(
+      callback,
+      showError: false,
+    );
+  }
+
+  Future<List<SyncProfile>> listProfiles() => _request(() async {
         final response =
             await _syncClient.listProfiles(SyncProfile_ListRequest());
         return response.results;
       });
 
-  Future<SyncProfile> createProfile(SyncProfile profile) => doFuture(() async {
+  Future<SyncProfile> createProfile(SyncProfile profile) => _request(() async {
         final response = await _syncClient.createProfile(
           SyncProfile_CreateRequest(payload: profile),
         );
         return response.result;
       });
 
-  Future<SyncProfile> updateProfile(SyncProfile profile) => doFuture(() async {
+  Future<SyncProfile> updateProfile(SyncProfile profile) => _request(() async {
         final response = await _syncClient.updateProfile(
           SyncProfile_UpdateRequest(payload: profile),
         );
         return response.result;
       });
 
-  Future<void> deleteProfile(int id) => doFuture(() async {
+  Future<void> deleteProfile(int id) => _request(() async {
         await _syncClient.deleteProfile(SyncProfile_DeleteRequest(id: id));
       });
 
   Future<List<SyncRecord>> listRecords(SyncRecord_ListRequest request) =>
-      doFuture(() async {
+      _request(() async {
         final response = await _syncClient.listRecords(request);
         return response.results;
       });
 
   Future<void> upsertRecords(Iterable<SyncRecord> records) =>
-      doFuture(() async {
+      _request(() async {
         await _syncClient.upsertRecords(
           SyncRecord_UpsertRequest(results: records),
         );
       });
 
   Future<List<SyncHistory>> listHistories(SyncHistory_ListRequest request) =>
-      doFuture(() async {
+      _request(() async {
         final response = await _syncClient.listHistories(request);
         return response.results;
       });
 
-  Future<SyncHistory> createHistory(SyncHistory history) => doFuture(() async {
+  Future<SyncHistory> createHistory(SyncHistory history) => _request(() async {
         final response = await _syncClient.createHistory(
           SyncHistory_CreateRequest(payload: history),
         );
         return response.result;
       });
 
-  Future<SyncHistory> startHistory(SyncHistory history) => doFuture(() async {
+  Future<SyncHistory> startHistory(SyncHistory history) => _request(() async {
         final response = await _syncClient.startHistory(
           SyncHistory_StartRequest(payload: history),
         );
         return response.result;
       });
 
-  Future<SyncHistory> finishHistory(SyncHistory history) => doFuture(() async {
+  Future<SyncHistory> finishHistory(SyncHistory history) => _request(() async {
         final response = await _syncClient.finishHistory(
           SyncHistory_FinishRequest(payload: history),
         );
@@ -284,7 +583,7 @@ class SyncingService {
   Future<List<SyncHistoryIssue>> listHistoryIssues(
     SyncHistoryIssue_ListRequest request,
   ) =>
-      doFuture(() async {
+      _request(() async {
         final response = await _syncClient.listHistoryIssues(request);
         return response.results;
       });

@@ -61,13 +61,21 @@ class LocalDirectorySyncProfile {
             SyncTargetType.repoDirectory) {
       throw const FormatException('此同步配置不是本地目录同步');
     }
+    Map<String, dynamic> decodeConfig(String value, String name) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is Map<String, dynamic>) return decoded;
+      } catch (_) {}
+      throw FormatException('$name配置格式错误');
+    }
+
     return LocalDirectorySyncProfile._(
       profile: profile,
       sourceConfig: LocalDirectorySourceConfig.fromJson(
-        _decodeConfig(profile.sourceConfig, '本地来源'),
+        decodeConfig(profile.sourceConfig, '本地来源'),
       ),
       targetConfig: LocalDirectoryTargetConfig.fromJson(
-        _decodeConfig(profile.targetConfig, '同步目标'),
+        decodeConfig(profile.targetConfig, '同步目标'),
       ),
     );
   }
@@ -104,13 +112,5 @@ class LocalDirectorySyncProfile {
       ..sourceConfig = jsonEncode(sourceConfig.toJson())
       ..targetConfig = jsonEncode(targetConfig.toJson())
       ..policyConfig = '{}';
-  }
-
-  static Map<String, dynamic> _decodeConfig(String value, String name) {
-    try {
-      final decoded = jsonDecode(value);
-      if (decoded is Map<String, dynamic>) return decoded;
-    } catch (_) {}
-    throw FormatException('$name配置格式错误');
   }
 }

@@ -34,12 +34,15 @@ class RepoService {
     return _client!;
   }
 
-  Future<List<Repo>> list({Map<String, String>? filter}) {
+  Future<List<Repo>> list({
+    Map<String, String>? filter,
+    bool showError = true,
+  }) {
     return doFuture(() async {
       Repo_ListRequest request = Repo_ListRequest(filter: filter);
       Repo_ListResponse response = await client.listRepos(request);
       return response.results;
-    });
+    }, showError: showError);
   }
 
   Future<void> test(Repo payload) {

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 
@@ -8,6 +7,18 @@ import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
 part 'file_setting.g.dart';
 part 'file_setting.freezed.dart';
+
+enum FileUploadPolicy {
+  @JsonValue('preserve')
+  preserve,
+  @JsonValue('rename')
+  rename;
+
+  String get label => switch (this) {
+        FileUploadPolicy.preserve => '保留文件名'.tr(),
+        FileUploadPolicy.rename => '自动重命名'.tr(),
+      };
+}
 
 enum FileListView {
   list,
@@ -62,6 +73,19 @@ extension FileListIconExtension on FileListIcon {
 }
 
 @freezed
+class FileThumbSetting with _$FileThumbSetting {
+  factory FileThumbSetting({
+    @Default(200) int width,
+    @Default(200) int height,
+    @Default(100) int quality,
+    @JsonKey(name: 'auto_clean') @Default(false) bool autoClean,
+  }) = _FileThumbSetting;
+
+  factory FileThumbSetting.fromJson(Map<String, Object?> json) =>
+      _$FileThumbSettingFromJson(json);
+}
+
+@freezed
 class FileSetting with _$FileSetting {
   const FileSetting._();
 
@@ -72,11 +96,12 @@ class FileSetting with _$FileSetting {
     @Default(FileListView.list) @JsonKey(name: 'view') FileListView view,
     @Default(FileListIcon.rectangle) @JsonKey(name: 'icon') FileListIcon icon,
     @JsonKey(name: 'iconColor') String? iconColor,
-    @Default("") @JsonKey(name: 'upload.format') String uploadFormat,
-    @Default(false) @JsonKey(name: 'upload.rename') bool uploadRename,
-    @Default(0) @JsonKey(name: 'upload.limit_size') int uploadLimitSize,
-    @Default("") @JsonKey(name: 'upload.limit_type') String uploadLimitType,
-    @Default(32) @JsonKey(name: 'upload.slice_size') int uploadSliceSize,
+    @Default(FileUploadPolicy.preserve)
+    @JsonKey(
+      name: 'upload.policy',
+      unknownEnumValue: FileUploadPolicy.preserve,
+    )
+    FileUploadPolicy uploadPolicy,
     @JsonKey(name: 'download.path') String? downloadPath,
     @Default(10) @JsonKey(name: 'download.queue_size') int downloadQueueSize,
     @Default(0) @JsonKey(name: 'pagination.size') int paginationSize,
@@ -90,19 +115,6 @@ class FileSetting with _$FileSetting {
         (item) => item.name == iconColor,
         orElse: () => defaultFlexScheme,
       );
-}
-
-@freezed
-class FileThumbSetting with _$FileThumbSetting {
-  factory FileThumbSetting({
-    @Default(200) int width,
-    @Default(200) int height,
-    @Default(100) int quality,
-    @JsonKey(name: 'auto_clean') @Default(false) bool autoClean,
-  }) = _FileThumbSetting;
-
-  factory FileThumbSetting.fromJson(Map<String, Object?> json) =>
-      _$FileThumbSettingFromJson(json);
 }
 
 final fileSettingProvider = newSettingNotifier(

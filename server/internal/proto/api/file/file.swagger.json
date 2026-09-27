@@ -447,6 +447,16 @@
     "FileRenameResponse": {
       "type": "object"
     },
+    "FileUploadPolicy": {
+      "type": "string",
+      "enum": [
+        "UPLOAD_POLICY_INHERIT",
+        "UPLOAD_POLICY_PRESERVE",
+        "UPLOAD_POLICY_RENAME"
+      ],
+      "default": "UPLOAD_POLICY_INHERIT",
+      "description": " - UPLOAD_POLICY_INHERIT: Use the global upload policy.\n - UPLOAD_POLICY_PRESERVE: Keep the requested filename unchanged.\n - UPLOAD_POLICY_RENAME: Append a unique timestamp to the requested filename."
+    },
     "FileUploadRequest": {
       "type": "object",
       "properties": {
@@ -468,8 +478,9 @@
           "type": "string",
           "format": "byte"
         },
-        "preserveFilename": {
-          "type": "boolean"
+        "uploadPolicy": {
+          "$ref": "#/definitions/FileUploadPolicy",
+          "description": "Overrides the global upload policy when it is not INHERIT."
         }
       }
     },
@@ -480,12 +491,6 @@
           "$ref": "#/definitions/fileFile"
         },
         "message": {
-          "type": "string"
-        },
-        "sourceHashAlgorithm": {
-          "type": "string"
-        },
-        "sourceHash": {
           "type": "string"
         }
       }

@@ -7,6 +7,7 @@ import 'package:path/path.dart' as filepath;
 import 'package:photo_manager/photo_manager.dart';
 
 import 'package:maple_file/common/utils/util.dart';
+import 'package:maple_file/generated/proto/api/file/file.pb.dart' as filepb;
 import 'package:maple_file/generated/proto/api/syncing/syncing.pb.dart';
 import 'package:maple_file/generated/proto/google/protobuf/timestamp.pb.dart';
 
@@ -422,12 +423,12 @@ class AlbumBackupService {
           stage = '上传到 ${uploadTarget.directory}/${uploadTarget.name}';
           fallbackCode = SyncErrorCode.uploadFailed;
           operation = SyncHistoryIssue_Operation.OPERATION_UPLOAD;
-          final (uploadedFile, hashAlgorithm, sourceHash) =
-              await SyncErrorClassifier.execute(
-            action: () => FileService.instance.uploadFilePreservingName(
+          final uploadedFile = await SyncErrorClassifier.execute(
+            action: () => FileService.instance.uploadFile(
               uploadTarget.directory,
               file,
               uploadTarget.name,
+              uploadPolicy: filepb.File_UploadPolicy.UPLOAD_POLICY_PRESERVE,
               showError: false,
             ),
             fallbackCode: SyncErrorCode.uploadFailed,
@@ -455,7 +456,8 @@ class AlbumBackupService {
           );
           if (uploadedFile.name != uploadTarget.name ||
               uploadedFile.size.toInt() != sourceStat.size ||
-              uploadedPath != targetItemPath) {
+              uploadedPath != targetItemPath ||
+              uploadedFile.hash.isEmpty) {
             throw const SyncException(
               code: SyncErrorCode.uploadResultMismatch,
               operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
@@ -473,8 +475,8 @@ class AlbumBackupService {
             sourceModifiedAt: Timestamp.fromDateTime(asset.modifiedDateTime),
             targetModifiedAt:
                 uploadedFile.hasUpdatedAt() ? uploadedFile.updatedAt : null,
-            sourceHashAlgorithm: hashAlgorithm,
-            sourceHash: sourceHash,
+            sourceHashAlgorithm: FileService.hashAlgorithm,
+            sourceHash: uploadedFile.hash,
             state: SyncRecord_State.STATE_ACTIVE,
             syncedAt: Timestamp.fromDateTime(DateTime.now()),
           );

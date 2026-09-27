@@ -23,6 +23,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type File_UploadPolicy int32
+
+const (
+	// Use the global upload policy.
+	File_UPLOAD_POLICY_INHERIT File_UploadPolicy = 0
+	// Keep the requested filename unchanged.
+	File_UPLOAD_POLICY_PRESERVE File_UploadPolicy = 1
+	// Append a unique timestamp to the requested filename.
+	File_UPLOAD_POLICY_RENAME File_UploadPolicy = 2
+)
+
+// Enum value maps for File_UploadPolicy.
+var (
+	File_UploadPolicy_name = map[int32]string{
+		0: "UPLOAD_POLICY_INHERIT",
+		1: "UPLOAD_POLICY_PRESERVE",
+		2: "UPLOAD_POLICY_RENAME",
+	}
+	File_UploadPolicy_value = map[string]int32{
+		"UPLOAD_POLICY_INHERIT":  0,
+		"UPLOAD_POLICY_PRESERVE": 1,
+		"UPLOAD_POLICY_RENAME":   2,
+	}
+)
+
+func (x File_UploadPolicy) Enum() *File_UploadPolicy {
+	p := new(File_UploadPolicy)
+	*p = x
+	return p
+}
+
+func (x File_UploadPolicy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (File_UploadPolicy) Descriptor() protoreflect.EnumDescriptor {
+	return file_api_file_file_proto_enumTypes[0].Descriptor()
+}
+
+func (File_UploadPolicy) Type() protoreflect.EnumType {
+	return &file_api_file_file_proto_enumTypes[0]
+}
+
+func (x File_UploadPolicy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use File_UploadPolicy.Descriptor instead.
+func (File_UploadPolicy) EnumDescriptor() ([]byte, []int) {
+	return file_api_file_file_proto_rawDescGZIP(), []int{0, 0}
+}
+
 type File struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// @gotags: gorm:"primary_key;auto_increment"
@@ -146,15 +198,16 @@ func (x *File) GetRepoId() int32 {
 }
 
 type File_UploadRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Index            int32                  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
-	Size             int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
-	Path             string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-	Filename         string                 `protobuf:"bytes,4,opt,name=filename,proto3" json:"filename,omitempty"`
-	Chunk            []byte                 `protobuf:"bytes,2,opt,name=chunk,proto3" json:"chunk,omitempty"`
-	PreserveFilename bool                   `protobuf:"varint,6,opt,name=preserve_filename,json=preserveFilename,proto3" json:"preserve_filename,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Index    int32                  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
+	Size     int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
+	Path     string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
+	Filename string                 `protobuf:"bytes,4,opt,name=filename,proto3" json:"filename,omitempty"`
+	Chunk    []byte                 `protobuf:"bytes,2,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	// Overrides the global upload policy when it is not INHERIT.
+	UploadPolicy  File_UploadPolicy `protobuf:"varint,6,opt,name=upload_policy,json=uploadPolicy,proto3,enum=api.file.File_UploadPolicy" json:"upload_policy,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *File_UploadRequest) Reset() {
@@ -222,21 +275,19 @@ func (x *File_UploadRequest) GetChunk() []byte {
 	return nil
 }
 
-func (x *File_UploadRequest) GetPreserveFilename() bool {
+func (x *File_UploadRequest) GetUploadPolicy() File_UploadPolicy {
 	if x != nil {
-		return x.PreserveFilename
+		return x.UploadPolicy
 	}
-	return false
+	return File_UPLOAD_POLICY_INHERIT
 }
 
 type File_UploadResponse struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Result              *File                  `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
-	Message             string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	SourceHashAlgorithm string                 `protobuf:"bytes,3,opt,name=source_hash_algorithm,json=sourceHashAlgorithm,proto3" json:"source_hash_algorithm,omitempty"`
-	SourceHash          string                 `protobuf:"bytes,4,opt,name=source_hash,json=sourceHash,proto3" json:"source_hash,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Result        *File                  `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *File_UploadResponse) Reset() {
@@ -279,20 +330,6 @@ func (x *File_UploadResponse) GetResult() *File {
 func (x *File_UploadResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
-	}
-	return ""
-}
-
-func (x *File_UploadResponse) GetSourceHashAlgorithm() string {
-	if x != nil {
-		return x.SourceHashAlgorithm
-	}
-	return ""
-}
-
-func (x *File_UploadResponse) GetSourceHash() string {
-	if x != nil {
-		return x.SourceHash
 	}
 	return ""
 }
@@ -1029,7 +1066,7 @@ var File_api_file_file_proto protoreflect.FileDescriptor
 
 const file_api_file_file_proto_rawDesc = "" +
 	"\n" +
-	"\x13api/file/file.proto\x12\bapi.file\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13api/file/repo.proto\"\xaf\v\n" +
+	"\x13api/file/file.proto\x12\bapi.file\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x13api/file/repo.proto\"\xcf\v\n" +
 	"\x04File\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x129\n" +
 	"\n" +
@@ -1043,20 +1080,17 @@ const file_api_file_file_proto_rawDesc = "" +
 	"\x04path\x18\b \x01(\tR\x04path\x12\"\n" +
 	"\x04repo\x18\n" +
 	" \x01(\v2\x0e.api.file.RepoR\x04repo\x12\x17\n" +
-	"\arepo_id\x18\v \x01(\x05R\x06repoId\x1a\xac\x01\n" +
+	"\arepo_id\x18\v \x01(\x05R\x06repoId\x1a\xc1\x01\n" +
 	"\rUploadRequest\x12\x14\n" +
 	"\x05index\x18\x01 \x01(\x05R\x05index\x12\x12\n" +
 	"\x04size\x18\x05 \x01(\x03R\x04size\x12\x12\n" +
 	"\x04path\x18\x03 \x01(\tR\x04path\x12\x1a\n" +
 	"\bfilename\x18\x04 \x01(\tR\bfilename\x12\x14\n" +
-	"\x05chunk\x18\x02 \x01(\fR\x05chunk\x12+\n" +
-	"\x11preserve_filename\x18\x06 \x01(\bR\x10preserveFilename\x1a\xa7\x01\n" +
+	"\x05chunk\x18\x02 \x01(\fR\x05chunk\x12@\n" +
+	"\rupload_policy\x18\x06 \x01(\x0e2\x1b.api.file.File.UploadPolicyR\fuploadPolicy\x1aR\n" +
 	"\x0eUploadResponse\x12&\n" +
 	"\x06result\x18\x01 \x01(\v2\x0e.api.file.FileR\x06result\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x122\n" +
-	"\x15source_hash_algorithm\x18\x03 \x01(\tR\x13sourceHashAlgorithm\x12\x1f\n" +
-	"\vsource_hash\x18\x04 \x01(\tR\n" +
-	"sourceHash\x1a\x88\x01\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x1a\x88\x01\n" +
 	"\vListRequest\x12>\n" +
 	"\x06filter\x18\x01 \x03(\v2&.api.file.File.ListRequest.FilterEntryR\x06filter\x1a9\n" +
 	"\vFilterEntry\x12\x10\n" +
@@ -1094,7 +1128,11 @@ const file_api_file_file_proto_rawDesc = "" +
 	"\x0fDownloadRequest\x12\x12\n" +
 	"\x04path\x18\x01 \x01(\tR\x04path\x1a(\n" +
 	"\x10DownloadResponse\x12\x14\n" +
-	"\x05chunk\x18\x01 \x01(\fR\x05chunk2\x87\a\n" +
+	"\x05chunk\x18\x01 \x01(\fR\x05chunk\"_\n" +
+	"\fUploadPolicy\x12\x19\n" +
+	"\x15UPLOAD_POLICY_INHERIT\x10\x00\x12\x1a\n" +
+	"\x16UPLOAD_POLICY_PRESERVE\x10\x01\x12\x18\n" +
+	"\x14UPLOAD_POLICY_RENAME\x10\x022\x87\a\n" +
 	"\vFileService\x12Z\n" +
 	"\x04List\x12\x1a.api.file.File.ListRequest\x1a\x1b.api.file.File.ListResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/api/file/list\x12Z\n" +
 	"\x04Move\x12\x1a.api.file.File.MoveRequest\x1a\x1b.api.file.File.MoveResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/api/file/move\x12Z\n" +
@@ -1119,61 +1157,64 @@ func file_api_file_file_proto_rawDescGZIP() []byte {
 	return file_api_file_file_proto_rawDescData
 }
 
+var file_api_file_file_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_api_file_file_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_api_file_file_proto_goTypes = []any{
-	(*File)(nil),                  // 0: api.file.File
-	(*File_UploadRequest)(nil),    // 1: api.file.File.UploadRequest
-	(*File_UploadResponse)(nil),   // 2: api.file.File.UploadResponse
-	(*File_ListRequest)(nil),      // 3: api.file.File.ListRequest
-	(*File_ListResponse)(nil),     // 4: api.file.File.ListResponse
-	(*File_MoveRequest)(nil),      // 5: api.file.File.MoveRequest
-	(*File_MoveResponse)(nil),     // 6: api.file.File.MoveResponse
-	(*File_CopyRequest)(nil),      // 7: api.file.File.CopyRequest
-	(*File_CopyResponse)(nil),     // 8: api.file.File.CopyResponse
-	(*File_MkdirRequest)(nil),     // 9: api.file.File.MkdirRequest
-	(*File_MkdirResponse)(nil),    // 10: api.file.File.MkdirResponse
-	(*File_RenameRequest)(nil),    // 11: api.file.File.RenameRequest
-	(*File_RenameResponse)(nil),   // 12: api.file.File.RenameResponse
-	(*File_RemoveRequest)(nil),    // 13: api.file.File.RemoveRequest
-	(*File_RemoveResponse)(nil),   // 14: api.file.File.RemoveResponse
-	(*File_PreviewRequest)(nil),   // 15: api.file.File.PreviewRequest
-	(*File_PreviewResponse)(nil),  // 16: api.file.File.PreviewResponse
-	(*File_DownloadRequest)(nil),  // 17: api.file.File.DownloadRequest
-	(*File_DownloadResponse)(nil), // 18: api.file.File.DownloadResponse
-	nil,                           // 19: api.file.File.ListRequest.FilterEntry
-	(*timestamppb.Timestamp)(nil), // 20: google.protobuf.Timestamp
-	(*Repo)(nil),                  // 21: api.file.Repo
+	(File_UploadPolicy)(0),        // 0: api.file.File.UploadPolicy
+	(*File)(nil),                  // 1: api.file.File
+	(*File_UploadRequest)(nil),    // 2: api.file.File.UploadRequest
+	(*File_UploadResponse)(nil),   // 3: api.file.File.UploadResponse
+	(*File_ListRequest)(nil),      // 4: api.file.File.ListRequest
+	(*File_ListResponse)(nil),     // 5: api.file.File.ListResponse
+	(*File_MoveRequest)(nil),      // 6: api.file.File.MoveRequest
+	(*File_MoveResponse)(nil),     // 7: api.file.File.MoveResponse
+	(*File_CopyRequest)(nil),      // 8: api.file.File.CopyRequest
+	(*File_CopyResponse)(nil),     // 9: api.file.File.CopyResponse
+	(*File_MkdirRequest)(nil),     // 10: api.file.File.MkdirRequest
+	(*File_MkdirResponse)(nil),    // 11: api.file.File.MkdirResponse
+	(*File_RenameRequest)(nil),    // 12: api.file.File.RenameRequest
+	(*File_RenameResponse)(nil),   // 13: api.file.File.RenameResponse
+	(*File_RemoveRequest)(nil),    // 14: api.file.File.RemoveRequest
+	(*File_RemoveResponse)(nil),   // 15: api.file.File.RemoveResponse
+	(*File_PreviewRequest)(nil),   // 16: api.file.File.PreviewRequest
+	(*File_PreviewResponse)(nil),  // 17: api.file.File.PreviewResponse
+	(*File_DownloadRequest)(nil),  // 18: api.file.File.DownloadRequest
+	(*File_DownloadResponse)(nil), // 19: api.file.File.DownloadResponse
+	nil,                           // 20: api.file.File.ListRequest.FilterEntry
+	(*timestamppb.Timestamp)(nil), // 21: google.protobuf.Timestamp
+	(*Repo)(nil),                  // 22: api.file.Repo
 }
 var file_api_file_file_proto_depIdxs = []int32{
-	20, // 0: api.file.File.created_at:type_name -> google.protobuf.Timestamp
-	20, // 1: api.file.File.updated_at:type_name -> google.protobuf.Timestamp
-	21, // 2: api.file.File.repo:type_name -> api.file.Repo
-	0,  // 3: api.file.File.UploadResponse.result:type_name -> api.file.File
-	19, // 4: api.file.File.ListRequest.filter:type_name -> api.file.File.ListRequest.FilterEntry
-	0,  // 5: api.file.File.ListResponse.results:type_name -> api.file.File
-	3,  // 6: api.file.FileService.List:input_type -> api.file.File.ListRequest
-	5,  // 7: api.file.FileService.Move:input_type -> api.file.File.MoveRequest
-	7,  // 8: api.file.FileService.Copy:input_type -> api.file.File.CopyRequest
-	9,  // 9: api.file.FileService.Mkdir:input_type -> api.file.File.MkdirRequest
-	11, // 10: api.file.FileService.Rename:input_type -> api.file.File.RenameRequest
-	13, // 11: api.file.FileService.Remove:input_type -> api.file.File.RemoveRequest
-	1,  // 12: api.file.FileService.Upload:input_type -> api.file.File.UploadRequest
-	17, // 13: api.file.FileService.Download:input_type -> api.file.File.DownloadRequest
-	15, // 14: api.file.FileService.Preview:input_type -> api.file.File.PreviewRequest
-	4,  // 15: api.file.FileService.List:output_type -> api.file.File.ListResponse
-	6,  // 16: api.file.FileService.Move:output_type -> api.file.File.MoveResponse
-	8,  // 17: api.file.FileService.Copy:output_type -> api.file.File.CopyResponse
-	10, // 18: api.file.FileService.Mkdir:output_type -> api.file.File.MkdirResponse
-	12, // 19: api.file.FileService.Rename:output_type -> api.file.File.RenameResponse
-	14, // 20: api.file.FileService.Remove:output_type -> api.file.File.RemoveResponse
-	2,  // 21: api.file.FileService.Upload:output_type -> api.file.File.UploadResponse
-	18, // 22: api.file.FileService.Download:output_type -> api.file.File.DownloadResponse
-	16, // 23: api.file.FileService.Preview:output_type -> api.file.File.PreviewResponse
-	15, // [15:24] is the sub-list for method output_type
-	6,  // [6:15] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	21, // 0: api.file.File.created_at:type_name -> google.protobuf.Timestamp
+	21, // 1: api.file.File.updated_at:type_name -> google.protobuf.Timestamp
+	22, // 2: api.file.File.repo:type_name -> api.file.Repo
+	0,  // 3: api.file.File.UploadRequest.upload_policy:type_name -> api.file.File.UploadPolicy
+	1,  // 4: api.file.File.UploadResponse.result:type_name -> api.file.File
+	20, // 5: api.file.File.ListRequest.filter:type_name -> api.file.File.ListRequest.FilterEntry
+	1,  // 6: api.file.File.ListResponse.results:type_name -> api.file.File
+	4,  // 7: api.file.FileService.List:input_type -> api.file.File.ListRequest
+	6,  // 8: api.file.FileService.Move:input_type -> api.file.File.MoveRequest
+	8,  // 9: api.file.FileService.Copy:input_type -> api.file.File.CopyRequest
+	10, // 10: api.file.FileService.Mkdir:input_type -> api.file.File.MkdirRequest
+	12, // 11: api.file.FileService.Rename:input_type -> api.file.File.RenameRequest
+	14, // 12: api.file.FileService.Remove:input_type -> api.file.File.RemoveRequest
+	2,  // 13: api.file.FileService.Upload:input_type -> api.file.File.UploadRequest
+	18, // 14: api.file.FileService.Download:input_type -> api.file.File.DownloadRequest
+	16, // 15: api.file.FileService.Preview:input_type -> api.file.File.PreviewRequest
+	5,  // 16: api.file.FileService.List:output_type -> api.file.File.ListResponse
+	7,  // 17: api.file.FileService.Move:output_type -> api.file.File.MoveResponse
+	9,  // 18: api.file.FileService.Copy:output_type -> api.file.File.CopyResponse
+	11, // 19: api.file.FileService.Mkdir:output_type -> api.file.File.MkdirResponse
+	13, // 20: api.file.FileService.Rename:output_type -> api.file.File.RenameResponse
+	15, // 21: api.file.FileService.Remove:output_type -> api.file.File.RemoveResponse
+	3,  // 22: api.file.FileService.Upload:output_type -> api.file.File.UploadResponse
+	19, // 23: api.file.FileService.Download:output_type -> api.file.File.DownloadResponse
+	17, // 24: api.file.FileService.Preview:output_type -> api.file.File.PreviewResponse
+	16, // [16:25] is the sub-list for method output_type
+	7,  // [7:16] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_api_file_file_proto_init() }
@@ -1187,13 +1228,14 @@ func file_api_file_file_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_file_file_proto_rawDesc), len(file_api_file_file_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_api_file_file_proto_goTypes,
 		DependencyIndexes: file_api_file_file_proto_depIdxs,
+		EnumInfos:         file_api_file_file_proto_enumTypes,
 		MessageInfos:      file_api_file_file_proto_msgTypes,
 	}.Build()
 	File_api_file_file_proto = out.File

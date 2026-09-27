@@ -382,12 +382,12 @@ class LocalDirectorySyncService {
           }
           operation = SyncHistoryIssue_Operation.OPERATION_UPLOAD;
           fallbackCode = SyncErrorCode.uploadFailed;
-          final (uploaded, hashAlgorithm, sourceHash) =
-              await SyncErrorClassifier.execute(
-            action: () => FileService.instance.uploadFilePreservingName(
+          final uploaded = await SyncErrorClassifier.execute(
+            action: () => FileService.instance.uploadFile(
               targetDirectory,
               file,
               name,
+              uploadPolicy: filepb.File_UploadPolicy.UPLOAD_POLICY_PRESERVE,
               showError: false,
             ),
             fallbackCode: SyncErrorCode.uploadFailed,
@@ -415,7 +415,8 @@ class LocalDirectorySyncService {
           );
           if (uploaded.name != name ||
               uploaded.size.toInt() != sourceStat.size ||
-              uploadedPath != targetPath) {
+              uploadedPath != targetPath ||
+              uploaded.hash.isEmpty) {
             throw const SyncException(
               code: SyncErrorCode.uploadResultMismatch,
               operation: SyncHistoryIssue_Operation.OPERATION_UPLOAD,
@@ -429,8 +430,8 @@ class LocalDirectorySyncService {
             sourcePath: parent,
             sourceKey: name,
             sourceSize: fixnum.Int64(sourceStat.size),
-            sourceHash: sourceHash,
-            sourceHashAlgorithm: hashAlgorithm,
+            sourceHash: uploaded.hash,
+            sourceHashAlgorithm: FileService.hashAlgorithm,
             sourceModifiedAt: Timestamp.fromDateTime(sourceStat.modified),
             targetPath: uploadedPath,
             targetSize: uploaded.size,

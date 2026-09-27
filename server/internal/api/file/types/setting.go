@@ -1,11 +1,15 @@
 package types
 
+type UploadPolicy string
+
+const (
+	UploadPolicyPreserve UploadPolicy = "preserve"
+	UploadPolicyRename   UploadPolicy = "rename"
+)
+
 type FileSetting struct {
-	UploadFormat    string       `json:"upload.format"`
-	UploadRename    bool         `json:"upload.rename"`
-	UploadLimitSize int64        `json:"upload.limit_size"`
-	UploadLimitType string       `json:"upload.limit_type"`
-	Thumb           ThumbSetting `json:"thumb"`
+	UploadPolicy UploadPolicy `json:"upload.policy"`
+	Thumb        ThumbSetting `json:"thumb"`
 }
 
 type ThumbSetting struct {

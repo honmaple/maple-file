@@ -77,7 +77,7 @@ func (srv *serviceImpl) RegisterHTTP(e *echo.Echo) {
 				return err
 			}
 
-			result, _, err := srv.upload(rctx, &pb.File_UploadRequest{
+			result, err := srv.upload(rctx, &pb.File_UploadRequest{
 				Path:     path,
 				Size:     file.Size,
 				Filename: file.Filename,

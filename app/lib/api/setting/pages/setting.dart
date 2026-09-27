@@ -91,24 +91,13 @@ class SettingScreen extends StatelessWidget {
               ),
               PlatformListTile(
                 leading: Icon(
-                  Icons.upload,
+                  Icons.swap_vert,
                   color: themeData.colorScheme.primary,
                 ),
-                title: Text('文件上传'.tr()),
+                title: Text('文件传输'.tr()),
                 trailing: PlatformListTileChevron(),
                 onTap: () {
-                  navigatorState(context).pushNamed('/file/setting/upload');
-                },
-              ),
-              PlatformListTile(
-                leading: Icon(
-                  Icons.download,
-                  color: themeData.colorScheme.primary,
-                ),
-                title: Text('文件下载'.tr()),
-                trailing: PlatformListTileChevron(),
-                onTap: () {
-                  navigatorState(context).pushNamed('/file/setting/download');
+                  navigatorState(context).pushNamed('/file/setting/transfer');
                 },
               ),
               PlatformListTile(
@@ -261,17 +250,10 @@ class _DesktopSettingState extends State<DesktopSettingScreen> {
             },
           ),
           CustomTreeMenu(
-            icon: Icons.upload,
-            label: '文件上传'.tr(),
+            icon: Icons.swap_vert,
+            label: '文件传输'.tr(),
             onTap: () {
-              _navigatorPush('/file/setting/upload');
-            },
-          ),
-          CustomTreeMenu(
-            icon: Icons.download,
-            label: '文件下载'.tr(),
-            onTap: () {
-              _navigatorPush('/file/setting/download');
+              _navigatorPush('/file/setting/transfer');
             },
           ),
           CustomTreeMenu(

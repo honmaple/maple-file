@@ -9,9 +9,8 @@ import "pages/repo_list.dart";
 import "pages/repo_edit.dart";
 
 import "pages/setting_theme.dart";
-import "pages/setting_upload.dart";
+import "pages/setting_transfer.dart";
 import "pages/setting_server.dart";
-import "pages/setting_download.dart";
 
 Future<void> init(CustomRouter router) async {
   router.registerMany({
@@ -30,14 +29,11 @@ Future<void> init(CustomRouter router) async {
     '/file/setting/theme': (context) {
       return const FileSettingThemeScreen();
     },
-    '/file/setting/upload': (context) {
-      return const FileSettingUploadScreen();
+    '/file/setting/transfer': (context) {
+      return const FileSettingTransferScreen();
     },
     '/file/setting/server': (context) {
       return const FileSettingServerScreen();
-    },
-    '/file/setting/download': (context) {
-      return const FileSettingDownloadScreen();
     },
   });
 }

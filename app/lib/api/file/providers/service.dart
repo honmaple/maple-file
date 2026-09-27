@@ -1,6 +1,4 @@
 import 'dart:io' as io;
-import 'dart:math' as math;
-import 'dart:core';
 import 'dart:typed_data';
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:path/path.dart' as filepath;
@@ -10,10 +8,11 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:maple_file/app/i18n.dart';
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/utils/util.dart';
-import 'package:maple_file/common/utils/isolate.dart';
 import 'package:maple_file/generated/proto/api/file/file.pbgrpc.dart';
 
 class FileService {
+  static const hashAlgorithm = 'sha256';
+
   static FileService get instance => _instance;
   static final FileService _instance = FileService._internal();
   factory FileService() => _instance;
@@ -118,31 +117,30 @@ class FileService {
     });
   }
 
-  // isolate必须使用static函数
   static Stream<File_UploadRequest> _upload(
     String path,
     io.File file, {
     String? newName,
-    bool preserveFilename = false,
+    File_UploadPolicy uploadPolicy = File_UploadPolicy.UPLOAD_POLICY_INHERIT,
   }) async* {
     const int chunkSize = 1024 * 32;
 
-    var size = file.lengthSync();
-    var name = newName ?? filepath.basename(file.path);
+    final size = await file.length();
+    final name = newName ?? filepath.basename(file.path);
 
     // 第0片不包括chunk
     yield File_UploadRequest(
       path: path,
       size: fixnum.Int64(size),
       filename: name,
-      preserveFilename: preserveFilename,
+      uploadPolicy: uploadPolicy,
     );
 
     var index = 0;
-    final readFile = file.openSync();
+    final readFile = await file.open();
     try {
       while (true) {
-        final chunk = readFile.readSync(math.min(chunkSize, size));
+        final chunk = await readFile.read(chunkSize);
         if (chunk.isEmpty) break;
         index++;
         yield File_UploadRequest(
@@ -151,44 +149,19 @@ class FileService {
           index: index,
           chunk: chunk,
           filename: name,
-          preserveFilename: preserveFilename,
+          uploadPolicy: uploadPolicy,
         );
       }
     } finally {
-      readFile.closeSync();
+      await readFile.close();
     }
-  }
-
-  Future<(File, String, String)> uploadFilePreservingName(
-    String path,
-    io.File file,
-    String name, {
-    bool showError = true,
-  }) async {
-    return doFuture(() async {
-      final stream = await IsolateUtil.streamCompute<(String, String, String),
-          File_UploadRequest>(
-        ((String, String, String) args) => _upload(
-          args.$1,
-          io.File(args.$2),
-          newName: args.$3,
-          preserveFilename: true,
-        ),
-        (path, file.path, name),
-      );
-      final response = await client.upload(stream);
-      return (
-        response.result,
-        response.sourceHashAlgorithm,
-        response.sourceHash
-      );
-    }, showError: showError);
   }
 
   Future<List<File>> _uploadDir(
     String path,
     io.Directory dir, {
     bool recursive = true,
+    File_UploadPolicy uploadPolicy = File_UploadPolicy.UPLOAD_POLICY_INHERIT,
   }) async {
     final root = filepath.dirname(dir.path);
 
@@ -222,10 +195,29 @@ class FileService {
       final response = await client.upload(_upload(
         uploadPath,
         entity as io.File,
+        uploadPolicy: uploadPolicy,
       ));
       results.add(response.result);
     }
     return results;
+  }
+
+  Future<File> uploadFile(
+    String path,
+    io.File file,
+    String name, {
+    File_UploadPolicy uploadPolicy = File_UploadPolicy.UPLOAD_POLICY_INHERIT,
+    bool showError = true,
+  }) async {
+    return doFuture(() async {
+      final response = await client.upload(_upload(
+        path,
+        file,
+        newName: name,
+        uploadPolicy: uploadPolicy,
+      ));
+      return response.result;
+    }, showError: showError);
   }
 
   Future<List<File>?> upload(
@@ -234,6 +226,7 @@ class FileService {
     List<io.Directory>? dirs,
     Map<String, String>? newNames,
     bool recursive = true,
+    File_UploadPolicy uploadPolicy = File_UploadPolicy.UPLOAD_POLICY_INHERIT,
   }) async {
     final dirsCount = dirs?.length ?? 0;
     final filesCount = files?.length ?? 0;
@@ -259,11 +252,12 @@ class FileService {
       List<File> results = <File>[];
 
       for (final file in files ?? []) {
-        final stream = await IsolateUtil.streamCompute<
-            (String, String, String?),
-            File_UploadRequest>(((String, String, String?) args) {
-          return _upload(args.$1, io.File(args.$2), newName: args.$3);
-        }, (path, file.path, newNames == null ? null : newNames[file.path]));
+        final stream = _upload(
+          path,
+          file,
+          newName: newNames?[file.path],
+          uploadPolicy: uploadPolicy,
+        );
 
         final response = await client.upload(stream);
 
@@ -271,7 +265,12 @@ class FileService {
       }
 
       for (final dir in dirs ?? []) {
-        results.addAll(await _uploadDir(path, dir, recursive: recursive));
+        results.addAll(await _uploadDir(
+          path,
+          dir,
+          recursive: recursive,
+          uploadPolicy: uploadPolicy,
+        ));
       }
       return results;
     });

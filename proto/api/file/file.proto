@@ -85,20 +85,28 @@ message File {
 	// @gotags: gorm:"not null"
 	int32 repo_id = 11;
 
+	enum UploadPolicy {
+		// Use the global upload policy.
+		UPLOAD_POLICY_INHERIT = 0;
+		// Keep the requested filename unchanged.
+		UPLOAD_POLICY_PRESERVE = 1;
+		// Append a unique timestamp to the requested filename.
+		UPLOAD_POLICY_RENAME = 2;
+	}
+
 	message UploadRequest {
 		int32  index = 1;
 		int64  size = 5;
 		string path = 3;
 		string filename = 4;
 		bytes  chunk = 2;
-		bool preserve_filename = 6;
+		// Overrides the global upload policy when it is not INHERIT.
+		UploadPolicy upload_policy = 6;
 	}
 
 	message UploadResponse {
 		File result = 1;
 		string message = 2;
-		string source_hash_algorithm = 3;
-		string source_hash = 4;
 	}
 
 	message ListRequest {

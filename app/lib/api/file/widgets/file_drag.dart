@@ -39,13 +39,23 @@ class _FileDragState extends ConsumerState<FileDrag> {
     return DropTarget(
       enable: widget.enable,
       onDragDone: (detail) async {
-        final files = detail.files.map((item) {
+        setState(() {
+          _dragging = false;
+        });
+        final files = await Future.wait(detail.files.map((item) async {
+          final type = await io.FileSystemEntity.type(
+            item.path,
+            followLinks: false,
+          );
           return File(
             name: item.name,
             path: item.path,
-            type: io.Directory(item.path).existsSync() ? "DIR" : item.mimeType,
+            type: type == io.FileSystemEntityType.directory
+                ? 'DIR'
+                : item.mimeType,
           );
-        }).toList();
+        }));
+        if (!context.mounted) return;
 
         final result = await showCustomDialog<List<File>>(
           context,
@@ -78,7 +88,7 @@ class _FileDragState extends ConsumerState<FileDrag> {
     );
   }
 
-  _handleUpload(List<File> uploads) {
+  void _handleUpload(List<File> uploads) {
     final dirs = uploads.where((file) {
       return file.type == "DIR";
     }).map((file) {
@@ -94,6 +104,7 @@ class _FileDragState extends ConsumerState<FileDrag> {
     FileService.instance
         .upload(widget.path, files: files, dirs: dirs)
         .then((_) {
+      if (!mounted) return;
       ref.invalidate(fileProvider(widget.path));
     });
   }
@@ -110,6 +121,7 @@ class FileDragList extends ConsumerStatefulWidget {
 
 class _FileDragListState extends ConsumerState<FileDragList> {
   List<File> files = [];
+  final Map<String, Future<io.FileStat>> _stats = {};
 
   @override
   void initState() {
@@ -139,23 +151,17 @@ class _FileDragListState extends ConsumerState<FileDragList> {
             ),
         ],
       ),
-      body: Container(
+      body: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final file in widget.files) _buildDragFile(context, file),
-          ],
-        ),
+        itemCount: widget.files.length,
+        itemBuilder: (context, index) {
+          return _buildDragFile(context, widget.files[index]);
+        },
       ),
     );
   }
 
-  _buildDragFile(BuildContext context, File file) {
-    final stat = file.type == "DIR"
-        ? io.Directory(file.path).statSync()
-        : io.File(file.path).statSync();
-
+  Widget _buildDragFile(BuildContext context, File file) {
     return ListTile(
       leading: Icon(
         PathUtil.icon(file.name, type: file.type),
@@ -163,19 +169,29 @@ class _FileDragListState extends ConsumerState<FileDragList> {
         color: Theme.of(context).primaryColor,
       ),
       title: Text(file.name),
-      subtitle: Wrap(
-        spacing: 8,
-        children: [
-          Text(
-            TimeUtil.formatDate(stat.modified, "yyyy-MM-dd HH:mm"),
-            style: const TextStyle(fontSize: 12),
-          ),
-          if (file.type != "DIR")
-            Text(
-              Util.formatSize(stat.size),
-              style: const TextStyle(fontSize: 12),
-            ),
-        ],
+      subtitle: FutureBuilder<io.FileStat>(
+        future: _stats.putIfAbsent(
+          file.path,
+          () => io.FileStat.stat(file.path),
+        ),
+        builder: (context, snapshot) {
+          final stat = snapshot.data;
+          if (stat == null) return const SizedBox.shrink();
+          return Wrap(
+            spacing: 8,
+            children: [
+              Text(
+                TimeUtil.formatDate(stat.modified, 'yyyy-MM-dd HH:mm'),
+                style: const TextStyle(fontSize: 12),
+              ),
+              if (file.type != 'DIR')
+                Text(
+                  Util.formatSize(stat.size),
+                  style: const TextStyle(fontSize: 12),
+                ),
+            ],
+          );
+        },
       ),
       trailing: Checkbox(
         value: files.contains(file),

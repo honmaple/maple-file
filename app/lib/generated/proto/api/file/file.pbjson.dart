@@ -29,6 +29,7 @@ const File$json = {
     {'1': 'repo_id', '3': 11, '4': 1, '5': 5, '10': 'repoId'},
   ],
   '3': [File_UploadRequest$json, File_UploadResponse$json, File_ListRequest$json, File_ListResponse$json, File_MoveRequest$json, File_MoveResponse$json, File_CopyRequest$json, File_CopyResponse$json, File_MkdirRequest$json, File_MkdirResponse$json, File_RenameRequest$json, File_RenameResponse$json, File_RemoveRequest$json, File_RemoveResponse$json, File_PreviewRequest$json, File_PreviewResponse$json, File_DownloadRequest$json, File_DownloadResponse$json],
+  '4': [File_UploadPolicy$json],
 };
 
 @$core.Deprecated('Use fileDescriptor instead')
@@ -40,7 +41,7 @@ const File_UploadRequest$json = {
     {'1': 'path', '3': 3, '4': 1, '5': 9, '10': 'path'},
     {'1': 'filename', '3': 4, '4': 1, '5': 9, '10': 'filename'},
     {'1': 'chunk', '3': 2, '4': 1, '5': 12, '10': 'chunk'},
-    {'1': 'preserve_filename', '3': 6, '4': 1, '5': 8, '10': 'preserveFilename'},
+    {'1': 'upload_policy', '3': 6, '4': 1, '5': 14, '6': '.api.file.File.UploadPolicy', '10': 'uploadPolicy'},
   ],
 };
 
@@ -50,8 +51,6 @@ const File_UploadResponse$json = {
   '2': [
     {'1': 'result', '3': 1, '4': 1, '5': 11, '6': '.api.file.File', '10': 'result'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'source_hash_algorithm', '3': 3, '4': 1, '5': 9, '10': 'sourceHashAlgorithm'},
-    {'1': 'source_hash', '3': 4, '4': 1, '5': 9, '10': 'sourceHash'},
   ],
 };
 
@@ -187,6 +186,16 @@ const File_DownloadResponse$json = {
   ],
 };
 
+@$core.Deprecated('Use fileDescriptor instead')
+const File_UploadPolicy$json = {
+  '1': 'UploadPolicy',
+  '2': [
+    {'1': 'UPLOAD_POLICY_INHERIT', '2': 0},
+    {'1': 'UPLOAD_POLICY_PRESERVE', '2': 1},
+    {'1': 'UPLOAD_POLICY_RENAME', '2': 2},
+  ],
+};
+
 /// Descriptor for `File`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List fileDescriptor = $convert.base64Decode(
     'CgRGaWxlEg4KAmlkGAEgASgFUgJpZBI5CgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3'
@@ -194,26 +203,26 @@ final $typed_data.Uint8List fileDescriptor = $convert.base64Decode(
     'cHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSEgoEbmFtZRgEIAEoCVIEbmFtZRISCgR0eX'
     'BlGAUgASgJUgR0eXBlEhIKBHNpemUYBiABKANSBHNpemUSEgoEaGFzaBgHIAEoCVIEaGFzaBIS'
     'CgRwYXRoGAggASgJUgRwYXRoEiIKBHJlcG8YCiABKAsyDi5hcGkuZmlsZS5SZXBvUgRyZXBvEh'
-    'cKB3JlcG9faWQYCyABKAVSBnJlcG9JZBqsAQoNVXBsb2FkUmVxdWVzdBIUCgVpbmRleBgBIAEo'
+    'cKB3JlcG9faWQYCyABKAVSBnJlcG9JZBrBAQoNVXBsb2FkUmVxdWVzdBIUCgVpbmRleBgBIAEo'
     'BVIFaW5kZXgSEgoEc2l6ZRgFIAEoA1IEc2l6ZRISCgRwYXRoGAMgASgJUgRwYXRoEhoKCGZpbG'
-    'VuYW1lGAQgASgJUghmaWxlbmFtZRIUCgVjaHVuaxgCIAEoDFIFY2h1bmsSKwoRcHJlc2VydmVf'
-    'ZmlsZW5hbWUYBiABKAhSEHByZXNlcnZlRmlsZW5hbWUapwEKDlVwbG9hZFJlc3BvbnNlEiYKBn'
-    'Jlc3VsdBgBIAEoCzIOLmFwaS5maWxlLkZpbGVSBnJlc3VsdBIYCgdtZXNzYWdlGAIgASgJUgdt'
-    'ZXNzYWdlEjIKFXNvdXJjZV9oYXNoX2FsZ29yaXRobRgDIAEoCVITc291cmNlSGFzaEFsZ29yaX'
-    'RobRIfCgtzb3VyY2VfaGFzaBgEIAEoCVIKc291cmNlSGFzaBqIAQoLTGlzdFJlcXVlc3QSPgoG'
-    'ZmlsdGVyGAEgAygLMiYuYXBpLmZpbGUuRmlsZS5MaXN0UmVxdWVzdC5GaWx0ZXJFbnRyeVIGZm'
-    'lsdGVyGjkKC0ZpbHRlckVudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2'
-    'YWx1ZToCOAEaOAoMTGlzdFJlc3BvbnNlEigKB3Jlc3VsdHMYASADKAsyDi5hcGkuZmlsZS5GaW'
-    'xlUgdyZXN1bHRzGlIKC01vdmVSZXF1ZXN0EhIKBHBhdGgYASABKAlSBHBhdGgSGQoIbmV3X3Bh'
-    'dGgYAiABKAlSB25ld1BhdGgSFAoFbmFtZXMYAyADKAlSBW5hbWVzGg4KDE1vdmVSZXNwb25zZR'
-    'pSCgtDb3B5UmVxdWVzdBISCgRwYXRoGAEgASgJUgRwYXRoEhkKCG5ld19wYXRoGAIgASgJUgdu'
-    'ZXdQYXRoEhQKBW5hbWVzGAMgAygJUgVuYW1lcxoOCgxDb3B5UmVzcG9uc2UaNgoMTWtkaXJSZX'
-    'F1ZXN0EhIKBHBhdGgYASABKAlSBHBhdGgSEgoEbmFtZRgCIAEoCVIEbmFtZRoPCg1Na2RpclJl'
-    'c3BvbnNlGlIKDVJlbmFtZVJlcXVlc3QSEgoEcGF0aBgBIAEoCVIEcGF0aBISCgRuYW1lGAIgAS'
-    'gJUgRuYW1lEhkKCG5ld19uYW1lGAMgASgJUgduZXdOYW1lGhAKDlJlbmFtZVJlc3BvbnNlGjkK'
-    'DVJlbW92ZVJlcXVlc3QSEgoEcGF0aBgBIAEoCVIEcGF0aBIUCgVuYW1lcxgDIAMoCVIFbmFtZX'
-    'MaEAoOUmVtb3ZlUmVzcG9uc2UaJAoOUHJldmlld1JlcXVlc3QSEgoEcGF0aBgBIAEoCVIEcGF0'
-    'aBonCg9QcmV2aWV3UmVzcG9uc2USFAoFY2h1bmsYASABKAxSBWNodW5rGiUKD0Rvd25sb2FkUm'
-    'VxdWVzdBISCgRwYXRoGAEgASgJUgRwYXRoGigKEERvd25sb2FkUmVzcG9uc2USFAoFY2h1bmsY'
-    'ASABKAxSBWNodW5r');
+    'VuYW1lGAQgASgJUghmaWxlbmFtZRIUCgVjaHVuaxgCIAEoDFIFY2h1bmsSQAoNdXBsb2FkX3Bv'
+    'bGljeRgGIAEoDjIbLmFwaS5maWxlLkZpbGUuVXBsb2FkUG9saWN5Ugx1cGxvYWRQb2xpY3kaUg'
+    'oOVXBsb2FkUmVzcG9uc2USJgoGcmVzdWx0GAEgASgLMg4uYXBpLmZpbGUuRmlsZVIGcmVzdWx0'
+    'EhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2UaiAEKC0xpc3RSZXF1ZXN0Ej4KBmZpbHRlchgBIA'
+    'MoCzImLmFwaS5maWxlLkZpbGUuTGlzdFJlcXVlc3QuRmlsdGVyRW50cnlSBmZpbHRlcho5CgtG'
+    'aWx0ZXJFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgBGj'
+    'gKDExpc3RSZXNwb25zZRIoCgdyZXN1bHRzGAEgAygLMg4uYXBpLmZpbGUuRmlsZVIHcmVzdWx0'
+    'cxpSCgtNb3ZlUmVxdWVzdBISCgRwYXRoGAEgASgJUgRwYXRoEhkKCG5ld19wYXRoGAIgASgJUg'
+    'duZXdQYXRoEhQKBW5hbWVzGAMgAygJUgVuYW1lcxoOCgxNb3ZlUmVzcG9uc2UaUgoLQ29weVJl'
+    'cXVlc3QSEgoEcGF0aBgBIAEoCVIEcGF0aBIZCghuZXdfcGF0aBgCIAEoCVIHbmV3UGF0aBIUCg'
+    'VuYW1lcxgDIAMoCVIFbmFtZXMaDgoMQ29weVJlc3BvbnNlGjYKDE1rZGlyUmVxdWVzdBISCgRw'
+    'YXRoGAEgASgJUgRwYXRoEhIKBG5hbWUYAiABKAlSBG5hbWUaDwoNTWtkaXJSZXNwb25zZRpSCg'
+    '1SZW5hbWVSZXF1ZXN0EhIKBHBhdGgYASABKAlSBHBhdGgSEgoEbmFtZRgCIAEoCVIEbmFtZRIZ'
+    'CghuZXdfbmFtZRgDIAEoCVIHbmV3TmFtZRoQCg5SZW5hbWVSZXNwb25zZRo5Cg1SZW1vdmVSZX'
+    'F1ZXN0EhIKBHBhdGgYASABKAlSBHBhdGgSFAoFbmFtZXMYAyADKAlSBW5hbWVzGhAKDlJlbW92'
+    'ZVJlc3BvbnNlGiQKDlByZXZpZXdSZXF1ZXN0EhIKBHBhdGgYASABKAlSBHBhdGgaJwoPUHJldm'
+    'lld1Jlc3BvbnNlEhQKBWNodW5rGAEgASgMUgVjaHVuaxolCg9Eb3dubG9hZFJlcXVlc3QSEgoE'
+    'cGF0aBgBIAEoCVIEcGF0aBooChBEb3dubG9hZFJlc3BvbnNlEhQKBWNodW5rGAEgASgMUgVjaH'
+    'VuayJfCgxVcGxvYWRQb2xpY3kSGQoVVVBMT0FEX1BPTElDWV9JTkhFUklUEAASGgoWVVBMT0FE'
+    'X1BPTElDWV9QUkVTRVJWRRABEhgKFFVQTE9BRF9QT0xJQ1lfUkVOQU1FEAI=');
 

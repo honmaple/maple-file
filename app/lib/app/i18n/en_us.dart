@@ -144,6 +144,7 @@ const enUS = {
   "文件上传": "File Upload",
   "文件上传分片大小(单位：KB)": "File upload fragment size (unit: KB)",
   "文件下载": "File Download",
+  "文件传输": "File Transfer",
   "文件分隔": "File Separator",
   "文件加密": "File Encrypt",
   "文件加密创建后不可更改加密配置": "The encryption configuration cannot be changed after the file is encrypted",

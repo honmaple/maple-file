@@ -36,7 +36,7 @@ extension CompressLevelExtension on CompressLevel {
 }
 
 @unfreezed
-class CompressOption with _$CompressOption {
+abstract class CompressOption with _$CompressOption {
   factory CompressOption({
     @Default(-1) int level,
   }) = _CompressOption;

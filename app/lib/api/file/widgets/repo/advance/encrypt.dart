@@ -10,7 +10,7 @@ part 'encrypt.g.dart';
 part 'encrypt.freezed.dart';
 
 @unfreezed
-class EncryptOption with _$EncryptOption {
+abstract class EncryptOption with _$EncryptOption {
   factory EncryptOption({
     @Default("CFB") String mode,
     @Default("v1") String version,

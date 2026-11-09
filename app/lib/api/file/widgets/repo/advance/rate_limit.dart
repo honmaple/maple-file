@@ -9,7 +9,7 @@ part 'rate_limit.g.dart';
 part 'rate_limit.freezed.dart';
 
 @unfreezed
-class RateLimitOption with _$RateLimitOption {
+abstract class RateLimitOption with _$RateLimitOption {
   factory RateLimitOption({
     @Default(false) bool wait,
     @Default(100) int burst,

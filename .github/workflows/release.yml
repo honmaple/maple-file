@@ -25,7 +25,8 @@ on:
 env:
   GO_VERSION: "1.23"
   NODE_VERSION: "24"
-  FLUTTER_VERSION: "3.29.3"
+  FLUTTER_VERSION: "3.47.5"
+  MACOSX_DEPLOYMENT_TARGET: "12.0"
 
 jobs:
   get-version:
@@ -220,7 +221,7 @@ jobs:
           go install golang.org/x/mobile/cmd/gomobile@latest
           go get golang.org/x/mobile/bind
           gomobile init
-          gomobile bind -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=${{ needs.get-version.outputs.version }}" -o ../app/ios/Frameworks/libserver.xcframework -target=ios github.com/honmaple/maple-file/server/cmd/mobile
+          gomobile bind -ldflags="-w -s -X github.com/honmaple/maple-file/server/internal/app.VERSION=${{ needs.get-version.outputs.version }}" -o ../app/ios/Frameworks/libserver.xcframework -target=ios -iosversion=15.0 github.com/honmaple/maple-file/server/cmd/mobile
 
       - name: Build ipa
         env:

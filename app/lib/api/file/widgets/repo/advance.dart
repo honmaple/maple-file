@@ -18,7 +18,7 @@ part 'advance.g.dart';
 part 'advance.freezed.dart';
 
 @unfreezed
-class AdvanceOption with _$AdvanceOption {
+abstract class AdvanceOption with _$AdvanceOption {
   factory AdvanceOption({
     @JsonKey(name: 'root_path') @Default("") String rootPath,
     @JsonKey(name: 'hidden_files') @Default([]) List<String> hiddenFiles,

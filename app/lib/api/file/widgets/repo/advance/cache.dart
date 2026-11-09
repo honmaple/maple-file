@@ -9,7 +9,7 @@ part 'cache.g.dart';
 part 'cache.freezed.dart';
 
 @unfreezed
-class CacheOption with _$CacheOption {
+abstract class CacheOption with _$CacheOption {
   factory CacheOption({
     @JsonKey(name: "expire_time") @Default(60) int expireTime,
   }) = _CacheOption;

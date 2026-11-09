@@ -36,7 +36,7 @@ enum AlbumTargetLayout {
 }
 
 @freezed
-class AlbumBackupSourceConfig with _$AlbumBackupSourceConfig {
+abstract class AlbumBackupSourceConfig with _$AlbumBackupSourceConfig {
   const factory AlbumBackupSourceConfig({
     @JsonKey(name: 'album_ids') @Default(<String>[]) List<String> albumIds,
   }) = _AlbumBackupSourceConfig;
@@ -46,7 +46,7 @@ class AlbumBackupSourceConfig with _$AlbumBackupSourceConfig {
 }
 
 @freezed
-class AlbumBackupTargetConfig with _$AlbumBackupTargetConfig {
+abstract class AlbumBackupTargetConfig with _$AlbumBackupTargetConfig {
   const factory AlbumBackupTargetConfig({
     @Default('') String path,
     @Default(AlbumTargetLayout.yearMonthDay) AlbumTargetLayout layout,
@@ -58,7 +58,7 @@ class AlbumBackupTargetConfig with _$AlbumBackupTargetConfig {
 }
 
 @freezed
-class AlbumBackupIssueContext with _$AlbumBackupIssueContext {
+abstract class AlbumBackupIssueContext with _$AlbumBackupIssueContext {
   @JsonSerializable(includeIfNull: false)
   const factory AlbumBackupIssueContext({
     @JsonKey(name: 'album_label') String? albumLabel,

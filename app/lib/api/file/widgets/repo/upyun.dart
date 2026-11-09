@@ -12,7 +12,7 @@ part 'upyun.g.dart';
 part 'upyun.freezed.dart';
 
 @unfreezed
-class UpyunOption with _$UpyunOption {
+abstract class UpyunOption with _$UpyunOption {
   factory UpyunOption({
     @Default("") String endpoint,
     @Default("") String bucket,

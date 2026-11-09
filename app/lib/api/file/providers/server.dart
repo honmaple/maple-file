@@ -1,14 +1,11 @@
-import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grpc/grpc.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/generated/proto/api/file/server.pbgrpc.dart'
     as serverpb;
-
-part 'server.g.dart';
 
 class ExternalServerService {
   static ExternalServerService get instance => _instance;
@@ -61,10 +58,8 @@ class ExternalServerService {
   }
 }
 
-@Riverpod(keepAlive: true)
-class ServerNotifier extends _$ServerNotifier {
-  @override
-  Future<serverpb.ExternalServer> build(String type) {
-    return ExternalServerService.instance.status(type);
-  }
-}
+final serverNotifierProvider =
+    FutureProvider.family<serverpb.ExternalServer, String>(
+  (ref, type) => ExternalServerService.instance.status(type),
+  name: 'serverNotifierProvider',
+);

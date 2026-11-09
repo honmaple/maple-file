@@ -12,7 +12,7 @@ part 'webdav.g.dart';
 part 'webdav.freezed.dart';
 
 @unfreezed
-class WebdavOption with _$WebdavOption {
+abstract class WebdavOption with _$WebdavOption {
   factory WebdavOption({
     @Default("") String endpoint,
     @Default("") String username,

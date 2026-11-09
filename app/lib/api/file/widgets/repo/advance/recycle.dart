@@ -9,7 +9,7 @@ part 'recycle.g.dart';
 part 'recycle.freezed.dart';
 
 @unfreezed
-class RecycleOption with _$RecycleOption {
+abstract class RecycleOption with _$RecycleOption {
   factory RecycleOption({
     @Default("") String path,
   }) = _RecycleOption;

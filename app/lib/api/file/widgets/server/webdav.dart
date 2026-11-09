@@ -19,7 +19,7 @@ part 'webdav.g.dart';
 part 'webdav.freezed.dart';
 
 @freezed
-class WebdavOption with _$WebdavOption {
+abstract class WebdavOption with _$WebdavOption {
   const factory WebdavOption({
     @Default(false) bool enabled,
     @Default("") String host,

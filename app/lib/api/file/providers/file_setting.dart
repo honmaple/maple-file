@@ -73,7 +73,7 @@ extension FileListIconExtension on FileListIcon {
 }
 
 @freezed
-class FileThumbSetting with _$FileThumbSetting {
+abstract class FileThumbSetting with _$FileThumbSetting {
   factory FileThumbSetting({
     @Default(200) int width,
     @Default(200) int height,
@@ -86,7 +86,7 @@ class FileThumbSetting with _$FileThumbSetting {
 }
 
 @freezed
-class FileSetting with _$FileSetting {
+abstract class FileSetting with _$FileSetting {
   const FileSetting._();
 
   const factory FileSetting({

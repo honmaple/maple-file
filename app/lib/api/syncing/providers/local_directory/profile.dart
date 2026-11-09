@@ -9,7 +9,7 @@ part 'profile.freezed.dart';
 part 'profile.g.dart';
 
 @freezed
-class LocalDirectorySourceConfig with _$LocalDirectorySourceConfig {
+abstract class LocalDirectorySourceConfig with _$LocalDirectorySourceConfig {
   const factory LocalDirectorySourceConfig({
     @Default('') String path,
     @Default('') String bookmark,
@@ -20,7 +20,7 @@ class LocalDirectorySourceConfig with _$LocalDirectorySourceConfig {
 }
 
 @freezed
-class LocalDirectoryTargetConfig with _$LocalDirectoryTargetConfig {
+abstract class LocalDirectoryTargetConfig with _$LocalDirectoryTargetConfig {
   const factory LocalDirectoryTargetConfig({
     @Default('') String path,
   }) = _LocalDirectoryTargetConfig;

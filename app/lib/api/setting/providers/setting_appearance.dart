@@ -21,7 +21,7 @@ extension FlexSchemeExtension on FlexScheme {
 }
 
 @freezed
-class AppearanceSetting with _$AppearanceSetting {
+abstract class AppearanceSetting with _$AppearanceSetting {
   const AppearanceSetting._();
 
   const factory AppearanceSetting({

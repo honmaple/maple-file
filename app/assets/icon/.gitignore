@@ -1,0 +1,3 @@
+# Keep editable logo sources alongside exported icons.
+*.svg
+concepts/

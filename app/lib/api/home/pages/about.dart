@@ -34,7 +34,20 @@ class AboutScreen extends ConsumerWidget {
                     alignment: Alignment.center,
                     child: Column(
                       children: [
-                        Image.asset("assets/icon/icon.png", width: 80),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Color(0xFFC4453B),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Image.asset(
+                              "assets/icon/icon.png",
+                              width: 72,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         Text("红枫云盘 {version}".tr(
                           args: {"version": resp.version},
                         )),

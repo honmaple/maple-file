@@ -17,7 +17,7 @@
 _tmp
 
 .DS_Store
-docs/
+docs.old/
 dist/
 *.svg
 appstore.md

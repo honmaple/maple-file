@@ -144,7 +144,7 @@ class _TaskListState extends ConsumerState<TaskListScreen>
   ) {
     return ListTile(
       leading: status == TaskType.running
-          ? Text("剩余任务({length}})".tr(args: {
+          ? Text("剩余任务({length})".tr(args: {
               "length": items.length,
             }))
           : status == TaskType.finished

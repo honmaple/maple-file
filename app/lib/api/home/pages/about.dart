@@ -68,11 +68,11 @@ class AboutScreen extends ConsumerWidget {
                 dividerMargin: 20,
                 children: [
                   PlatformListTile(
-                    title: Text("OS".tr()),
+                    title: Text("OS"),
                     trailing: Text(resp.os),
                   ),
                   PlatformListTile(
-                    title: Text("Arch".tr()),
+                    title: Text("Arch"),
                     trailing: Text(resp.os),
                   ),
                 ],

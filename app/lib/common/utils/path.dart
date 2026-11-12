@@ -121,8 +121,9 @@ class PathUtil {
   }
 
   static bool isVideo(String name, {String? type}) {
-    if (type == null || type == "") {
-      type = mimeType(name);
+    if (type == null || type.isEmpty || type == "application/octet-stream") {
+      return mimeType(name).startsWith("video/") ||
+          videoTypes.contains(filepath.posix.extension(name).toLowerCase());
     }
     return type.startsWith("video/");
   }

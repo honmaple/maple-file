@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
-	"slices"
-	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/labstack/echo/v4"
@@ -107,33 +104,6 @@ func (srv *serviceImpl) RegisterHTTP(e *echo.Echo) {
 			return errors.New("can't preview dir")
 		}
 
-		thumb := slices.Contains([]string{"true", "1"}, c.QueryParams().Get("thumb"))
-		if thumb {
-			thumbPath, err := srv.thumbFile(srv.ctx.Context, path, info)
-			if err != nil {
-				return err
-			}
-
-			file, err := os.Open(thumbPath)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			stat, err := file.Stat()
-			if err != nil {
-				return err
-			}
-
-			// 更新访问时间
-			if err := os.Chtimes(thumbPath, time.Now(), stat.ModTime()); err != nil {
-				return err
-			}
-
-			http.ServeContent(c.Response(), c.Request(), stat.Name(), stat.ModTime(), file)
-			return nil
-		}
-
 		file, err := srv.fs.Open(rctx, path)
 		if err != nil {
 			return err
@@ -192,6 +162,5 @@ func New(ctx *types.Context, repo repository.Repository, settings SettingLoader)
 	srv.fs = fs.New(ctx, resolver)
 	srv.resolver = resolver
 
-	go srv.cleanThumbFile()
 	return srv, nil
 }

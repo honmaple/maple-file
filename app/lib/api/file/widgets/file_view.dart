@@ -1,11 +1,8 @@
-import 'package:path/path.dart' as filepath;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'package:maple_file/app/i18n.dart';
-import 'package:maple_file/app/grpc.dart';
 import 'package:maple_file/common/utils/path.dart';
 import 'package:maple_file/common/utils/util.dart';
 import 'package:maple_file/common/utils/time.dart';
@@ -19,11 +16,9 @@ import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 import 'file_action.dart';
 import 'file_breadcrumb.dart';
 
-import 'preview/image.dart';
-import 'preview/source.dart';
-
 import '../providers/file.dart';
 import '../providers/file_setting.dart';
+import '../providers/thumbnail.dart';
 
 class FileView extends ConsumerStatefulWidget {
   const FileView({
@@ -98,16 +93,9 @@ class _FileViewState extends ConsumerState<FileView> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Icon(
-              Icons.hourglass_empty,
-              size: 36,
-              color: Colors.black54,
-            ),
+            const Icon(Icons.hourglass_empty, size: 36, color: Colors.black54),
             const SizedBox(height: 8),
-            Text(
-              "暂无文件".tr(),
-              style: const TextStyle(color: Colors.black54),
-            ),
+            Text("暂无文件".tr(), style: const TextStyle(color: Colors.black54)),
           ],
         ),
       );
@@ -153,17 +141,18 @@ class _FileViewState extends ConsumerState<FileView> {
                 ],
               ),
               selected: selection.contains(row),
-              trailing: _isSelection(row)
-                  ? _buildCheckbox(selection, row)
-                  : widget.showActions && !_isRoot
+              trailing:
+                  _isSelection(row)
+                      ? _buildCheckbox(selection, row)
+                      : widget.showActions && !_isRoot
                       ? IconButton(
-                          icon: const Icon(Icons.more_vert),
-                          onPressed: () async {
-                            final result = await showFileAction(context, row);
-                            if (!context.mounted) return;
-                            result?.action(context, row, ref: ref);
-                          },
-                        )
+                        icon: const Icon(Icons.more_vert),
+                        onPressed: () async {
+                          final result = await showFileAction(context, row);
+                          if (!context.mounted) return;
+                          result?.action(context, row, ref: ref);
+                        },
+                      )
                       : null,
             ),
           ),
@@ -183,39 +172,38 @@ class _FileViewState extends ConsumerState<FileView> {
       crossAxisSpacing: 4,
       itemBuilder: (context, index) {
         final row = rows[index];
-        return Stack(children: [
-          if (_isSelection(row))
-            Positioned(
-              top: -4,
-              right: -4,
-              child: _buildCheckbox(selection, row),
-            ),
-          widget.fileBuilder(
-            context,
-            row,
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FileIcon(file: row, size: 1),
-                  const SizedBox(height: 8),
-                  _buildName(row, maxLines: 2, center: true),
-                ],
+        return Stack(
+          children: [
+            if (_isSelection(row))
+              Positioned(
+                top: -4,
+                right: -4,
+                child: _buildCheckbox(selection, row),
+              ),
+            widget.fileBuilder(
+              context,
+              row,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FileIcon(file: row, size: 1),
+                    const SizedBox(height: 8),
+                    _buildName(row, maxLines: 2, center: true),
+                  ],
+                ),
               ),
             ),
-          ),
-        ]);
+          ],
+        );
       },
     );
   }
 
   _buildName(File row, {int? maxLines, bool center = false}) {
     if (row.type == "RECYCLE") {
-      return Text(
-        "回收站".tr(),
-        textAlign: center ? TextAlign.center : null,
-      );
+      return Text("回收站".tr(), textAlign: center ? TextAlign.center : null);
     }
     return Text(
       row.name,
@@ -246,11 +234,7 @@ class _FileViewState extends ConsumerState<FileView> {
 }
 
 class FileIcon extends ConsumerWidget {
-  const FileIcon({
-    super.key,
-    required this.file,
-    this.size = 1,
-  });
+  const FileIcon({super.key, required this.file, this.size = 1});
 
   final double size;
   final File file;
@@ -263,18 +247,17 @@ class FileIcon extends ConsumerWidget {
         return SizedBox(
           width: 64 * size,
           height: 64 * size,
-          child: file.type.startsWith("image/")
-              ? _buildThumb(context, setting)
-              : _build(context, setting),
+          child: _buildThumbnail(context, ref, setting),
         );
       case FileListIcon.circle:
         return Container(
           height: 48 * size,
           width: 48 * size,
           decoration: BoxDecoration(
-            color: setting.iconColor == null
-                ? Theme.of(context).primaryColor
-                : setting.scheme.primaryColor(context),
+            color:
+                setting.iconColor == null
+                    ? Theme.of(context).primaryColor
+                    : setting.scheme.primaryColor(context),
             borderRadius: BorderRadius.all(Radius.circular(24 * size)),
           ),
           alignment: Alignment.center,
@@ -296,23 +279,27 @@ class FileIcon extends ConsumerWidget {
     return Icon(
       PathUtil.icon(file.name, type: file.type),
       size: 64 * size,
-      color: setting.iconColor == null
-          ? Theme.of(context).primaryColor
-          : setting.scheme.primaryColor(context),
+      color:
+          setting.iconColor == null
+              ? Theme.of(context).primaryColor
+              : setting.scheme.primaryColor(context),
     );
   }
 
-  _buildThumb(BuildContext context, FileSetting setting) {
-    return ImagePreview(
-      source: PreviewSource.network(
-        Grpc.instance.thumbURL(
-          filepath.posix.join(file.path, file.name),
-        ),
-        name: file.name,
-      ),
-      errorBuilder: (context) {
-        return _build(context, setting);
-      },
+  Widget _buildThumbnail(
+    BuildContext context,
+    WidgetRef ref,
+    FileSetting setting,
+  ) {
+    final thumbnail = ref.watch(thumbnailProvider(file)).asData?.value;
+    if (thumbnail == null) return _build(context, setting);
+
+    return Image.memory(
+      thumbnail,
+      fit: PathUtil.isImage(file.name, type: file.type)
+          ? BoxFit.cover
+          : BoxFit.contain,
+      errorBuilder: (context, error, stack) => _build(context, setting),
     );
   }
 }

@@ -8,9 +8,24 @@ PODS:
     - Flutter
     - FlutterMacOS
     - mdk (~> 0.35.1)
+  - libwebp (1.6.0):
+    - libwebp/demux (= 1.6.0)
+    - libwebp/mux (= 1.6.0)
+    - libwebp/sharpyuv (= 1.6.0)
+    - libwebp/webp (= 1.6.0)
+  - libwebp/demux (1.6.0):
+    - libwebp/webp
+  - libwebp/mux (1.6.0):
+    - libwebp/demux
+  - libwebp/sharpyuv (1.6.0)
+  - libwebp/webp (1.6.0):
+    - libwebp/sharpyuv
   - mdk (0.35.1)
   - permission_handler_apple (9.3.0):
     - Flutter
+  - video_thumbnail (0.0.1):
+    - Flutter
+    - libwebp
 
 DEPENDENCIES:
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
@@ -18,9 +33,11 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - video_thumbnail (from `.symlinks/plugins/video_thumbnail/ios`)
 
 SPEC REPOS:
   trunk:
+    - libwebp
     - mdk
 
 EXTERNAL SOURCES:
@@ -34,14 +51,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/fvp/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  video_thumbnail:
+    :path: ".symlinks/plugins/video_thumbnail/ios"
 
 SPEC CHECKSUMS:
   audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
   external_path: fd37c654b69a1336e33a2403f48383ae6100e443
   Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
   fvp: 4fe77c2b30122233a57f425dafd219ed35565809
+  libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   mdk: 59bbe9e2ac2a052455ab1b076c245680d66cf6c0
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  video_thumbnail: b637e0ad5f588ca9945f6e2c927f73a69a661140
 
 PODFILE CHECKSUM: bc4b3ca49b4ef3ec1d4e94b4273fa20c6dcf1983
 

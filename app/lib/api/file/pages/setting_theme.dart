@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 
@@ -10,6 +11,7 @@ import 'package:maple_file/common/widgets/platform.dart';
 import 'package:maple_file/api/setting/providers/setting_appearance.dart';
 
 import '../providers/file_setting.dart';
+import '../providers/thumbnail.dart';
 
 class FileSettingThemeScreen extends ConsumerStatefulWidget {
   const FileSettingThemeScreen({super.key});
@@ -20,14 +22,35 @@ class FileSettingThemeScreen extends ConsumerStatefulWidget {
 }
 
 class _FileSettingThemeState extends ConsumerState<FileSettingThemeScreen> {
+  bool _clearingThumbnails = false;
+
+  Future<void> _handleClearThumbnails() async {
+    if (_clearingThumbnails) return;
+    setState(() => _clearingThumbnails = true);
+    try {
+      final cleared = await ref.read(thumbnailServiceProvider).clearCache();
+      if (!mounted) return;
+      SmartDialog.showNotify(
+        msg: cleared ? '缩略图缓存已清理'.tr() : '暂无缩略图缓存'.tr(),
+        notifyType: cleared ? NotifyType.success : NotifyType.warning,
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      SmartDialog.showNotify(
+        msg: '${"执行失败".tr()}: $error',
+        notifyType: NotifyType.error,
+      );
+    } finally {
+      if (mounted) setState(() => _clearingThumbnails = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final themeData = Theme.of(context);
     final setting = ref.watch(fileSettingProvider);
-    final thumbSetting = setting.thumb ?? FileThumbSetting();
     return PlatformScaffold(
       appBar: PlatformAppBar(
-        title: Text('显示设置'.tr()),
+        title: Text('文件展示'.tr()),
       ),
       body: ListView(
         padding: EdgeInsets.zero,
@@ -188,69 +211,35 @@ class _FileSettingThemeState extends ConsumerState<FileSettingThemeScreen> {
               ),
             ],
           ),
-          if (setting.icon == FileListIcon.thumb)
+          if (setting.icon == FileListIcon.thumb) ...[
             CustomListSection(
-              header: Container(
-                alignment: Alignment.centerLeft,
-                child: Text("缩略图设置".tr(), style: themeData.textTheme.bodySmall),
-              ),
               hasLeading: false,
               dividerMargin: 20,
               children: [
-                CustomListTilePrompt(
-                  type: CustomListTilePromptType.number,
-                  label: "宽度".tr(),
-                  value: "${thumbSetting.width}",
-                  onTap: (result) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(
-                        thumb: thumbSetting.copyWith(width: int.parse(result)),
-                      );
-                    });
-                  },
-                ),
-                CustomListTilePrompt(
-                  type: CustomListTilePromptType.number,
-                  label: "高度".tr(),
-                  value: "${thumbSetting.height}",
-                  onTap: (result) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(
-                        thumb: thumbSetting.copyWith(height: int.parse(result)),
-                      );
-                    });
-                  },
-                ),
-                CustomListTilePrompt(
-                  type: CustomListTilePromptType.number,
-                  label: "质量".tr(),
-                  value: "${thumbSetting.quality}",
-                  onTap: (result) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(
-                        thumb:
-                            thumbSetting.copyWith(quality: int.parse(result)),
-                      );
-                    });
-                  },
-                ),
                 CustomListTileSwitch(
-                  label: "自动清理".tr(),
-                  value: thumbSetting.autoClean,
-                  subtitle: Text(
-                    "开启后将自动清理最近一个月未访问的缩略图".tr(),
-                    maxLines: 3,
-                  ),
-                  onChanged: (result) {
-                    ref.read(fileSettingProvider.notifier).update((state) {
-                      return state.copyWith(
-                        thumb: thumbSetting.copyWith(autoClean: result),
-                      );
-                    });
+                  label: '视频缩略图'.tr(),
+                  value: setting.thumb.video,
+                  onChanged: (enabled) {
+                    ref.read(fileSettingProvider.notifier).update(
+                      (state) => state.copyWith.thumb(video: enabled),
+                    );
                   },
                 ),
               ],
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _clearingThumbnails ? null : _handleClearThumbnails,
+                child: Text('清理缩略图'.tr()),
+              ),
+            ),
+          ],
         ],
       ),
     );

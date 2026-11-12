@@ -3,7 +3,6 @@ module github.com/honmaple/maple-file/server
 go 1.26.0
 
 require (
-	github.com/djherbis/times v1.6.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.30.1
@@ -17,7 +16,6 @@ require (
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/viper v1.21.0
 	github.com/urfave/cli/v2 v2.27.2
-	golang.org/x/image v0.46.0
 	golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028
 	golang.org/x/net v0.58.0
 	golang.org/x/sync v0.23.0

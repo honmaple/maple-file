@@ -15,15 +15,12 @@ enum FileUploadPolicy {
   rename;
 
   String get label => switch (this) {
-        FileUploadPolicy.preserve => '保留文件名'.tr(),
-        FileUploadPolicy.rename => '自动重命名'.tr(),
-      };
+    FileUploadPolicy.preserve => '保留文件名'.tr(),
+    FileUploadPolicy.rename => '自动重命名'.tr(),
+  };
 }
 
-enum FileListView {
-  list,
-  grid,
-}
+enum FileListView { list, grid }
 
 extension FileListViewExtension on FileListView {
   String get label {
@@ -35,12 +32,7 @@ extension FileListViewExtension on FileListView {
   }
 }
 
-enum FileListSort {
-  name,
-  type,
-  size,
-  time,
-}
+enum FileListSort { name, type, size, time }
 
 extension FileListSortExtension on FileListSort {
   String get label {
@@ -55,11 +47,7 @@ extension FileListSortExtension on FileListSort {
   }
 }
 
-enum FileListIcon {
-  rectangle,
-  circle,
-  thumb,
-}
+enum FileListIcon { rectangle, circle, thumb }
 
 extension FileListIconExtension on FileListIcon {
   String get label {
@@ -74,12 +62,8 @@ extension FileListIconExtension on FileListIcon {
 
 @freezed
 abstract class FileThumbSetting with _$FileThumbSetting {
-  factory FileThumbSetting({
-    @Default(200) int width,
-    @Default(200) int height,
-    @Default(100) int quality,
-    @JsonKey(name: 'auto_clean') @Default(false) bool autoClean,
-  }) = _FileThumbSetting;
+  const factory FileThumbSetting({@Default(false) bool video}) =
+      _FileThumbSetting;
 
   factory FileThumbSetting.fromJson(Map<String, Object?> json) =>
       _$FileThumbSettingFromJson(json);
@@ -95,26 +79,23 @@ abstract class FileSetting with _$FileSetting {
     @Default(FileListSort.name) @JsonKey(name: 'sort') FileListSort sort,
     @Default(FileListView.list) @JsonKey(name: 'view') FileListView view,
     @Default(FileListIcon.rectangle) @JsonKey(name: 'icon') FileListIcon icon,
+    @Default(FileThumbSetting()) FileThumbSetting thumb,
     @JsonKey(name: 'iconColor') String? iconColor,
     @Default(FileUploadPolicy.preserve)
-    @JsonKey(
-      name: 'upload.policy',
-      unknownEnumValue: FileUploadPolicy.preserve,
-    )
+    @JsonKey(name: 'upload.policy', unknownEnumValue: FileUploadPolicy.preserve)
     FileUploadPolicy uploadPolicy,
     @JsonKey(name: 'download.path') String? downloadPath,
     @Default(10) @JsonKey(name: 'download.queue_size') int downloadQueueSize,
     @Default(0) @JsonKey(name: 'pagination.size') int paginationSize,
-    FileThumbSetting? thumb,
   }) = _FileSetting;
 
   factory FileSetting.fromJson(Map<String, Object?> json) =>
       _$FileSettingFromJson(json);
 
   FlexScheme get scheme => FlexScheme.values.firstWhere(
-        (item) => item.name == iconColor,
-        orElse: () => defaultFlexScheme,
-      );
+    (item) => item.name == iconColor,
+    orElse: () => defaultFlexScheme,
+  );
 }
 
 final fileSettingProvider = newSettingNotifier(

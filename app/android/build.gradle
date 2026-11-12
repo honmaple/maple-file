@@ -12,6 +12,14 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+    if (project.name == "video_thumbnail") {
+        project.plugins.withId("com.android.library") {
+            project.androidComponents.finalizeDsl { android ->
+                // The plugin's compileSdk 33 is below Flutter's AndroidX requirements.
+                android.compileSdk = rootProject.project(":app").android.compileSdk
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
